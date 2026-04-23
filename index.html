@@ -76,6 +76,16 @@
     <!-- FONDO OSCURO PARA EL MENÚ MÓVIL (Overlay) -->
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-teal-900/40 z-30 hidden backdrop-blur-sm transition-opacity" onclick="toggleMenu()"></div>
 
+    <!-- BANNER DE COOKIES Y TRATAMIENTO DE DATOS -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 w-full bg-slate-800 text-slate-100 p-4 md:p-6 z-50 flex flex-col md:flex-row justify-between items-center shadow-2xl transition-transform duration-500 transform translate-y-full">
+        <div class="text-xs md:text-sm mb-4 md:mb-0 max-w-5xl pr-4 leading-relaxed">
+            <strong>Aviso de Privacidad y Cookies:</strong> Esta aplicación utiliza cookies técnicas estrictamente necesarias para su funcionamiento. Al continuar utilizando la plataforma, confirmas que estás de acuerdo con nuestra <a href="#" onclick="event.preventDefault(); openPrivacyPolicy();" class="underline font-bold text-teal-300 hover:text-teal-200 transition-colors">política de tratamiento de datos personales</a>.
+        </div>
+        <div class="flex shrink-0 w-full md:w-auto">
+            <button onclick="acceptCookies()" class="w-full md:w-auto bg-teal-500 hover:bg-teal-400 text-white px-8 py-2.5 rounded-lg font-medium transition-colors shadow-sm">Entendido y Aceptar</button>
+        </div>
+    </div>
+
     <!-- PANEL IZQUIERDO: Información (Menú Lateral) -->
     <div id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 flex flex-col w-[85%] sm:w-1/2 md:w-1/3 border-r border-teal-100 bg-white p-6 md:p-8 overflow-y-auto shadow-2xl md:shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         
@@ -98,8 +108,10 @@
                         <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                     </span>
                 </summary>
-                <p class="text-teal-700 mt-3 text-sm leading-relaxed">
-                    Esta evaluación nos ayuda a comprender mejor tus estilos de comportamiento, pensamientos y sentimientos. Toda la información es estrictamente confidencial.
+                <p class="text-teal-700 mt-3 text-sm leading-relaxed text-justify">
+                    El <strong>Cuestionario Exploratorio de Personalidad (CEPER-III)</strong> es un instrumento de evaluación psicométrica estructurado para identificar y medir estilos y rasgos de personalidad.
+                    <br><br>
+                    Permite observar características comportamentales, de pensamiento y emocionales en 14 dimensiones clínicas. Su objetivo principal es trazar un perfil psicológico detallado para apoyar procesos de diagnóstico e investigación profesional.
                 </p>
             </details>
 
@@ -111,24 +123,28 @@
                     </span>
                 </summary>
                 <div class="text-teal-700 mt-3 text-sm leading-relaxed bg-teal-50/50 p-3 rounded-lg border border-teal-100">
-                    Responde señalando el grado en que cada comportamiento o pensamiento es característico de ti.<br><br>
-                    <div class="flex justify-between items-center text-xs mt-2 font-medium">
-                        <span class="bg-white px-2 py-1 rounded shadow-sm border border-teal-100 text-teal-600">1 = Nada característico</span>
-                        <span class="text-teal-300">...</span>
-                        <span class="bg-white px-2 py-1 rounded shadow-sm border border-teal-100 text-teal-600">7 = Totalmente</span>
-                    </div>
+                    <p class="mb-3 text-justify">El proceso consta de dos fases principales:</p>
+                    <ol class="list-decimal pl-4 mb-3 text-justify space-y-1">
+                        <li><strong>Perfil Demográfico:</strong> Inicialmente te pediremos algunos datos básicos y confidenciales para conocerte mejor.</li>
+                        <li><strong>Evaluación CEPER-III:</strong> Posteriormente, iniciarás la prueba donde evaluarás distintas afirmaciones sobre ti.</li>
+                    </ol>
+                    <p class="text-justify">Para la evaluación, utilizarás una escala del 1 al 7, donde <strong>1</strong> significa "Nada característico de mí" y <strong>7</strong> "Totalmente característico de mí".</p>
                 </div>
             </details>
 
-            <details class="group border-b border-teal-50 pb-4">
+            <details id="privacy-section" class="group border-b border-teal-50 pb-4">
                 <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
                     <span>Privacidad de datos</span>
                     <span class="transition group-open:rotate-180 text-teal-500">
                         <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                     </span>
                 </summary>
-                <p class="text-teal-700 mt-3 text-sm leading-relaxed">
-                    Tus respuestas serán utilizadas únicamente con fines clínicos y de evaluación profesional. Los datos están encriptados y protegidos según normativas de salud.
+                <p class="text-teal-700 mt-3 text-sm leading-relaxed text-justify">
+                    En cumplimiento de las normativas de protección de datos vigentes (como la Ley 1581 de 2012 y equivalentes internacionales), tu información se maneja con <strong>estricta confidencialidad</strong> y altos estándares de seguridad.
+                    <br><br>
+                    <strong>Tus respuestas y datos personales serán utilizados única y exclusivamente con fines de evaluación clínica y de investigación académica. En ningún caso tu información será compartida, vendida ni utilizada con fines comerciales, de marketing o de terceros ajenos a este propósito.</strong>
+                    <br><br>
+                    Al iniciar la prueba, otorgas tu consentimiento explícito e informado para el tratamiento ético de tus datos y la generación de un reporte psicométrico exclusivo para tu profesional asignado.
                 </p>
             </details>
         </div>
@@ -161,12 +177,12 @@
         </header>
 
         <!-- Área de mensajes -->
-        <main id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 w-full scroll-smooth">
+        <main id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 w-full scroll-smooth pb-32">
             <!-- Los mensajes se inyectarán aquí -->
         </main>
 
         <!-- Área de Interacción (Botones / Inputs) -->
-        <footer id="interaction-area" class="w-full bg-white border-t border-teal-100 p-4 md:p-5 shadow-[0_-4px_24px_rgba(0,0,0,0.03)] z-10 shrink-0">
+        <footer id="interaction-area" class="w-full bg-white border-t border-teal-100 p-4 md:p-5 shadow-[0_-4px_24px_rgba(0,0,0,0.03)] z-10 shrink-0 min-h-[90px]">
             <!-- El contenido dinámico irá aquí -->
         </footer>
     </div>
@@ -239,6 +255,7 @@
         const patientData = {
             demographics: {
                 psicologo: "",
+                consentimiento_datos: false,
                 nombres: "",
                 primer_apellido: "",
                 segundo_apellido: "",
@@ -444,6 +461,19 @@
         const mobileOverlay = document.getElementById('mobile-menu-overlay');
 
         // --- FUNCIONES DE INTERFAZ BÁSICAS ---
+        function checkCookies() {
+            if (!localStorage.getItem('cookiesAccepted')) {
+                setTimeout(() => {
+                    document.getElementById('cookie-banner').classList.remove('translate-y-full');
+                }, 1000);
+            }
+        }
+
+        function acceptCookies() {
+            localStorage.setItem('cookiesAccepted', 'true');
+            document.getElementById('cookie-banner').classList.add('translate-y-full');
+        }
+
         function toggleMenu() {
             const isClosed = sidebar.classList.contains('-translate-x-full');
             if (isClosed) {
@@ -454,6 +484,25 @@
                 sidebar.classList.add('-translate-x-full');
                 mobileOverlay.classList.add('opacity-0');
                 setTimeout(() => mobileOverlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // NUEVO: Función para abrir directamente la política de privacidad
+        function openPrivacyPolicy() {
+            // Abrir menú lateral si está cerrado (especialmente útil en móviles)
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                toggleMenu();
+            }
+            
+            // Buscar la sección de privacidad y abrirla
+            const privacyDetails = document.getElementById('privacy-section');
+            if (privacyDetails) {
+                privacyDetails.open = true;
+                // Pequeño delay para que la animación fluya
+                setTimeout(() => {
+                    privacyDetails.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
             }
         }
 
@@ -481,7 +530,7 @@
             interactionArea.innerHTML = '';
         }
 
-        // --- FLUJO DEL CHATBOT (DATOS DEMOGRÁFICOS) ---
+        // --- FLUJO DEL CHATBOT (DATOS DEMOGRÁFICOS Y PRIVACIDAD) ---
 
         function goBackDemographics(stepFunction) {
             clearInteraction();
@@ -524,7 +573,47 @@
             patientData.demographics.psicologo = psicologo;
             clearInteraction();
             addMessage(psicologo, 'user');
-            setTimeout(askNames, 500);
+            setTimeout(askPrivacy, 500);
+        }
+
+        // NUEVO: Petición de consentimiento de datos
+        function askPrivacy() {
+            clearInteraction();
+            addMessage("Por disposición legal y para proteger tu información, por favor confirma que has leído y aceptas nuestra <a href='#' onclick='event.preventDefault(); openPrivacyPolicy();' class='underline font-bold text-teal-600 hover:text-teal-800 transition-colors'>política de tratamiento de datos personales</a>.");
+            interactionArea.innerHTML = `
+                <div class="flex flex-col md:flex-row justify-center gap-3 max-w-xl mx-auto">
+                    <button onclick="goBackDemographics(askPsicologo)" class="w-full md:w-1/4 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                    <button onclick="handlePrivacy(true)" class="w-full md:w-auto flex-1 bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-md">Sí, acepto</button>
+                    <button onclick="handlePrivacy(false)" class="w-full md:w-auto flex-1 bg-white border border-red-300 text-red-600 hover:bg-red-50 px-4 py-3 rounded-xl font-medium transition-colors">No acepto</button>
+                </div>
+            `;
+        }
+
+        function handlePrivacy(accepted) {
+            clearInteraction();
+            if(accepted) {
+                patientData.demographics.consentimiento_datos = true;
+                addMessage("Sí, acepto.", 'user');
+                setTimeout(askNames, 500);
+            } else {
+                addMessage("No acepto.", 'user');
+                setTimeout(cancelAssessment, 500);
+            }
+        }
+
+        // NUEVO: Cancelación absoluta si no aceptan términos
+        function cancelAssessment() {
+            addMessage("Entendemos completamente tu decisión. El cuestionario ha sido cancelado y la sesión ha terminado.<br><br><span class='text-red-600 font-semibold'>Importante: Te confirmamos que hasta este momento no se ha guardado, procesado ni almacenado ningún tipo de dato personal en nuestros servidores.</span><br><br>Puedes cerrar esta ventana de forma segura.", "bot");
+            interactionArea.innerHTML = `
+                <div class="flex flex-col items-center py-4">
+                    <div class="text-sm text-slate-500 font-medium bg-slate-50 px-6 py-3 rounded-lg border border-slate-200 shadow-sm">
+                        Evaluación cancelada.
+                    </div>
+                    <button onclick="location.reload()" class="mt-4 text-xs text-teal-600 hover:text-teal-800 hover:underline font-medium">Reiniciar evaluación desde cero</button>
+                </div>
+            `;
+            // Limpiamos los datos temporalmente guardados en memoria por seguridad
+            patientData.demographics = {};
         }
 
         function askNames() {
@@ -536,7 +625,7 @@
                     <input type="text" id="demo-apellido1" placeholder="Primer Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
                     <input type="text" id="demo-apellido2" placeholder="Segundo Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
                     <div class="md:col-span-2 flex gap-3 mt-1">
-                        <button type="button" onclick="goBackDemographics(askPsicologo)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                        <button type="button" onclick="goBackDemographics(askPrivacy)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
                         <button type="submit" class="w-2/3 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
                     </div>
                 </form>
@@ -879,11 +968,11 @@
                 fraseMotivacional = `Ser ${d.profesion.toLowerCase()} y estar ${d.situacion_sentimental.toLowerCase().split('/')[0]} trae sus propios retos y alegrías. El autoconocimiento es la mejor inversión que puedes hacer en ti ahora mismo.`;
             }
 
-            addMessage(`¡Genial! Hemos terminado de armar tu perfil.<br><br><span class="text-teal-700 font-medium italic">"${fraseMotivacional}"</span><br><br>Ahora sí, vamos a comenzar con la evaluación CEPER-III.<br><br><div class="flex flex-col gap-1 mt-2 text-sm text-teal-800 bg-white border border-teal-100 p-2.5 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">1</span> = Nada característico</div><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">7</span> = Totalmente característico</div></div>`);
+            addMessage(`¡Genial! Hemos terminado de armar tu perfil.<br><br><span class="text-teal-700 font-medium italic">"${fraseMotivacional}"</span><br><br>Ahora sí, vamos a comenzar con la evaluación CEPER-III.<br><br>A continuación encontrarás una serie de afirmaciones sobre formas de pensar, sentir y actuar. Evalúa cada frase y decide en qué medida te describe habitualmente. <strong>No hay respuestas correctas ni incorrectas</strong>, lo importante es tu sinceridad.<br><br><div class="flex flex-col gap-1 mt-2 text-sm text-teal-800 bg-white border border-teal-100 p-2.5 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">1</span> = Nada característico de mí</div><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">7</span> = Totalmente característico de mí</div></div>`);
             
             setTimeout(() => {
                 askNextQuestion();
-            }, 5500); // Dar tiempo para leer el mensaje largo
+            }, 6500); // Aumenté un poco el tiempo para dar chance de leer bien las instrucciones
         }
 
         function askNextQuestion() {
@@ -967,7 +1056,10 @@
         }
 
         // --- INICIALIZACIÓN ---
-        window.onload = startIntro;
+        window.onload = () => {
+            checkCookies();
+            startIntro();
+        };
 
     </script>
 </body>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación CEPER-III</title>
+    <!-- Tailwind CSS para diseño moderno y colores suaves -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Personalización de colores suaves y scroll */
+        :root {
+            --bg-color: #ffffff;
+            --text-soft: #0f766e; /* Teal 700 */
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-soft);
+            background-color: var(--bg-color);
+            overflow: hidden; /* Evita scroll general, lo manejaremos en los paneles */
+        }
+        
+        /* Estilos para el scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #99f6e4; /* Teal 200 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5eead4; /* Teal 300 */
+        }
+
+        /* Animación suave para los mensajes */
+        .message-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Estilo para los botones de la escala Likert */
+        .likert-btn {
+            transition: all 0.2s;
+        }
+        .likert-btn:hover {
+            transform: scale(1.05);
+            background-color: #f0fdfa; /* Teal 50 */
+            border-color: #5eead4; /* Teal 300 */
+        }
+    </style>
+</head>
+<body class="flex h-screen w-full">
+
+    <!-- PANEL IZQUIERDO: Información -->
+    <div class="hidden md:flex flex-col w-1/3 border-r border-teal-100 bg-white p-8 overflow-y-auto shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10">
+        <div class="mb-8">
+            <!-- Enlace al Login -->
+            <a href="login.html" class="inline-block text-2xl font-semibold text-teal-800 tracking-wide mb-2 hover:text-teal-600 transition-colors cursor-pointer" title="Ir al Portal Administrativo">CEPER-III</a>
+            <p class="text-sm text-teal-600">Cuestionario Exploratorio de Personalidad</p>
+        </div>
+
+        <div class="space-y-4">
+            <!-- Desplegable 1 -->
+            <details class="group border-b border-teal-50 pb-4" open>
+                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
+                    <span>Sobre la prueba</span>
+                    <span class="transition group-open:rotate-180 text-teal-500">
+                        <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                    </span>
+                </summary>
+                <p class="text-teal-700 mt-3 text-sm leading-relaxed">
+                    Esta evaluación nos ayuda a comprender mejor tus estilos de comportamiento, pensamientos y sentimientos. Toda la información es estrictamente confidencial.
+                </p>
+            </details>
+
+            <!-- Desplegable 2 -->
+            <details class="group border-b border-teal-50 pb-4">
+                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
+                    <span>Instrucciones</span>
+                    <span class="transition group-open:rotate-180 text-teal-500">
+                        <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                    </span>
+                </summary>
+                <p class="text-teal-700 mt-3 text-sm leading-relaxed">
+                    Responde señalando el grado en que cada comportamiento o pensamiento es característico de ti.<br><br>
+                    <strong>1</strong> = Nada característico<br>
+                    <strong>7</strong> = Totalmente característico
+                </p>
+            </details>
+
+            <!-- Desplegable 3 -->
+            <details class="group border-b border-teal-50 pb-4">
+                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
+                    <span>Privacidad de datos</span>
+                    <span class="transition group-open:rotate-180 text-teal-500">
+                        <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                    </span>
+                </summary>
+                <p class="text-teal-700 mt-3 text-sm leading-relaxed">
+                    (Aquí insertaremos la política de manejo de datos según las directrices que me proporciones).
+                </p>
+            </details>
+        </div>
+        
+        <div class="mt-auto pt-8">
+            <p class="text-xs text-teal-400 text-center">Plataforma de Evaluación Psicológica Segura</p>
+        </div>
+    </div>
+
+    <!-- PANEL DERECHO: Chatbot -->
+    <div class="flex-1 flex flex-col bg-slate-50 relative">
+        
+        <!-- Header con Barra de Progreso -->
+        <header class="h-16 border-b border-teal-100 bg-white/90 backdrop-blur flex items-center px-6 sticky top-0 z-20 shadow-sm">
+            <div class="flex-1">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-medium text-teal-700" id="progress-text">Progreso: 0%</span>
+                    <span class="text-xs font-medium text-teal-700" id="question-counter">0/170</span>
+                </div>
+                <div class="w-full bg-teal-100 rounded-full h-1.5">
+                    <div id="progress-bar" class="bg-teal-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Área de mensajes -->
+        <main id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-40">
+            <!-- Los mensajes se inyectarán aquí -->
+        </main>
+
+        <!-- Área de Interacción (Botones / Inputs) -->
+        <footer id="interaction-area" class="absolute bottom-0 w-full bg-white border-t border-teal-100 p-4 shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">
+            <!-- El contenido dinámico irá aquí -->
+        </footer>
+    </div>
+
+    <script>
+        // --- ESTADO DE LA APLICACIÓN ---
+        const totalQuestions = 170; // Las 170 preguntas del CEPER III
+        let currentStep = 'intro'; // intro -> demograficos -> test -> finalizado
+        let currentQuestionIndex = 0;
+        
+        // Aquí se guardará la data estructurada y segura
+        const patientData = {
+            demographics: {},
+            answers: {}
+        };
+
+        // --- PREGUNTAS DE EJEMPLO (Se llenará con las 170 reales después) ---
+        const questionsList = [];
+        questionsList.push("Creo que hay personas que intentan aprovecharse de mis ideas o de lo que hago para su propio beneficio.");
+        questionsList.push("No me atraen las fiestas ni las reuniones sociales.");
+        questionsList.push("Con frecuencia tengo pensamientos extraños de los que me gustaría poder librarme.");
+        for(let i = 4; i <= 170; i++) {
+            questionsList.push(`Ítem de prueba número ${i}. (Aquí irá la pregunta real).`);
+        }
+
+        // --- ELEMENTOS DEL DOM ---
+        const chatContainer = document.getElementById('chat-container');
+        const interactionArea = document.getElementById('interaction-area');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const questionCounter = document.getElementById('question-counter');
+
+        // --- FUNCIONES DE INTERFAZ ---
+
+        // Añadir mensaje al chat
+        function addMessage(text, sender = 'bot') {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex w-full ${sender === 'user' ? 'justify-end' : 'justify-start'} message-fade-in`;
+            
+            const bubble = document.createElement('div');
+            if(sender === 'bot') {
+                // Tonos Teal (verdes/azules) para el bot
+                bubble.className = 'bg-teal-50 border border-teal-100 text-teal-900 px-5 py-3.5 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm';
+            } else {
+                // Tonos Blue para el usuario
+                bubble.className = 'bg-blue-100 text-blue-900 px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[85%] font-medium';
+            }
+            
+            bubble.innerHTML = text;
+            msgDiv.appendChild(bubble);
+            chatContainer.appendChild(msgDiv);
+            
+            // Auto-scroll al fondo
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // --- FLUJO DE LA PRUEBA ---
+
+        function startIntro() {
+            addMessage("¡Hola! Soy tu asistente virtual para esta evaluación. 😊<br><br>Te acompañaré paso a paso para que el proceso sea lo más cómodo posible. Antes de iniciar con las preguntas, necesito conocer algunos datos básicos.");
+            
+            interactionArea.innerHTML = `
+                <div class="flex justify-center">
+                    <button onclick="startDemographics()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-full font-medium transition-colors w-full md:w-auto shadow-md">
+                        Empezar
+                    </button>
+                </div>
+            `;
+        }
+
+        function startDemographics() {
+            addMessage("Empezar", 'user');
+            
+            setTimeout(() => {
+                addMessage("Por favor, completa los siguientes datos (son confidenciales):");
+                
+                interactionArea.innerHTML = `
+                    <form id="demo-form" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="demo-name" placeholder="Tu nombre" required class="w-full border border-teal-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-teal-50/30 text-teal-900 placeholder-teal-400">
+                        <input type="number" id="demo-age" placeholder="Tu edad" required class="w-full border border-teal-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-teal-50/30 text-teal-900 placeholder-teal-400">
+                        <select id="demo-gender" required class="w-full border border-teal-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-teal-50/30 md:col-span-2 text-teal-700">
+                            <option value="" disabled selected>Selecciona tu género</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                            <option value="O">Otro</option>
+                        </select>
+                        <button type="submit" class="md:col-span-2 bg-teal-600 hover:bg-teal-700 text-white px-8 py-2.5 rounded-lg font-medium transition-colors shadow-sm">
+                            Guardar y continuar
+                        </button>
+                    </form>
+                `;
+
+                document.getElementById('demo-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    patientData.demographics = {
+                        name: document.getElementById('demo-name').value,
+                        age: document.getElementById('demo-age').value,
+                        gender: document.getElementById('demo-gender').value
+                    };
+                    
+                    interactionArea.innerHTML = '';
+                    addMessage(`Mis datos están completos.`, 'user');
+                    
+                    setTimeout(startTest, 800);
+                });
+            }, 600);
+        }
+
+        function startTest() {
+            addMessage(`¡Perfecto ${patientData.demographics.name}! Vamos a comenzar.<br><br>Te mostraré una serie de afirmaciones. Por favor, selecciona del 1 al 7 qué tan característica es de ti.<br><br><span class="text-sm text-teal-700 bg-teal-100 px-2 py-1 rounded">1 = Nada característico</span> | <span class="text-sm text-teal-700 bg-teal-100 px-2 py-1 rounded">7 = Totalmente característico</span>`);
+            currentStep = 'test';
+            
+            setTimeout(() => {
+                askNextQuestion();
+            }, 2500);
+        }
+
+        function askNextQuestion() {
+            if (currentQuestionIndex >= totalQuestions) {
+                finishTest();
+                return;
+            }
+
+            // Actualizar barra de progreso
+            const progress = ((currentQuestionIndex) / totalQuestions) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.innerText = `Progreso: ${Math.round(progress)}%`;
+            questionCounter.innerText = `${currentQuestionIndex + 1}/${totalQuestions}`;
+
+            // Imprimir la pregunta
+            const currentQ = questionsList[currentQuestionIndex];
+            addMessage(`<strong>${currentQuestionIndex + 1}.</strong> ${currentQ}`);
+
+            // Mostrar botones Likert (1-7)
+            let buttonsHTML = '<div class="flex justify-between items-center max-w-2xl mx-auto gap-1 md:gap-2">';
+            for(let i = 1; i <= 7; i++) {
+                buttonsHTML += `<button onclick="handleAnswer(${i})" class="likert-btn flex-1 bg-white border border-teal-200 text-teal-700 font-semibold py-3 md:py-4 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-300">${i}</button>`;
+            }
+            buttonsHTML += '</div>';
+            
+            // Leyenda bajo los botones
+            buttonsHTML += `
+                <div class="flex justify-between max-w-2xl mx-auto mt-2 px-2">
+                    <span class="text-[10px] md:text-xs text-teal-500 font-medium">Nada característico</span>
+                    <span class="text-[10px] md:text-xs text-teal-500 font-medium">Totalmente característico</span>
+                </div>
+            `;
+
+            // Botón para retroceder a la pregunta anterior
+            if (currentQuestionIndex > 0) {
+                buttonsHTML += `
+                    <div class="flex justify-center mt-4">
+                        <button onclick="goBack()" class="text-sm text-teal-600 hover:text-teal-800 flex items-center gap-1 transition-colors font-medium bg-teal-50 px-4 py-2 rounded-full hover:bg-teal-100">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            Corregir respuesta anterior
+                        </button>
+                    </div>
+                `;
+            }
+
+            interactionArea.innerHTML = buttonsHTML;
+        }
+
+        // --- LÓGICA DE RESPUESTAS ---
+
+        function handleAnswer(value) {
+            interactionArea.innerHTML = '';
+            addMessage(`${value}`, 'user');
+            patientData.answers[`item_${currentQuestionIndex + 1}`] = value;
+            currentQuestionIndex++;
+            setTimeout(askNextQuestion, 600);
+        }
+
+        function goBack() {
+            if(currentQuestionIndex > 0) {
+                interactionArea.innerHTML = '';
+                addMessage("Quiero corregir mi respuesta anterior.", 'user');
+                
+                // Disminuimos el índice
+                currentQuestionIndex--;
+                
+                // Opcional: Borramos la respuesta de la base de datos temporal
+                delete patientData.answers[`item_${currentQuestionIndex + 1}`];
+
+                // Retraso natural antes de volver a preguntar
+                setTimeout(() => {
+                    addMessage(`<i>Volviendo a la pregunta ${currentQuestionIndex + 1}...</i>`);
+                    setTimeout(askNextQuestion, 600);
+                }, 600);
+            }
+        }
+
+        function finishTest() {
+            progressBar.style.width = `100%`;
+            progressText.innerText = `Progreso: 100%`;
+            questionCounter.innerText = `${totalQuestions}/${totalQuestions}`;
+
+            addMessage("¡Hemos terminado! 🎉<br><br>Muchas gracias por tu tiempo y sinceridad. Tus respuestas han sido guardadas de forma segura.");
+            
+            interactionArea.innerHTML = `
+                <div class="flex justify-center text-sm text-teal-600 py-4 font-medium">
+                    Evaluación completada. Puedes cerrar esta ventana.
+                </div>
+            `;
+            
+            console.log("=== DATOS SEGUROS LISTOS PARA ENVIAR A LA API ===");
+            console.log(JSON.stringify(patientData, null, 2));
+        }
+
+        // --- INICIALIZACIÓN ---
+        window.onload = startIntro;
+
+    </script>
+</body>
+</html>

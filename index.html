@@ -172,20 +172,64 @@
     </div>
 
     <script>
-        // --- BASE DE DATOS GEOGRÁFICA SIMULADA (Geodata.json) ---
-        // Aquí conectaremos luego tu archivo geodata.json real.
-        const paisesAmerica = [
-            "Argentina", "Bolivia", "Brasil", "Canadá", "Chile", "Colombia", "Costa Rica", "Cuba", 
-            "Ecuador", "El Salvador", "Estados Unidos", "Guatemala", "Honduras", "México", 
-            "Nicaragua", "Panamá", "Paraguay", "Perú", "República Dominicana", "Uruguay", "Venezuela"
-        ];
-        // Estructura demo para Colombia
-        const colombiaData = {
-            "Atlántico": ["Barranquilla", "Soledad", "Puerto Colombia", "Malambo"],
-            "Bogotá D.C.": ["Bogotá"],
-            "Antioquia": ["Medellín", "Envigado", "Bello", "Itagüí"],
-            "Valle del Cauca": ["Cali", "Palmira", "Buenaventura"]
+        // --- BASE DE DATOS GEOGRÁFICA (A partir de Geodata.json) ---
+        const geoData = {
+          "América del Sur": {
+            "Colombia": {
+              "Amazonas": ["Leticia", "Puerto Nariño"],
+              "Antioquia": ["Medellín", "Abejorral", "Abriaquí", "Alejandría", "Amagá", "Amalfi", "Andes", "Angelópolis", "Angostura", "Anorí", "Anzá", "Apartadó", "Arboletes", "Argelia", "Armenia", "Barbosa", "Bello", "Belmira", "Betania", "Betulia", "Briceño", "Buriticá", "Cáceres", "Caicedo", "Caldas", "Campamento", "Cañasgordas", "Caracolí", "Caramanta", "Carepa", "Carmen de Viboral", "Carolina", "Caucasia", "Chigorodó", "Cisneros", "Cocorná", "Concepción", "Concordia", "Copacabana", "Dabeiba", "Donmatías", "Ebéjico", "El Bagre", "El Peñol", "El Retiro", "El Santuario", "Entrerríos", "Envigado", "Fredonia", "Frontino", "Giraldo", "Girardota", "Gómez Plata", "Granada", "Guadalupe", "Guarne", "Guatapé", "Heliconia", "Hispania", "Itagüí", "Ituango", "Jardín", "Jericó", "La Ceja", "La Estrella", "La Pintada", "La Unión", "Liborina", "Maceo", "Marinilla", "Montebello", "Murindó", "Mutatá", "Nariño", "Nechí", "Necoclí", "Olaya", "Peque", "Pueblorrico", "Puerto Berrío", "Puerto Nare", "Puerto Triunfo", "Remedios", "Rionegro", "Sabanalarga", "Sabaneta", "Salgar", "San Andrés de Cuerquia", "San Carlos", "San Francisco", "San Jerónimo", "San José de la Montaña", "San Juan de Urabá", "San Luis", "San Pedro de los Milagros", "San Pedro de Urabá", "San Rafael", "San Roque", "San Vicente", "Santa Bárbara", "Santa Fe de Antioquia", "Santa Rosa de Osos", "Santo Domingo", "Segovia", "Sonsón", "Sopetrán", "Támesis", "Tarazá", "Tarso", "Titiribí", "Toledo", "Turbo", "Uramita", "Urrao", "Valdivia", "Valparaíso", "Vegachí", "Venecia", "Vigía del Fuerte", "Yalí", "Yarumal", "Yolombó", "Yondó", "Zaragoza"],
+              "Arauca": ["Arauca", "Arauquita", "Cravo Norte", "Fortul", "Puerto Rondón", "Saravena", "Tame"],
+              "Atlántico": ["Barranquilla", "Baranoa", "Campo de la Cruz", "Candelaria", "Galapa", "Juan de Acosta", "Luruaco", "Malambo", "Manatí", "Palmar de Varela", "Piojó", "Polonuevo", "Ponedera", "Puerto Colombia", "Repelón", "Sabanagrande", "Sabanalarga", "Santa Lucía", "Santo Tomás", "Soledad", "Suán", "Tubará", "Usiacurí"],
+              "Bolívar": ["Cartagena de Indias", "Achí", "Altos del Rosario", "Arenal", "Arjona", "Arroyohondo", "Barranco de Loba", "Brazuelo de Papayal", "Calamar", "Cantagallo", "Cicuco", "Clemencia", "Córdoba", "El Carmen de Bolívar", "El Guamo", "El Peñón", "Hatillo de Loba", "Magangué", "Mahates", "Margarita", "María La Baja", "Mompós", "Montecristo", "Morales", "Norosí", "Pinillos", "Regidor", "Río Viejo", "San Cristóbal", "San Estanislao", "San Fernando", "San Jacinto", "San Jacinto del Cauca", "San Juan Nepomuceno", "San Martín de Loba", "San Pablo", "Santa Catalina", "Santa Cruz de Mompox", "Santa Rosa", "Santa Rosa del Sur", "Simití", "Soplaviento", "Talaigua Nuevo", "Tiquisio", "Turbaco", "Turbaná", "Villanueva", "Zambrano"],
+              "Boyacá": ["Tunja", "Almeida", "Aquitania", "Arcabuco", "Belén", "Berbeo", "Betéitiva", "Boavita", "Boyacá", "Briceño", "Buenavista", "Busbanzá", "Caldas", "Campohermoso", "Cerinza", "Chinavita", "Chiquinquirá", "Chíquiza", "Chiscas", "Chita", "Chitaraque", "Chivatá", "Chivor", "Ciénega", "Cómbita", "Coper", "Corrales", "Covarachía", "Cubará", "Cucaita", "Cuítiva", "Duitama", "El Cocuy", "El Espino", "Firavitoba", "Floresta", "Gachantivá", "Gámeza", "Garagoa", "Guateque", "Guayatá", "Güicán", "Iza", "Jenesano", "Jericó", "La Capilla", "La Uvita", "La Victoria", "Labranzagrande", "Macanal", "Maripí", "Miraflores", "Mongua", "Monguí", "Moniquirá", "Motavita", "Muzo", "Nobsa", "Nuevo Colón", "Oicatá", "Otanche", "Pachavita", "Páez", "Paipa", "Pajarito", "Panqueba", "Pauna", "Paya", "Paz de Río", "Pesca", "Pisba", "Puerto Boyacá", "Quípama", "Ramiriquí", "Ráquira", "Rondón", "Saboyá", "Sáchica", "Samacá", "San Eduardo", "San José de Pare", "San Luis de Gaceno", "San Mateo", "San Miguel de Sema", "San Pablo de Borbur", "Santa María", "Santa Rosa de Viterbo", "Santa Sofía", "Santana", "Sativanorte", "Sativasur", "Siachoque", "Soatá", "Socha", "Socotá", "Sogamoso", "Somondoco", "Sora", "Soracá", "Sotaquirá", "Susacón", "Sutamarchán", "Sutatenza", "Tasco", "Tenza", "Tibaná", "Tibasosa", "Tinjacá", "Tipacoque", "Toca", "Togüí", "Tópaga", "Tota", "Tununguá", "Turmequé", "Tuta", "Tutazá", "Úmbita", "Ventaquemada", "Villa de Leyva", "Viracachá", "Zetaquira"],
+              "Caldas": ["Manizales", "Aguadas", "Anserma", "Aranzazu", "Belalcázar", "Chinchiná", "Filadelfia", "La Dorada", "La Merced", "Manzanares", "Marmato", "Marquetalia", "Marulanda", "Neira", "Norcasia", "Pácora", "Palestina", "Pensilvania", "Riosucio", "Risaralda", "Salamina", "Samaná", "San José", "Supía", "Victoria", "Villamaría", "Viterbo"],
+              "Caquetá": ["Florencia", "Albania", "Belén de los Andaquíes", "Cartagena del Chairá", "Curillo", "El Doncello", "El Paujil", "La Montañita", "Milán", "Morelia", "Puerto Rico", "San José del Fragua", "San Vicente del Caguán", "Solano", "Solita", "Valparaíso"],
+              "Casanare": ["Yopal", "Aguazul", "Chámeza", "Hato Corozal", "La Salina", "Maní", "Monterrey", "Nunchía", "Orocué", "Paz de Ariporo", "Pore", "Recetor", "Sabanalarga", "Sácama", "San Luis de Palenque", "Támara", "Tauramena", "Trinidad", "Villanueva"],
+              "Cauca": ["Popayán", "Almaguer", "Argelia", "Balboa", "Bolívar", "Buenos Aires", "Cajibío", "Caldono", "Caloto", "Corinto", "El Tambo", "Florencia", "Guachené", "Guapí", "Inzá", "Jambaló", "La Sierra", "La Vega", "López de Micay", "Mercaderes", "Miranda", "Morales", "Padilla", "Páez", "Patía", "Piamonte", "Piendamó", "Puerto Tejada", "Puracé", "Rosas", "San Sebastián", "Santander de Quilichao", "Santa Rosa", "Silvia", "Sotará", "Suárez", "Sucre", "Timbío", "Timbiquí", "Toribío", "Totoró", "Villa Rica"],
+              "Cesar": ["Valledupar", "Aguachica", "Agustín Codazzi", "Astrea", "Becerril", "Bosconia", "Chimichagua", "Chiriguaná", "Curumaní", "El Copey", "El Paso", "Gamarra", "González", "La Gloria", "La Jagua de Ibirico", "La Paz", "Manaure Balcón del Cesar", "Pailitas", "Pelaya", "Pueblo Bello", "Río de Oro", "San Alberto", "San Diego", "San Martín", "Tamalameque"],
+              "Chocó": ["Quibdó", "Acandí", "Alto Baudó", "Atrato", "Bagadó", "Bahía Solano", "Bajo Baudó", "Bojayá", "Cantón de San Pablo", "Carmen del Darién", "Cértegui", "Condoto", "El Carmen de Atrato", "Istmina", "Juradó", "Litoral del San Juan", "Lloró", "Medio Atrato", "Medio Baudó", "Medio San Juan", "Nóvita", "Nuquí", "Riosucio", "San José del Palmar", "Sipí", "Tadó", "Unguía", "Unión Panamericana"],
+              "Córdoba": ["Montería", "Ayapel", "Buenavista", "Canalete", "Cereté", "Chimá", "Chinú", "Ciénaga de Oro", "Cotorra", "La Apartada", "Lorica", "Los Córdobas", "Momil", "Montelíbano", "Moñitos", "Planeta Rica", "Pueblo Nuevo", "Puerto Escondido", "Puerto Libertador", "Purísima", "Sahagún", "San Andrés de Sotavento", "San Antero", "San Bernardo del Viento", "San Carlos", "San José de Uré", "San Pelayo", "Santa Cruz de Lorica", "Tierralta", "Tuchín", "Valencia"],
+              "Cundinamarca": ["Bogotá D.C.", "Agua de Dios", "Albán", "Anapoima", "Anolaima", "Apulo", "Arbeláez", "Beltrán", "Bituima", "Bojacá", "Cabrera", "Cachipay", "Cajicá", "Caparrapí", "Cáqueza", "Carmen de Carupa", "Chaguaní", "Chía", "Chipaque", "Choachí", "Chocontá", "Cogua", "Cota", "Cucunubá", "El Colegio", "El Peñón", "El Rosal", "Facatativá", "Fómeque", "Fosca", "Funza", "Fúquene", "Fusagasugá", "Gachalá", "Gachancipá", "Gachetá", "Gama", "Girardot", "Granada", "Guachetá", "Guaduas", "Guasca", "Guataquí", "Guatavita", "Guayabal de Síquima", "Guayabetal", "Gutiérrez", "Jerusalén", "Junín", "La Calera", "La Mesa", "La Palma", "La Peña", "La Vega", "Lenguazaque", "Machetá", "Madrid", "Manta", "Medina", "Mosquera", "Nariño", "Nemocón", "Nilo", "Nimaima", "Nocaima", "Pacho", "Paime", "Pandi", "Paratebueno", "Pasca", "Puerto Salgar", "Pulí", "Quebradanegra", "Quetame", "Quipile", "Ricaurte", "San Antonio del Tequendama", "San Bernardo", "San Cayetano", "San Francisco", "San Juan de Rioseco", "Sasaima", "Sesquilé", "Sibaté", "Silvania", "Simijaca", "Soacha", "Sopó", "Subachoque", "Suesca", "Supatá", "Susa", "Sutatausa", "Tabio", "Tausa", "Tena", "Tenjo", "Tibacuy", "Tibirita", "Tocaima", "Tocancipá", "Topaipí", "Ubalá", "Ubaque", "Ubaté", "Une", "Útica", "Venecia", "Vergara", "Vianí", "Villagómez", "Villapinzón", "Villeta", "Viotá", "Yacopí", "Zipacón", "Zipaquirá"],
+              "Guainía": ["Inírida", "Barrancominas", "Mapiripana", "San Felipe"],
+              "Guaviare": ["San José del Guaviare", "Calamar", "El Retorno", "Miraflores"],
+              "Huila": ["Neiva", "Acevedo", "Agrado", "Aipe", "Algeciras", "Altamira", "Baraya", "Campoalegre", "Colombia", "Elías", "Garzón", "Gigante", "Guadalupe", "Hobo", "Íquira", "Isnos", "La Argentina", "La Plata", "Nátaga", "Oporapa", "Paicol", "Palermo", "Palestina", "Pital", "Pitalito", "Rivera", "Saladoblanco", "San Agustín", "Santa María", "Suaza", "Tarqui", "Tello", "Teruel", "Tesalia", "Timaná", "Villavieja", "Yaguará"],
+              "La Guajira": ["Riohacha", "Albania", "Barrancas", "Dibulla", "Distracción", "El Molino", "Fonseca", "Hatonuevo", "La Jagua del Pilar", "Maicao", "Manaure", "San Juan del Cesar", "Uribia", "Urumita", "Villanueva"],
+              "Magdalena": ["Santa Marta", "Algarrobo", "Aracataca", "Ariguaní", "Cerro de San Antonio", "Chibolo", "Ciénaga", "Concordia", "El Banco", "El Piñón", "El Retén", "Fundación", "Guamal", "Nueva Granada", "Pedraza", "Pijiño del Carmen", "Pivijay", "Plato", "Puebloviejo", "Remolino", "Sabanas de San Ángel", "Salamina", "San Sebastián de Buenavista", "San Zenón", "Santa Ana", "Santa Bárbara de Pinto", "Sitionuevo", "Tenerife", "Zapayán", "Zona Bananera"],
+              "Meta": ["Villavicencio", "Acacías", "Barranca de Upía", "Cabuyaro", "Castilla la Nueva", "Cubarral", "Cumaral", "El Calvario", "El Castillo", "El Dorado", "Fuente de Oro", "Granada", "Guamal", "La Macarena", "Lejanías", "Mapiripán", "Mesetas", "Puerto Concordia", "Puerto Gaitán", "Puerto Lleras", "Puerto López", "Puerto Rico", "Restrepo", "San Carlos de Guaroa", "San Juan de Arama", "San Juanito", "San Martín", "Uribe", "Vista Hermosa"],
+              "Nariño": ["Pasto", "Albán", "Aldana", "Ancuyá", "Arboleda", "Barbacoas", "Belén", "Buesaco", "Chachagüí", "Colón", "Consacá", "Contadero", "Córdoba", "Cuaspud", "Cumbal", "Cumbitara", "El Charco", "El Peñol", "El Rosario", "El Tablón de Gómez", "El Tambo", "Francisco Pizarro", "Funes", "Guachucal", "Guaitarilla", "Gualmatán", "Iles", "Imués", "Ipiales", "La Cruz", "La Florida", "La Llanada", "La Tola", "La Unión", "Leiva", "Linares", "Los Andes", "Magüí Payán", "Mallama", "Mosquera", "Nariño", "Olaya Herrera", "Ospina", "Policarpa", "Potosí", "Providencia", "Puerres", "Pupiales", "Ricaurte", "Roberto Payán", "Samaniego", "San Bernardo", "San Lorenzo", "San Pablo", "San Pedro de Cartago", "Sandoná", "Santa Bárbara", "Santacruz", "Sapuyes", "Taminango", "Tangua", "Tumaco", "Túquerres", "Yacuanquer"],
+              "Norte de Santander": ["Cúcuta", "Ábrego", "Arboledas", "Bochalema", "Bucarasica", "Cáchira", "Cácota", "Chinácota", "Chitagá", "Convención", "Cucutilla", "Duranía", "El Carmen", "El Tarra", "El Zulia", "Gramalote", "Hacarí", "Herrán", "La Esperanza", "La Playa de Belén", "Labateca", "Los Patios", "Lourdes", "Mutiscua", "Ocaña", "Pamplona", "Pamplonita", "Puerto Santander", "Ragonvalia", "Salazar de Las Palmas", "San Calixto", "San Cayetano", "Santiago", "Sardinata", "Silos", "Teorama", "Tibú", "Toledo", "Villa Caro", "Villa del Rosario"],
+              "Putumayo": ["Mocoa", "Colón", "Orito", "Puerto Asís", "Puerto Caicedo", "Puerto Guzmán", "Puerto Leguízamo", "San Francisco", "San Miguel", "Santiago", "Sibundoy", "Valle del Guamuez", "Villagarzón"],
+              "Quindío": ["Armenia", "Buenavista", "Calarcá", "Circasia", "Córdoba", "Filandia", "Génova", "La Tebaida", "Montenegro", "Pijao", "Quimbaya", "Salento"],
+              "Risaralda": ["Pereira", "Apía", "Balboa", "Belén de Umbría", "Dosquebradas", "Guática", "La Celia", "La Virginia", "Marsella", "Mistrató", "Pueblo Rico", "Quinchía", "Santa Rosa de Cabal", "Santuario"],
+              "San Andrés y Providencia": ["San Andrés", "Providencia y Santa Catalina Islas"],
+              "Santander": ["Bucaramanga", "Aguada", "Albania", "Aratoca", "Barbosa", "Barichara", "Barrancabermeja", "Betulia", "Bolívar", "Cabrera", "California", "Capitanejo", "Carcasí", "Cepitá", "Cerrito", "Charalá", "Charta", "Chima", "Chipatá", "Cimitarra", "Concepción", "Confines", "Contratación", "Coromoro", "Curití", "El Carmen de Chucurí", "El Guacamayo", "El Peñón", "El Playón", "Encino", "Enciso", "Florián", "Floridablanca", "Galán", "Gámbita", "Girón", "Guaca", "Guadalupe", "Guapotá", "Guavatá", "Güepsa", "Hato", "Jesús María", "Jordán", "La Belleza", "La Paz", "Landázuri", "Lebrija", "Los Santos", "Macaravita", "Málaga", "Matanza", "Mogotes", "Molagavita", "Ocamonte", "Oiba", "Onzaga", "Palmar", "Palmas del Socorro", "Páramo", "Piedecuesta", "Pinchote", "Puente Nacional", "Puerto Parra", "Puerto Wilches", "Rionegro", "Sabana de Torres", "San Andrés", "San Benito", "San Gil", "San Joaquín", "San José de Miranda", "San Miguel", "San Vicente de Chucurí", "Santa Bárbara", "Santa Helena del Opón", "Simacota", "Socorro", "Suaita", "Sucre", "Suratá", "Tona", "Valle de San José", "Vélez", "Vetas", "Villanueva", "Zapatoca"],
+              "Sucre": ["Sincelejo", "Buenavista", "Caimito", "Chalán", "Colosó", "Corozal", "Coveñas", "El Roble", "Galeras", "Guaranda", "La Unión", "Los Palmitos", "Majagual", "Morroa", "Ovejas", "Palmito", "Sampués", "San Benito Abad", "San Juan de Betulia", "San Marcos", "San Onofre", "San Pedro", "Sincé", "Sucre", "Tolú", "Tolúviejo"],
+              "Tolima": ["Ibagué", "Alpujarra", "Alvarado", "Ambalema", "Anzoátegui", "Armero", "Ataco", "Cajamarca", "Carmen de Apicalá", "Casabianca", "Chaparral", "Coello", "Coyaima", "Cunday", "Dolores", "Espinal", "Falan", "Flandes", "Fresno", "Guamo", "Herveo", "Honda", "Icononzo", "Lérida", "Líbano", "Mariquita", "Melgar", "Murillo", "Natagaima", "Ortega", "Palocabildo", "Piedras", "Planadas", "Prado", "Purificación", "Rioblanco", "Roncesvalles", "Rovira", "Saldaña", "San Antonio", "San Luis", "Santa Isabel", "Suárez", "Valle de San Juan", "Venadillo", "Villahermosa", "Villarrica"],
+              "Valle del Cauca": ["Cali", "Alcalá", "Andalucía", "Ansermanuevo", "Argelia", "Bolívar", "Buenaventura", "Buga", "Bugalagrande", "Caicedonia", "Calima", "Candelaria", "Cartago", "Dagua", "El Águila", "El Cairo", "El Cerrito", "El Dovio", "Florida", "Ginebra", "Guacarí", "Jamundí", "La Cumbre", "La Unión", "La Victoria", "Obando", "Palmira", "Pradera", "Restrepo", "Riofrío", "Roldanillo", "San Pedro", "Sevilla", "Toro", "Trujillo", "Tuluá", "Ulloa", "Versalles", "Vijes", "Yotoco", "Yumbo", "Zarzal"],
+              "Vaupés": ["Mitú", "Carurú", "Pacoa", "Taraira", "Papunahua", "Yavaraté"],
+              "Vichada": ["Puerto Carreño", "Cumaribo", "La Primavera", "Santa Rosalía"]
+            },
+            "Argentina": {}, "Bolivia": {}, "Brasil": {}, "Chile": {}, "Ecuador": {}, "Paraguay": {}, "Perú": {}, "Uruguay": {}, "Venezuela": {}
+          },
+          "América Central": {
+            "Costa Rica": {}, "El Salvador": {}, "Guatemala": {}, "Honduras": {}, "Nicaragua": {}, "Panamá": {}
+          },
+          "América del Norte": {
+            "Canadá": {}, "Estados Unidos": {}, "México": {}
+          },
+          "Europa": {
+            "Alemania": {}, "España": {}, "Francia": {}, "Italia": {}, "Portugal": {}, "Reino Unido": {}
+          },
+          "Otro": { "Otro": {} }
         };
+
+        let paisesGlobales = [];
+        for (let region in geoData) {
+            for (let country in geoData[region]) {
+                paisesGlobales.push(country);
+            }
+        }
+        paisesGlobales.sort();
 
         // --- ESTADO DE LA APLICACIÓN ---
         const totalQuestions = 170;
@@ -195,7 +239,8 @@
         const patientData = {
             demographics: {
                 nombres: "",
-                apellidos: "",
+                primer_apellido: "",
+                segundo_apellido: "",
                 correo: "",
                 fecha_nacimiento: "",
                 edad: null,
@@ -214,15 +259,179 @@
             answers: {}
         };
 
-        // --- PREGUNTAS CEPER III ---
+        // --- PREGUNTAS CEPER III (170 Ítems Reales extraídos del PDF) ---
         const questionsList = [
             "Creo que hay personas que intentan aprovecharse de mis ideas o de lo que hago para su propio beneficio.",
             "No me atraen las fiestas ni las reuniones sociales.",
-            "Con frecuencia tengo pensamientos extraños de los que me gustaría poder librarme."
+            "Con frecuencia tengo pensamientos extraños de los que me gustaría poder librarme.",
+            "Cuando quiero algo intento conseguirlo como sea, sin importar si alguien sale perjudicado.",
+            "A veces tengo explosiones de ira o de cólera que no puedo controlar.",
+            "Cuando estoy en reuniones sociales me gusta llamar la atención, que la gente se fije en mí.",
+            "Considero que mi inteligencia es superior a la de la mayoría.",
+            "Soy una persona tímida que habitualmente le cuesta establecer relaciones con los demás.",
+            "Me encuentro cómodo/a cuando los demás toman decisiones importantes por mí.",
+            "Lo más importante para mí es seguir un procedimiento y un orden estricto a la hora de hacer las cosas.",
+            "Con frecuencia estoy irritado/a y de mal humor.",
+            "Al final siempre termino relacionándome con amigos/as que me tratan mal.",
+            "Me paso la vida preocupándome por una u otra cosa.",
+            "A veces digo cosas crueles a los demás para hacerles sufrir o que se sientan mal.",
+            "Cuando alguien me crítica por cometer un error, rápidamente le señalo los suyos.",
+            "Hay pocas cosas en la vida que me hagan disfrutar.",
+            "Cuando estoy solo/a siento, a veces, la presencia de alguien o de algo que no puedo ver.",
+            "Me gusta hacer cosas que nadie se atreve a hacer, aunque ponga en peligro mi seguridad.",
+            "Algunas veces me he causado daño o me he herido intencionadamente.",
+            "Cuando una reunión social se está poniendo aburrida suelo ser yo quien la anime.",
+            "Cualquier director de una empresa de mi especialidad desearía tenerme en ella.",
+            "Cuando empiezo una relación sentimental soy muy cauteloso/a por temor a pasar vergüenza o hacer el ridículo.",
+            "Muchas veces me siento desamparado/a o desvalido/a cuando estoy solo/a.",
+            "La gente me dice que soy una persona muy responsable y seria.",
+            "La gente me dice que siempre llevo la contraria.",
+            "Cuando logro algo por lo que he luchado, en lugar de sentirme satisfecho/a y aliviado/a, me siento triste o culpable.",
+            "Me descubro en muchas ocasiones pensando que no valgo para nada.",
+            "Cuando alguien está bajo mis órdenes y no las cumple, le castigo con dureza.",
+            "Creo que la gente habla de mí a mis espaldas.",
+            "Prefiero estar con personas que no me pidan muestras de cariño.",
+            "A menudo puedo leer la mente de las personas.",
+            "El peligro me estimula y me anima.",
+            "Mis sentimientos hacia personas importantes en mi vida a veces cambian rápidamente de un extremo a otro (p. ej., de admiración a decepción, de amor a odio).",
+            "Me gusta mucho asistir a fiestas y ser el centro de la atención.",
+            "Soy o seré un/a triunfador/a.",
+            "Pienso que me faltan habilidades a la hora de enfrentarme a la mayoría de las situaciones sociales.",
+            "Con frecuencia busco consejo a la hora de tomar decisiones en mi vida cotidiana.",
+            "Considero que siempre hay formas correctas de hacer las cosas y así suelo actuar yo.",
+            "Creo que los superiores se aprovechan siempre de la autoridad que les da su posición para manipular a su antojo a los demás.",
+            "No suelo pasármelo bien en situaciones que se suponen divertidas.",
+            "Siempre he criticado mi forma de pensar y actuar.",
+            "A veces disfruto cuando veo sufrir a los animales o a las personas.",
+            "Me cuido de las personas que son más amistosas de lo que espero.",
+            "La gente suele decir que soy poco cariñoso/a o poco afectivo/a.",
+            "Mis pensamientos pueden ser tan potentes que casi puedo oírlos.",
+            "Con frecuencia me olvido de cumplir con mis compromisos económicos (p. ej., pago alquiler, cuotas, etc.)",
+            "Mi estado de ánimo puede cambiar mucho de un día para otro.",
+            "Tengo muchos amigos/as.",
+            "Es importante que los demás admiren lo que hago.",
+            "Me angustia relacionarme con personas desconocidas o poco conocidas por temor a hacer el ridículo o que no les caiga bien.",
+            "Me preocupa estar solo/a, sin la protección de alguien cercano que me ayude.",
+            "Para que las cosas importantes salgan bien tengo que hacerlas yo y no dejarlas a cargo de los demás.",
+            "La gente con la que me relaciono suele tener más suerte de la que se merece.",
+            "Me cuesta mejorar a nivel personal o profesional aunque suelo ayudar a los demás a que consigan sus objetivos.",
+            "Generalmente tiendo a ver el lado negativo de las cosas.",
+            "Las personas suelen hacer lo que yo les digo porque si no podrían sufrir consecuencias negativas.",
+            "Me produce un gran malestar que alguno de mis padres caiga gravemente enfermo.",
+            "Me enfado y siento celos cuando alguna persona del sexo opuesto se acerca a mi pareja.",
+            "Prefiero los trabajos en solitario a los trabajos en grupo.",
+            "Siento que la gente está hablando de mí cuando paso a su lado.",
+            "Me gusta experimentar nuevas sensaciones constantemente.",
+            "Cuando me siento mal, suelo hacer cosas que no puedo controlar y de las que luego me arrepiento (p. ej., gastar mucho dinero, atracarme de comida, etc.)",
+            "Me es muy fácil hacer nuevos amigos/as.",
+            "Me gustaría que alguien escribiese mi biografía algún día.",
+            "Cuando voy a algún lugar donde no conozco a la gente, me suelo comportar de forma torpe y nerviosa.",
+            "Me resulta muy difícil iniciar nuevos proyectos o hacer las cosas a mi manera porque me siento inseguro/a.",
+            "Las normas y el orden suelen determinar el éxito en un trabajo o un proyecto.",
+            "Mi pareja o familiares cercanos se quejan con frecuencia de que no hago las cosas como a ellos les gustaría.",
+            "A veces me siento confuso/a y molesto/a cuando la gente es amable conmigo.",
+            "Con frecuencia me siento culpable o con remordimientos.",
+            "Con frecuencia controlo por la fuerza a mi pareja o a las personas que dependen de mí.",
+            "Prefiero ser reservado/a con mis cosas para que nadie las pueda usar en mi contra.",
+            "No me gusta que me feliciten aunque haga las cosas bien.",
+            "A veces la gente comenta que mi forma de vestir es diferente o excéntrica.",
+            "Cuando me enfado puedo ser violento/a y desagradable, incluso con mi familia.",
+            "A menudo me pregunto quien soy realmente.",
+            "Expreso mis emociones fácil y frecuentemente.",
+            "Suelo ser más capaz que los demás.",
+            "Me gustaría tener más amigos, pero me resulta difícil establecer relaciones con la gente.",
+            "En general, soy una persona agradable y sumisa.",
+            "Controlo muy bien mi dinero para estar preparado/a en caso de necesidad.",
+            "La gente que suele tener éxito se debe a que es afortunada o a que es deshonesta.",
+            "Muchas veces pienso que no merezco las cosas buenas que me pasan.",
+            "Desde niño/a he tenido frecuentemente sentimientos de tristeza.",
+            "De vez en cuando utilizo la violencia física para que quede claro quién manda.",
+            "Muchas veces sospecho que mis amigos/as están en mi contra.",
+            "Hay pocas personas imprescindibles en mi vida.",
+            "Poseo un sexto sentido que no suelen tener las demás personas.",
+            "Me importa mucho más conseguir lo que necesito ahora que lo que pueda suceder en el futuro.",
+            "A veces me siento culpable como si hubiera cometido un delito, aunque no lo he cometido realmente.",
+            "La gente me dice a menudo que cuento las cosas de forma muy exagerada.",
+            "Creo que soy una persona especialmente competente y espero que los demás me presten la atención que merezco.",
+            "Me siento menos interesante y divertido que los demás.",
+            "Cuando estoy en un grupo prefiero que sean otros quienes tomen las decisiones importantes.",
+            "La gente piensa que soy demasiado/a estricto/a con las reglas y las normas.",
+            "Me molestan las personas que piensan que pueden hacer las cosas mejor que yo.",
+            "Suelo elegir como pareja personas que terminan tratándome mal.",
+            "Desde hace mucho tiempo me encuentro triste y desanimado/a.",
+            "He tenido que ser realmente duro/a con algunas personas para mantenerlas a raya.",
+            "Siempre que hay un problema intentan culparme.",
+            "Estoy solo/a la mayor parte del tiempo y lo prefiero así.",
+            "A veces siento como si mi mente se separase de mi cuerpo.",
+            "Aprovecharme de los demás no me produce sentimientos de culpa.",
+            "Me siento desorientado/a, sin objetivos, y no se hacia dónde voy en la vida.",
+            "Tengo fama de que me gusta coquetear con personas del sexo opuesto.",
+            "Hay mucha gente que me tiene envidia por las cosas que consigo.",
+            "Las situaciones nuevas siempre me producen temor.",
+            "Me preocupa que me dejen solo/a y tenga que cuidar de mí mismo/a.",
+            "Una gran parte de mi tiempo la dedico a trabajar/estudiar, de modo que me queda poco tiempo para actividades de ocio.",
+            "Si no quiero hacer algo, por más que me lo pida el/a profesor/a, el/a jefe/a, mis padres o mi pareja, no lo voy a hacer o lo voy a hacer mal a propósito.",
+            "Cuando alguien se preocupa realmente por mí, pierdo enseguida el interés por esa persona.",
+            "Habitualmente me siento culpable.",
+            "Para conseguir el respeto de los demás tengo que ser duro/a y amenazante.",
+            "Suelo poner a prueba a las personas para saber si puedo confiar en ellas.",
+            "Tengo pocas ganas de hacer amigos/as íntimos/as.",
+            "Suelo tener sensaciones especiales que las demás personas no pueden comprender.",
+            "Suelo hacer las cosas sin pensar en los riesgos para mí o para los demás.",
+            "A veces, cuando las cosas van mal, siento que estoy viviendo un sueño o veo pasar la vida delante de mí como si fuera una película.",
+            "A veces utilizo mi apariencia física para llamar la atención de los demás.",
+            "La gente piensa que tengo un elevado concepto de mi mismo/a.",
+            "Con frecuencia evito asistir a reuniones o situaciones sociales por temor a no ser aceptado/a o que no caiga bien a la gente.",
+            "Suelo estar dispuesto/a a ceder ante los demás, aunque no esté de acuerdo con ellos/as, por temor a que se enfaden o me rechacen.",
+            "Siempre compruebo que mi trabajo esté terminado y bien hecho antes de tomarme un descanso para actividades de ocio.",
+            "Aunque mis superiores/profesores o mi pareja me pidan más de lo que soy capaz de hacer, sigo mi ritmo a la hora de hacerlo.",
+            "El sufrimiento me hace mejor persona, por lo que evito la ayuda de los demás.",
+            "Incluso en los buenos tiempos, siempre he tenido miedo a que las cosas de pronto fuesen mal.",
+            "A veces he mentido con el único propósito de ver sufrir a otras personas.",
+            "Me produciría mucho malestar o mucha rabia que un grupo de delincuentes armados atracase a una persona que quiero mucho.",
+            "Con frecuencia creo que las personas intentan engañar a los demás, incluso a mí.",
+            "Hago pocos intentos para establecer nuevas relaciones.",
+            "En ocasiones he tenido experiencias sobrenaturales.",
+            "Desde pequeño/a me meto en peleas con mucha facilidad.",
+            "Haría algo desesperado para impedir que una persona que quiero me abandone.",
+            "Las personas me dicen que a veces me comporto de forma muy teatral.",
+            "Gracias a mi otras personas han conseguido cosas importantes.",
+            "Me falta confianza en mí mismo/a para arriesgarme a probar algo nuevo.",
+            "Habitualmente hago lo posible por complacer a los demás, incluso a quienes no me gustan.",
+            "Siempre tengo organizadas mis actividades diarias porque no me gusta perder el tiempo.",
+            "Creo que los demás no valoran adecuadamente mis esfuerzos.",
+            "Los demás se aprovechan de mí, pero no hago nada para evitarlo.",
+            "Con frecuencia pienso que en el futuro las cosas no irán mejor.",
+            "Siento un gran placer cuando consigo humillar a los demás.",
+            "Cuando alguien me ha hecho una mala jugada, tardo mucho tiempo en olvidarlo.",
+            "Siempre he tenido menos interés por el sexo que la mayoría de la gente.",
+            "La gente piensa que en ocasiones hablo sobre cosas extrañas, raras o mágicas.",
+            "Me cuesta mucho seguir las mismas normas sociales que los demás.",
+            "La mayoría de las personas que quiero terminan decepcionándome.",
+            "Suelo ser una persona muy sociable y extravertida.",
+            "Tengo la capacidad de convencer a los demás para conseguir lo que me propongo.",
+            "Suelo pensar que los demás tienen de mí una imagen poco favorable.",
+            "Con frecuencia soy muy indeciso/a.",
+            "La gente me ve como una persona muy organizada y perfeccionista.",
+            "A menudo otras personas me culpan de cosas que no he hecho.",
+            "Con frecuencia he dejado de lado mis sueños para ayudar a otros a alcanzar los suyos.",
+            "Habitualmente estoy cansado/a y fatigado/a.",
+            "Con frecuencia me dicen que humillo o maltrato a otras personas.",
+            "A menudo me han dicho que suelo buscar el doble sentido o el significado oculto de las cosas cuando hablan conmigo.",
+            "Mis familiares realmente son mis únicos confidentes.",
+            "Me pongo nervioso/a cuando estoy con personas que no conozco bien porque pueden querer hacerme daño.",
+            "No me preocupan las consecuencias que puedan traerme mis actos si consigo lo que quiero.",
+            "Con frecuencia me siento vacío/a.",
+            "Dicen que soy muy exagerado/a al expresar mis emociones.",
+            "Algunas personas cercanas a mí me dicen que soy egoísta, que sólo pienso en mí.",
+            "Con frecuencia pienso que no voy a estar a la altura de las circunstancias cuando tengo que mantener una conversación con alguien a quien acabo de conocer.",
+            "Siempre estoy temiendo que alguna persona cercana me abandone.",
+            "Me molesta cuando tengo que modificar cosas de mi rutina diaria.",
+            "He tenido poca suerte en esta vida; me gustaría haber sido más afortunado/a.",
+            "Suelo sacrificar mi bienestar para tratar de ayudar a los demás.",
+            "La gente me dice que soy una persona triste y demasiado seria.",
+            "Con frecuencia consigo que los demás hagan lo que yo quiero por medio de la violencia o la coerción."
         ];
-        for(let i = 4; i <= 170; i++) {
-            questionsList.push(`Ítem de prueba número ${i}. (Aquí irá la pregunta real).`);
-        }
 
         // --- ELEMENTOS DEL DOM ---
         const chatContainer = document.getElementById('chat-container');
@@ -299,11 +508,12 @@
             addMessage("Empezar Evaluación", 'user');
             
             setTimeout(() => {
-                addMessage("Excelente. Para empezar, por favor dime tus nombres y apellidos completos.");
+                addMessage("Excelente. Para empezar, por favor dime tus nombres y apellidos.");
                 interactionArea.innerHTML = `
                     <form id="form-names" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <input type="text" id="demo-nombres" placeholder="Nombres (Ej: María)" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
-                        <input type="text" id="demo-apellidos" placeholder="Apellidos (Ej: Pérez Gómez)" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                        <input type="text" id="demo-nombres" placeholder="Nombres (Ej: María José)" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900 md:col-span-2">
+                        <input type="text" id="demo-apellido1" placeholder="Primer Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                        <input type="text" id="demo-apellido2" placeholder="Segundo Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
                         <div class="md:col-span-2 flex gap-3 mt-1">
                             <button type="button" onclick="goBackDemographics(startIntro)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
                             <button type="submit" class="w-2/3 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
@@ -314,9 +524,10 @@
                 document.getElementById('form-names').addEventListener('submit', function(e) {
                     e.preventDefault();
                     patientData.demographics.nombres = document.getElementById('demo-nombres').value.trim();
-                    patientData.demographics.apellidos = document.getElementById('demo-apellidos').value.trim();
+                    patientData.demographics.primer_apellido = document.getElementById('demo-apellido1').value.trim();
+                    patientData.demographics.segundo_apellido = document.getElementById('demo-apellido2').value.trim();
                     
-                    addMessage(`${patientData.demographics.nombres} ${patientData.demographics.apellidos}`, 'user');
+                    addMessage(`${patientData.demographics.nombres} ${patientData.demographics.primer_apellido} ${patientData.demographics.segundo_apellido}`, 'user');
                     setTimeout(askEmail, 500);
                 });
             }, 600);
@@ -324,7 +535,7 @@
 
         function askEmail() {
             clearInteraction();
-            addMessage(`Mucho gusto, ${patientData.demographics.nombres}. ¿Cuál es tu correo electrónico?`);
+            addMessage(`Mucho gusto, ${patientData.demographics.nombres.split(' ')[0]}. ¿Cuál es tu correo electrónico?`);
             
             interactionArea.innerHTML = `
                 <form id="form-email" class="max-w-xl mx-auto flex flex-col md:flex-row gap-3">
@@ -366,7 +577,6 @@
             clearInteraction();
             addMessage("Perfecto. ¿Cuál es tu fecha de nacimiento?");
             
-            // max date: today
             const today = new Date().toISOString().split('T')[0];
             
             interactionArea.innerHTML = `
@@ -395,18 +605,23 @@
                 addMessage(dobVal.split('-').reverse().join('/'), 'user'); // Mostrar formato DD/MM/YYYY
                 
                 setTimeout(() => {
-                    if (calculatedAge < 18) {
-                        askGuardian();
-                    } else {
-                        askGeo();
-                    }
-                }, 600);
+                    // Aquí agregamos la confirmación exacta de la edad según instrucción
+                    addMessage(`Perfecto, tu edad es ${calculatedAge}.`);
+                    
+                    setTimeout(() => {
+                        if (calculatedAge < 18) {
+                            askGuardian();
+                        } else {
+                            askGeo();
+                        }
+                    }, 1000);
+                }, 500);
             });
         }
 
         function askGuardian() {
             clearInteraction();
-            addMessage(`Calculo que tienes ${patientData.demographics.edad} años. Al ser menor de edad, necesitamos los datos y autorización de tu acudiente legal.`);
+            addMessage(`Al ser menor de edad, necesitamos los datos y autorización de tu acudiente legal.`);
             
             interactionArea.innerHTML = `
                 <form id="form-guardian" class="max-w-xl mx-auto flex flex-col gap-3">
@@ -440,7 +655,7 @@
             addMessage("¿De qué país nos visitas?");
             
             let optionsPais = `<option value="" disabled selected>Selecciona tu país</option>`;
-            paisesAmerica.forEach(p => optionsPais += `<option value="${p}">${p}</option>`);
+            paisesGlobales.forEach(p => optionsPais += `<option value="${p}">${p}</option>`);
 
             interactionArea.innerHTML = `
                 <form id="form-geo" class="max-w-xl mx-auto grid grid-cols-1 gap-3">
@@ -469,8 +684,9 @@
                     deptoSelect.classList.remove('hidden');
                     deptoSelect.required = true;
                     
+                    const colombiaData = geoData["América del Sur"]["Colombia"];
                     let deptoOptions = `<option value="" disabled selected>Selecciona tu Departamento</option>`;
-                    Object.keys(colombiaData).forEach(d => deptoOptions += `<option value="${d}">${d}</option>`);
+                    Object.keys(colombiaData).sort().forEach(d => deptoOptions += `<option value="${d}">${d}</option>`);
                     deptoSelect.innerHTML = deptoOptions;
                 } else {
                     deptoSelect.classList.add('hidden');
@@ -485,9 +701,10 @@
                 ciudadSelect.classList.remove('hidden');
                 ciudadSelect.required = true;
                 
+                const colombiaData = geoData["América del Sur"]["Colombia"];
                 const ciudades = colombiaData[this.value] || [];
                 let ciudadOptions = `<option value="" disabled selected>Selecciona tu Ciudad</option>`;
-                ciudades.forEach(c => ciudadOptions += `<option value="${c}">${c}</option>`);
+                ciudades.sort().forEach(c => ciudadOptions += `<option value="${c}">${c}</option>`);
                 ciudadSelect.innerHTML = ciudadOptions;
             });
 

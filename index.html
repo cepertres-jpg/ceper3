@@ -52,7 +52,6 @@
         /* Estilo para los botones de la escala Likert */
         .likert-btn {
             transition: all 0.2s;
-            /* Evitar doble tap zoom en móviles */
             touch-action: manipulation; 
         }
         .likert-btn:hover {
@@ -63,6 +62,13 @@
         .likert-btn:active {
             transform: scale(0.95);
         }
+        
+        /* Ocultar flechas en input number */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
     </style>
 </head>
 <body class="flex h-[100dvh] w-full relative">
@@ -71,7 +77,6 @@
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-teal-900/40 z-30 hidden backdrop-blur-sm transition-opacity" onclick="toggleMenu()"></div>
 
     <!-- PANEL IZQUIERDO: Información (Menú Lateral) -->
-    <!-- En móvil está oculto a la izquierda y se desliza. En PC es fijo y ocupa 1/3 -->
     <div id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 flex flex-col w-[85%] sm:w-1/2 md:w-1/3 border-r border-teal-100 bg-white p-6 md:p-8 overflow-y-auto shadow-2xl md:shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         
         <!-- Botón cerrar solo visible en móvil -->
@@ -86,7 +91,6 @@
         </div>
 
         <div class="space-y-4">
-            <!-- Desplegable 1 -->
             <details class="group border-b border-teal-50 pb-4" open>
                 <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
                     <span>Sobre la prueba</span>
@@ -99,7 +103,6 @@
                 </p>
             </details>
 
-            <!-- Desplegable 2 -->
             <details class="group border-b border-teal-50 pb-4">
                 <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
                     <span>Instrucciones</span>
@@ -117,7 +120,6 @@
                 </div>
             </details>
 
-            <!-- Desplegable 3 -->
             <details class="group border-b border-teal-50 pb-4">
                 <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
                     <span>Privacidad de datos</span>
@@ -150,7 +152,7 @@
             <div class="flex-1">
                 <div class="flex justify-between items-center mb-1.5">
                     <span class="text-[11px] md:text-xs font-semibold text-teal-700 uppercase tracking-wider" id="progress-text">Progreso: 0%</span>
-                    <span class="text-[11px] md:text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100" id="question-counter">0/170</span>
+                    <span class="text-[11px] md:text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100" id="question-counter">Preparación</span>
                 </div>
                 <div class="w-full bg-teal-100 rounded-full h-2">
                     <div id="progress-bar" class="bg-teal-500 h-2 rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(20,184,166,0.4)]" style="width: 0%"></div>
@@ -170,22 +172,54 @@
     </div>
 
     <script>
+        // --- BASE DE DATOS GEOGRÁFICA SIMULADA (Geodata.json) ---
+        // Aquí conectaremos luego tu archivo geodata.json real.
+        const paisesAmerica = [
+            "Argentina", "Bolivia", "Brasil", "Canadá", "Chile", "Colombia", "Costa Rica", "Cuba", 
+            "Ecuador", "El Salvador", "Estados Unidos", "Guatemala", "Honduras", "México", 
+            "Nicaragua", "Panamá", "Paraguay", "Perú", "República Dominicana", "Uruguay", "Venezuela"
+        ];
+        // Estructura demo para Colombia
+        const colombiaData = {
+            "Atlántico": ["Barranquilla", "Soledad", "Puerto Colombia", "Malambo"],
+            "Bogotá D.C.": ["Bogotá"],
+            "Antioquia": ["Medellín", "Envigado", "Bello", "Itagüí"],
+            "Valle del Cauca": ["Cali", "Palmira", "Buenaventura"]
+        };
+
         // --- ESTADO DE LA APLICACIÓN ---
-        const totalQuestions = 170; // Las 170 preguntas del CEPER III
-        let currentStep = 'intro'; // intro -> demograficos -> test -> finalizado
+        const totalQuestions = 170;
         let currentQuestionIndex = 0;
         
-        // Aquí se guardará la data estructurada y segura
+        // Objeto donde se guarda todo para enviar a la API
         const patientData = {
-            demographics: {},
+            demographics: {
+                nombres: "",
+                apellidos: "",
+                correo: "",
+                fecha_nacimiento: "",
+                edad: null,
+                acudiente: null, // Solo si es menor
+                pais: "",
+                departamento: "",
+                ciudad: "",
+                nivel_educativo: "",
+                profesion: "",
+                genero: "",
+                religion: "",
+                situacion_sentimental: "",
+                hijos: 0,
+                mascotas: ""
+            },
             answers: {}
         };
 
-        // --- PREGUNTAS DE EJEMPLO (Se llenará con las 170 reales después) ---
-        const questionsList = [];
-        questionsList.push("Creo que hay personas que intentan aprovecharse de mis ideas o de lo que hago para su propio beneficio.");
-        questionsList.push("No me atraen las fiestas ni las reuniones sociales.");
-        questionsList.push("Con frecuencia tengo pensamientos extraños de los que me gustaría poder librarme.");
+        // --- PREGUNTAS CEPER III ---
+        const questionsList = [
+            "Creo que hay personas que intentan aprovecharse de mis ideas o de lo que hago para su propio beneficio.",
+            "No me atraen las fiestas ni las reuniones sociales.",
+            "Con frecuencia tengo pensamientos extraños de los que me gustaría poder librarme."
+        ];
         for(let i = 4; i <= 170; i++) {
             questionsList.push(`Ítem de prueba número ${i}. (Aquí irá la pregunta real).`);
         }
@@ -199,36 +233,28 @@
         const sidebar = document.getElementById('sidebar');
         const mobileOverlay = document.getElementById('mobile-menu-overlay');
 
-        // --- FUNCIONES DE INTERFAZ ---
-
-        // Control del menú móvil
+        // --- FUNCIONES DE INTERFAZ BÁSICAS ---
         function toggleMenu() {
             const isClosed = sidebar.classList.contains('-translate-x-full');
             if (isClosed) {
-                // Abrir
                 sidebar.classList.remove('-translate-x-full');
                 mobileOverlay.classList.remove('hidden');
-                // Pequeño delay para la animación del overlay
                 setTimeout(() => mobileOverlay.classList.remove('opacity-0'), 10);
             } else {
-                // Cerrar
                 sidebar.classList.add('-translate-x-full');
                 mobileOverlay.classList.add('opacity-0');
-                setTimeout(() => mobileOverlay.classList.add('hidden'), 300); // Esperar que termine la animación
+                setTimeout(() => mobileOverlay.classList.add('hidden'), 300);
             }
         }
 
-        // Añadir mensaje al chat
         function addMessage(text, sender = 'bot') {
             const msgDiv = document.createElement('div');
             msgDiv.className = `flex w-full ${sender === 'user' ? 'justify-end' : 'justify-start'} message-fade-in`;
             
             const bubble = document.createElement('div');
             if(sender === 'bot') {
-                // Tonos Teal (verdes/azules) para el bot. Ajustado tamaño texto para móviles.
                 bubble.className = 'bg-teal-50 border border-teal-100 text-teal-900 px-4 py-3 md:px-5 md:py-3.5 rounded-2xl rounded-tl-sm max-w-[90%] md:max-w-[80%] shadow-sm text-[15px] leading-relaxed';
             } else {
-                // Tonos Blue para el usuario
                 bubble.className = 'bg-blue-100 text-blue-900 px-4 py-3 md:px-5 md:py-3.5 rounded-2xl rounded-tr-sm max-w-[90%] md:max-w-[80%] font-medium text-[15px] shadow-sm';
             }
             
@@ -236,70 +262,310 @@
             msgDiv.appendChild(bubble);
             chatContainer.appendChild(msgDiv);
             
-            // Auto-scroll al fondo
             setTimeout(() => {
-                chatContainer.scrollTo({
-                    top: chatContainer.scrollHeight,
-                    behavior: 'smooth'
-                });
+                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
             }, 100);
         }
 
-        // --- FLUJO DE LA PRUEBA ---
+        function clearInteraction() {
+            interactionArea.innerHTML = '';
+        }
+
+        // --- FLUJO DEL CHATBOT (DATOS DEMOGRÁFICOS) ---
 
         function startIntro() {
             addMessage("¡Hola! Soy tu asistente virtual para esta evaluación. 😊<br><br>Te acompañaré paso a paso para que el proceso sea lo más cómodo posible. Antes de iniciar con las preguntas, necesito conocer algunos datos básicos.");
             
             interactionArea.innerHTML = `
                 <div class="flex justify-center max-w-2xl mx-auto">
-                    <button onclick="startDemographics()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3.5 md:py-3 rounded-full font-medium transition-colors w-full md:w-auto shadow-md active:transform active:scale-95 text-[15px]">
+                    <button onclick="askNames()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3.5 md:py-3 rounded-full font-medium transition-colors w-full md:w-auto shadow-md active:transform active:scale-95 text-[15px]">
                         Empezar Evaluación
                     </button>
                 </div>
             `;
         }
 
-        function startDemographics() {
-            addMessage("Empezar", 'user');
+        function askNames() {
+            clearInteraction();
+            addMessage("Empezar Evaluación", 'user');
             
             setTimeout(() => {
-                addMessage("Por favor, completa los siguientes datos (son estrictamente confidenciales):");
-                
+                addMessage("Excelente. Para empezar, por favor dime tus nombres y apellidos completos.");
                 interactionArea.innerHTML = `
-                    <form id="demo-form" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                        <input type="text" id="demo-name" placeholder="Tu nombre y apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900 placeholder-teal-500 text-[15px] transition-all">
-                        <input type="number" id="demo-age" placeholder="Tu edad" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900 placeholder-teal-500 text-[15px] transition-all">
-                        <select id="demo-gender" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 md:col-span-2 text-teal-800 text-[15px] transition-all cursor-pointer">
-                            <option value="" disabled selected>Selecciona tu género</option>
-                            <option value="M">Masculino</option>
-                            <option value="F">Femenino</option>
-                            <option value="O">Otro</option>
-                        </select>
-                        <button type="submit" class="md:col-span-2 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3.5 rounded-xl font-medium transition-colors shadow-md active:transform active:scale-[0.98] text-[15px] mt-1">
-                            Guardar y continuar
-                        </button>
+                    <form id="form-names" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input type="text" id="demo-nombres" placeholder="Nombres (Ej: María)" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                        <input type="text" id="demo-apellidos" placeholder="Apellidos (Ej: Pérez Gómez)" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                        <button type="submit" class="md:col-span-2 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md mt-1">Siguiente</button>
                     </form>
                 `;
 
-                document.getElementById('demo-form').addEventListener('submit', function(e) {
+                document.getElementById('form-names').addEventListener('submit', function(e) {
                     e.preventDefault();
-                    patientData.demographics = {
-                        name: document.getElementById('demo-name').value,
-                        age: document.getElementById('demo-age').value,
-                        gender: document.getElementById('demo-gender').value
-                    };
+                    patientData.demographics.nombres = document.getElementById('demo-nombres').value.trim();
+                    patientData.demographics.apellidos = document.getElementById('demo-apellidos').value.trim();
                     
-                    interactionArea.innerHTML = '';
-                    addMessage(`Datos guardados.`, 'user');
-                    
-                    setTimeout(startTest, 800);
+                    addMessage(`${patientData.demographics.nombres} ${patientData.demographics.apellidos}`, 'user');
+                    setTimeout(askEmail, 500);
                 });
             }, 600);
         }
 
+        function askEmail() {
+            clearInteraction();
+            addMessage(`Mucho gusto, ${patientData.demographics.nombres}. ¿Cuál es tu correo electrónico?`);
+            
+            interactionArea.innerHTML = `
+                <form id="form-email" class="max-w-xl mx-auto flex flex-col md:flex-row gap-3">
+                    <input type="email" id="demo-email" placeholder="tu@correo.com" required class="flex-1 border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Continuar</button>
+                </form>
+            `;
+
+            document.getElementById('form-email').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const emailInput = document.getElementById('demo-email').value.trim();
+                addMessage(emailInput, 'user');
+                setTimeout(() => confirmEmail(emailInput), 500);
+            });
+        }
+
+        function confirmEmail(email) {
+            clearInteraction();
+            addMessage(`Has escrito: <strong>${email}</strong>.<br>¿Es correcto tu correo? Necesitamos que esté perfecto para contactarte.`);
+            
+            interactionArea.innerHTML = `
+                <div class="flex justify-center gap-3 max-w-xl mx-auto">
+                    <button onclick="saveEmail('${email}')" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-md">Sí, es correcto</button>
+                    <button onclick="askEmail()" class="flex-1 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">No, corregir</button>
+                </div>
+            `;
+        }
+
+        function saveEmail(email) {
+            patientData.demographics.correo = email;
+            addMessage("Sí, es correcto.", 'user');
+            setTimeout(askDob, 500);
+        }
+
+        function askDob() {
+            clearInteraction();
+            addMessage("Perfecto. ¿Cuál es tu fecha de nacimiento?");
+            
+            // max date: today
+            const today = new Date().toISOString().split('T')[0];
+            
+            interactionArea.innerHTML = `
+                <form id="form-dob" class="max-w-xl mx-auto flex flex-col md:flex-row gap-3">
+                    <input type="date" id="demo-dob" max="${today}" required class="flex-1 border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
+                </form>
+            `;
+
+            document.getElementById('form-dob').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const dobVal = document.getElementById('demo-dob').value;
+                patientData.demographics.fecha_nacimiento = dobVal;
+                
+                // Calcular edad
+                const birthDate = new Date(dobVal);
+                const ageDifMs = Date.now() - birthDate.getTime();
+                const ageDate = new Date(ageDifMs); 
+                const calculatedAge = Math.abs(ageDate.getUTCFullYear() - 1970);
+                
+                patientData.demographics.edad = calculatedAge;
+
+                addMessage(dobVal.split('-').reverse().join('/'), 'user'); // Mostrar formato DD/MM/YYYY
+                
+                setTimeout(() => {
+                    if (calculatedAge < 18) {
+                        askGuardian();
+                    } else {
+                        askGeo();
+                    }
+                }, 600);
+            });
+        }
+
+        function askGuardian() {
+            clearInteraction();
+            addMessage(`Calculo que tienes ${patientData.demographics.edad} años. Al ser menor de edad, necesitamos los datos y autorización de tu acudiente legal.`);
+            
+            interactionArea.innerHTML = `
+                <form id="form-guardian" class="max-w-xl mx-auto flex flex-col gap-3">
+                    <input type="text" id="g-name" placeholder="Nombre completo del acudiente" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-900">
+                    <input type="text" id="g-rel" placeholder="Parentesco (Ej: Madre, Padre, Tutor)" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-900">
+                    <label class="flex items-start gap-2 mt-2 text-sm text-teal-800 cursor-pointer">
+                        <input type="checkbox" required class="mt-1 w-4 h-4 text-teal-600 rounded focus:ring-teal-500">
+                        <span>El acudiente acepta la aplicación de esta prueba y el tratamiento de los datos.</span>
+                    </label>
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md mt-2">Guardar autorización</button>
+                </form>
+            `;
+
+            document.getElementById('form-guardian').addEventListener('submit', function(e) {
+                e.preventDefault();
+                patientData.demographics.acudiente = {
+                    nombre: document.getElementById('g-name').value.trim(),
+                    parentesco: document.getElementById('g-rel').value.trim(),
+                    autorizacion_dada: true
+                };
+                addMessage("Datos del acudiente y autorización proporcionados.", 'user');
+                setTimeout(askGeo, 600);
+            });
+        }
+
+        function askGeo() {
+            clearInteraction();
+            addMessage("¿De qué país nos visitas?");
+            
+            let optionsPais = `<option value="" disabled selected>Selecciona tu país</option>`;
+            paisesAmerica.forEach(p => optionsPais += `<option value="${p}">${p}</option>`);
+
+            interactionArea.innerHTML = `
+                <form id="form-geo" class="max-w-xl mx-auto grid grid-cols-1 gap-3">
+                    <select id="demo-pais" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-800 cursor-pointer">
+                        ${optionsPais}
+                    </select>
+                    
+                    <!-- Contenedores para Colombia (ocultos inicialmente) -->
+                    <select id="demo-depto" class="hidden w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-800 cursor-pointer"></select>
+                    <select id="demo-ciudad" class="hidden w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-800 cursor-pointer"></select>
+
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
+                </form>
+            `;
+
+            const paisSelect = document.getElementById('demo-pais');
+            const deptoSelect = document.getElementById('demo-depto');
+            const ciudadSelect = document.getElementById('demo-ciudad');
+
+            // Lógica para mostrar Departamentos si es Colombia
+            paisSelect.addEventListener('change', function() {
+                if(this.value === 'Colombia') {
+                    deptoSelect.classList.remove('hidden');
+                    deptoSelect.required = true;
+                    
+                    let deptoOptions = `<option value="" disabled selected>Selecciona tu Departamento</option>`;
+                    Object.keys(colombiaData).forEach(d => deptoOptions += `<option value="${d}">${d}</option>`);
+                    deptoSelect.innerHTML = deptoOptions;
+                } else {
+                    deptoSelect.classList.add('hidden');
+                    ciudadSelect.classList.add('hidden');
+                    deptoSelect.required = false;
+                    ciudadSelect.required = false;
+                }
+            });
+
+            // Lógica para mostrar Ciudades cuando se elige un Departamento
+            deptoSelect.addEventListener('change', function() {
+                ciudadSelect.classList.remove('hidden');
+                ciudadSelect.required = true;
+                
+                const ciudades = colombiaData[this.value] || [];
+                let ciudadOptions = `<option value="" disabled selected>Selecciona tu Ciudad</option>`;
+                ciudades.forEach(c => ciudadOptions += `<option value="${c}">${c}</option>`);
+                ciudadSelect.innerHTML = ciudadOptions;
+            });
+
+            document.getElementById('form-geo').addEventListener('submit', function(e) {
+                e.preventDefault();
+                patientData.demographics.pais = paisSelect.value;
+                
+                let respuestaUsuario = paisSelect.value;
+                if(paisSelect.value === 'Colombia') {
+                    patientData.demographics.departamento = deptoSelect.value;
+                    patientData.demographics.ciudad = ciudadSelect.value;
+                    respuestaUsuario += ` (${ciudadSelect.value}, ${deptoSelect.value})`;
+                }
+
+                addMessage(respuestaUsuario, 'user');
+                setTimeout(askEduProGen, 600);
+            });
+        }
+
+        function askEduProGen() {
+            clearInteraction();
+            addMessage("Casi listos con los datos. Por favor selecciona tu nivel educativo, tu ocupación actual y género.");
+            
+            const eduOptions = ["Primaria", "Secundaria", "Técnico/Tecnólogo", "Profesional", "Especialista", "Magister", "Doctorado"];
+            const profOptions = ["Estudiante", "Trabajador Independiente", "Empleado", "Desempleado", "Empleo Informal", "Ama de Casa", "Cuidador Primario", "Militar", "Religioso"];
+            const genOptions = ["Hombre", "Mujer", "No Binario", "Transexual"];
+
+            interactionArea.innerHTML = `
+                <form id="form-epg" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <select id="demo-edu" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-800">
+                        <option value="" disabled selected>Nivel Educativo</option>
+                        ${eduOptions.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                    <select id="demo-prof" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-800">
+                        <option value="" disabled selected>Profesión / Ocupación</option>
+                        ${profOptions.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                    <select id="demo-gen" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-800 md:col-span-2">
+                        <option value="" disabled selected>Género</option>
+                        ${genOptions.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                    <button type="submit" class="md:col-span-2 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
+                </form>
+            `;
+
+            document.getElementById('form-epg').addEventListener('submit', function(e) {
+                e.preventDefault();
+                patientData.demographics.nivel_educativo = document.getElementById('demo-edu').value;
+                patientData.demographics.profesion = document.getElementById('demo-prof').value;
+                patientData.demographics.genero = document.getElementById('demo-gen').value;
+                
+                addMessage("Datos de perfil registrados.", 'user');
+                setTimeout(askPersonal, 600);
+            });
+        }
+
+        function askPersonal() {
+            clearInteraction();
+            addMessage("Finalmente, cuéntanos un poco más sobre ti en estos aspectos:");
+            
+            const situacionOptions = ["Soltero/a", "Casado/a", "Separado/a / Divorciado/a", "Viudo/a"];
+            const mascotasOptions = [
+                "No tengo y no me gustan", 
+                "No tengo pero me gustan", 
+                "Sí tengo una o más", 
+                "Sí tengo una o más pero no me gustan"
+            ];
+
+            interactionArea.innerHTML = `
+                <form id="form-personal" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" id="demo-rel" placeholder="Religión" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-900">
+                    <input type="number" id="demo-hijos" placeholder="Número de hijos" min="0" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-900">
+                    <select id="demo-sit" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-800">
+                        <option value="" disabled selected>Situación Sentimental</option>
+                        ${situacionOptions.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                    <select id="demo-mascotas" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-800">
+                        <option value="" disabled selected>Sobre mascotas...</option>
+                        ${mascotasOptions.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                    <button type="submit" class="md:col-span-2 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md mt-1">Finalizar Perfil</button>
+                </form>
+            `;
+
+            document.getElementById('form-personal').addEventListener('submit', function(e) {
+                e.preventDefault();
+                patientData.demographics.religion = document.getElementById('demo-rel').value.trim();
+                patientData.demographics.hijos = parseInt(document.getElementById('demo-hijos').value);
+                patientData.demographics.situacion_sentimental = document.getElementById('demo-sit').value;
+                patientData.demographics.mascotas = document.getElementById('demo-mascotas').value;
+                
+                addMessage("Información completada.", 'user');
+                setTimeout(startTest, 800);
+            });
+        }
+
+        // --- INICIO DE LA PRUEBA (170 ÍTEMS) ---
+        
         function startTest() {
-            addMessage(`¡Perfecto ${patientData.demographics.name.split(' ')[0]}! Vamos a comenzar.<br><br>Te mostraré una serie de afirmaciones. Por favor, selecciona del 1 al 7 qué tan característica es de ti.<br><br><div class="flex flex-col gap-1 mt-2 text-sm text-teal-800 bg-white border border-teal-100 p-2.5 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">1</span> = Nada característico</div><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">7</span> = Totalmente característico</div></div>`);
-            currentStep = 'test';
+            clearInteraction();
+            questionCounter.innerText = `0/170`;
+            addMessage(`¡Genial! Hemos terminado con los datos demográficos.<br><br>Ahora sí, vamos a comenzar con la evaluación CEPER-III.<br><br><div class="flex flex-col gap-1 mt-2 text-sm text-teal-800 bg-white border border-teal-100 p-2.5 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">1</span> = Nada característico</div><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">7</span> = Totalmente característico</div></div>`);
             
             setTimeout(() => {
                 askNextQuestion();
@@ -312,24 +578,20 @@
                 return;
             }
 
-            // Actualizar barra de progreso
             const progress = ((currentQuestionIndex) / totalQuestions) * 100;
             progressBar.style.width = `${progress}%`;
             progressText.innerText = `Progreso: ${Math.round(progress)}%`;
             questionCounter.innerText = `${currentQuestionIndex + 1}/${totalQuestions}`;
 
-            // Imprimir la pregunta
             const currentQ = questionsList[currentQuestionIndex];
             addMessage(`<span class="font-bold text-teal-700 mr-1">${currentQuestionIndex + 1}.</span> ${currentQ}`);
 
-            // Mostrar botones Likert (1-7) en formato Grid para que entren perfecto en móviles
             let buttonsHTML = '<div class="grid grid-cols-7 gap-1 md:gap-2 max-w-2xl mx-auto w-full">';
             for(let i = 1; i <= 7; i++) {
                 buttonsHTML += `<button onclick="handleAnswer(${i})" class="likert-btn bg-white border-2 border-teal-100 text-teal-700 font-bold py-3 md:py-4 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-lg md:text-xl flex items-center justify-center">${i}</button>`;
             }
             buttonsHTML += '</div>';
             
-            // Leyenda bajo los botones ajustada para móvil
             buttonsHTML += `
                 <div class="flex justify-between max-w-2xl mx-auto mt-2 px-1">
                     <span class="text-[11px] md:text-xs text-teal-600 font-medium leading-tight max-w-[80px] md:max-w-none text-left">Nada característico</span>
@@ -337,7 +599,6 @@
                 </div>
             `;
 
-            // Botón para retroceder a la pregunta anterior
             if (currentQuestionIndex > 0) {
                 buttonsHTML += `
                     <div class="flex justify-center mt-3 md:mt-4">
@@ -352,10 +613,8 @@
             interactionArea.innerHTML = buttonsHTML;
         }
 
-        // --- LÓGICA DE RESPUESTAS ---
-
         function handleAnswer(value) {
-            interactionArea.innerHTML = '';
+            clearInteraction();
             addMessage(`${value}`, 'user');
             patientData.answers[`item_${currentQuestionIndex + 1}`] = value;
             currentQuestionIndex++;
@@ -364,16 +623,11 @@
 
         function goBack() {
             if(currentQuestionIndex > 0) {
-                interactionArea.innerHTML = '';
+                clearInteraction();
                 addMessage("Corregir respuesta anterior.", 'user');
-                
-                // Disminuimos el índice
                 currentQuestionIndex--;
-                
-                // Borramos la respuesta de la base temporal
                 delete patientData.answers[`item_${currentQuestionIndex + 1}`];
 
-                // Retraso natural antes de volver a preguntar
                 setTimeout(() => {
                     addMessage(`<span class="text-teal-600 italic">Volviendo a la pregunta ${currentQuestionIndex + 1}...</span>`);
                     setTimeout(askNextQuestion, 600);
@@ -389,7 +643,7 @@
             addMessage("¡Hemos terminado! 🎉<br><br>Muchas gracias por tu tiempo y sinceridad. Tus respuestas han sido procesadas de forma segura.");
             
             interactionArea.innerHTML = `
-                <div class="flex justify-center text-sm text-teal-600 py-4 font-medium bg-teal-50 rounded-lg max-w-sm mx-auto border border-teal-100">
+                <div class="flex justify-center text-sm text-teal-600 py-4 font-medium bg-teal-50 rounded-lg max-w-sm mx-auto border border-teal-100 shadow-sm">
                     Evaluación completada con éxito.
                 </div>
             `;

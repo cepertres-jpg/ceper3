@@ -238,13 +238,14 @@
         // Objeto donde se guarda todo para enviar a la API
         const patientData = {
             demographics: {
+                psicologo: "",
                 nombres: "",
                 primer_apellido: "",
                 segundo_apellido: "",
                 correo: "",
                 fecha_nacimiento: "",
                 edad: null,
-                acudiente: null, // Solo si es menor
+                acudiente: null,
                 pais: "",
                 departamento: "",
                 ciudad: "",
@@ -496,41 +497,60 @@
             
             interactionArea.innerHTML = `
                 <div class="flex justify-center max-w-2xl mx-auto">
-                    <button onclick="askNames()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3.5 md:py-3 rounded-full font-medium transition-colors w-full md:w-auto shadow-md active:transform active:scale-95 text-[15px]">
+                    <button onclick="askPsicologo()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3.5 md:py-3 rounded-full font-medium transition-colors w-full md:w-auto shadow-md active:transform active:scale-95 text-[15px]">
                         Empezar Evaluación
                     </button>
                 </div>
             `;
         }
 
-        function askNames() {
+        function askPsicologo() {
             clearInteraction();
             addMessage("Empezar Evaluación", 'user');
             
             setTimeout(() => {
-                addMessage("Excelente. Para empezar, por favor dime tus nombres y apellidos.");
+                addMessage("Para asegurar que tus resultados lleguen a la persona correcta, ¿quién es tu psicólogo/a asignado/a?");
                 interactionArea.innerHTML = `
-                    <form id="form-names" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <input type="text" id="demo-nombres" placeholder="Nombres (Ej: María José)" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900 md:col-span-2">
-                        <input type="text" id="demo-apellido1" placeholder="Primer Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
-                        <input type="text" id="demo-apellido2" placeholder="Segundo Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
-                        <div class="md:col-span-2 flex gap-3 mt-1">
-                            <button type="button" onclick="goBackDemographics(startIntro)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
-                            <button type="submit" class="w-2/3 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
-                        </div>
-                    </form>
+                    <div class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
+                        ${['Jorge', 'Victor', 'Martha', 'Claudia', 'Johanna'].map(p => 
+                            `<button onclick="savePsicologo('${p}')" class="bg-white border border-teal-200 text-teal-800 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors shadow-sm text-center active:scale-95">${p}</button>`
+                        ).join('')}
+                    </div>
                 `;
-
-                document.getElementById('form-names').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    patientData.demographics.nombres = document.getElementById('demo-nombres').value.trim();
-                    patientData.demographics.primer_apellido = document.getElementById('demo-apellido1').value.trim();
-                    patientData.demographics.segundo_apellido = document.getElementById('demo-apellido2').value.trim();
-                    
-                    addMessage(`${patientData.demographics.nombres} ${patientData.demographics.primer_apellido} ${patientData.demographics.segundo_apellido}`, 'user');
-                    setTimeout(askEmail, 500);
-                });
             }, 600);
+        }
+
+        function savePsicologo(psicologo) {
+            patientData.demographics.psicologo = psicologo;
+            clearInteraction();
+            addMessage(psicologo, 'user');
+            setTimeout(askNames, 500);
+        }
+
+        function askNames() {
+            clearInteraction();
+            addMessage("Excelente. Ahora por favor dime tus nombres y apellidos.");
+            interactionArea.innerHTML = `
+                <form id="form-names" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" id="demo-nombres" placeholder="Nombres (Ej: María José)" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900 md:col-span-2">
+                    <input type="text" id="demo-apellido1" placeholder="Primer Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                    <input type="text" id="demo-apellido2" placeholder="Segundo Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                    <div class="md:col-span-2 flex gap-3 mt-1">
+                        <button type="button" onclick="goBackDemographics(askPsicologo)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('form-names').addEventListener('submit', function(e) {
+                e.preventDefault();
+                patientData.demographics.nombres = document.getElementById('demo-nombres').value.trim();
+                patientData.demographics.primer_apellido = document.getElementById('demo-apellido1').value.trim();
+                patientData.demographics.segundo_apellido = document.getElementById('demo-apellido2').value.trim();
+                
+                addMessage(`${patientData.demographics.nombres} ${patientData.demographics.primer_apellido} ${patientData.demographics.segundo_apellido}`, 'user');
+                setTimeout(askEmail, 500);
+            });
         }
 
         function askEmail() {
@@ -605,7 +625,7 @@
                 addMessage(dobVal.split('-').reverse().join('/'), 'user'); // Mostrar formato DD/MM/YYYY
                 
                 setTimeout(() => {
-                    // Aquí agregamos la confirmación exacta de la edad según instrucción
+                    // Confirmación exacta de la edad
                     addMessage(`Perfecto, tu edad es ${calculatedAge}.`);
                     
                     setTimeout(() => {
@@ -663,9 +683,12 @@
                         ${optionsPais}
                     </select>
                     
-                    <!-- Contenedores para Colombia (ocultos inicialmente) -->
+                    <!-- Contenedores para Colombia -->
                     <select id="demo-depto" class="hidden w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-800 cursor-pointer"></select>
                     <select id="demo-ciudad" class="hidden w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-800 cursor-pointer"></select>
+
+                    <!-- Input manual para otros países -->
+                    <input type="text" id="demo-ciudad-manual" class="hidden w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-900" placeholder="Escribe el nombre de tu ciudad">
 
                     <div class="flex gap-3">
                         <button type="button" onclick="goBackDemographics(patientData.demographics.edad < 18 ? askGuardian : askDob)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
@@ -677,26 +700,33 @@
             const paisSelect = document.getElementById('demo-pais');
             const deptoSelect = document.getElementById('demo-depto');
             const ciudadSelect = document.getElementById('demo-ciudad');
+            const ciudadManual = document.getElementById('demo-ciudad-manual');
 
-            // Lógica para mostrar Departamentos si es Colombia
             paisSelect.addEventListener('change', function() {
                 if(this.value === 'Colombia') {
+                    // Mostrar selects Colombia
                     deptoSelect.classList.remove('hidden');
                     deptoSelect.required = true;
+                    ciudadManual.classList.add('hidden');
+                    ciudadManual.required = false;
+                    ciudadManual.value = "";
                     
                     const colombiaData = geoData["América del Sur"]["Colombia"];
                     let deptoOptions = `<option value="" disabled selected>Selecciona tu Departamento</option>`;
                     Object.keys(colombiaData).sort().forEach(d => deptoOptions += `<option value="${d}">${d}</option>`);
                     deptoSelect.innerHTML = deptoOptions;
                 } else {
+                    // Mostrar input manual Internacional
                     deptoSelect.classList.add('hidden');
                     ciudadSelect.classList.add('hidden');
                     deptoSelect.required = false;
                     ciudadSelect.required = false;
+                    
+                    ciudadManual.classList.remove('hidden');
+                    ciudadManual.required = true;
                 }
             });
 
-            // Lógica para mostrar Ciudades cuando se elige un Departamento
             deptoSelect.addEventListener('change', function() {
                 ciudadSelect.classList.remove('hidden');
                 ciudadSelect.required = true;
@@ -712,16 +742,36 @@
                 e.preventDefault();
                 patientData.demographics.pais = paisSelect.value;
                 
-                let respuestaUsuario = paisSelect.value;
                 if(paisSelect.value === 'Colombia') {
                     patientData.demographics.departamento = deptoSelect.value;
                     patientData.demographics.ciudad = ciudadSelect.value;
-                    respuestaUsuario += ` (${ciudadSelect.value}, ${deptoSelect.value})`;
+                    addMessage(`${paisSelect.value} (${ciudadSelect.value}, ${deptoSelect.value})`, 'user');
+                    setTimeout(askEduProGen, 600);
+                } else {
+                    const ciudadIngresada = ciudadManual.value.trim();
+                    addMessage(`${paisSelect.value} (${ciudadIngresada})`, 'user');
+                    setTimeout(() => confirmCityManual(ciudadIngresada), 500);
                 }
-
-                addMessage(respuestaUsuario, 'user');
-                setTimeout(askEduProGen, 600);
             });
+        }
+
+        function confirmCityManual(ciudad) {
+            clearInteraction();
+            addMessage(`Has escrito que tu ciudad es: <strong>${ciudad}</strong>.<br>¿Es correcta?`);
+            
+            interactionArea.innerHTML = `
+                <div class="flex justify-center gap-3 max-w-xl mx-auto">
+                    <button onclick="saveCityManual('${ciudad}')" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-md">Sí, es correcta</button>
+                    <button onclick="goBackDemographics(askGeo)" class="flex-1 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">No, corregir</button>
+                </div>
+            `;
+        }
+
+        function saveCityManual(ciudad) {
+            patientData.demographics.departamento = "N/A"; // No aplica para otros países
+            patientData.demographics.ciudad = ciudad;
+            addMessage("Sí, es correcta.", 'user');
+            setTimeout(askEduProGen, 500);
         }
 
         function askEduProGen() {
@@ -807,16 +857,33 @@
             });
         }
 
-        // --- INICIO DE LA PRUEBA (170 ÍTEMS) ---
+        // --- INICIO DE LA PRUEBA (170 ÍTEMS Y LÓGICA MOTIVACIONAL) ---
         
         function startTest() {
             clearInteraction();
             questionCounter.innerText = `0/170`;
-            addMessage(`¡Genial! Hemos terminado con los datos demográficos.<br><br>Ahora sí, vamos a comenzar con la evaluación CEPER-III.<br><br><div class="flex flex-col gap-1 mt-2 text-sm text-teal-800 bg-white border border-teal-100 p-2.5 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">1</span> = Nada característico</div><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">7</span> = Totalmente característico</div></div>`);
+
+            // Construir Frase Motivacional Personalizada
+            const d = patientData.demographics;
+            let fraseMotivacional = `¡Gracias por compartir esto! Cada detalle que nos das hace que tu perfil sea único.`;
+
+            if (d.profesion === 'Estudiante' && d.edad < 25) {
+                fraseMotivacional = `Esta etapa de estudiante está llena de descubrimientos, ${d.nombres.split(' ')[0]}. Conocer a fondo tu personalidad te dará herramientas increíbles para construir tu futuro profesional.`;
+            } else if (d.hijos > 0) {
+                fraseMotivacional = `Sabemos que ser padre/madre de ${d.hijos} hijo(s) requiere muchísima energía, ${d.nombres.split(' ')[0]}. Dedicar este momento para evaluarte y conocerte mejor es un acto de amor propio muy valioso.`;
+            } else if (d.profesion === 'Trabajador Independiente') {
+                fraseMotivacional = `Ser independiente requiere de mucho carácter y disciplina. Esta prueba te será de gran utilidad para potenciar tus habilidades naturales.`;
+            } else if (d.mascotas === 'Sí tengo una o más' || d.mascotas === 'No tengo pero me gustan') {
+                fraseMotivacional = `¡Qué genial que tengas esa conexión con las mascotas! Esa empatía seguramente refleja un lado muy especial de tu personalidad. Vamos a explorarlo.`;
+            } else if (d.situacion_sentimental === 'Casado/a' || d.situacion_sentimental === 'Soltero/a') {
+                fraseMotivacional = `Ser ${d.profesion.toLowerCase()} y estar ${d.situacion_sentimental.toLowerCase().split('/')[0]} trae sus propios retos y alegrías. El autoconocimiento es la mejor inversión que puedes hacer en ti ahora mismo.`;
+            }
+
+            addMessage(`¡Genial! Hemos terminado de armar tu perfil.<br><br><span class="text-teal-700 font-medium italic">"${fraseMotivacional}"</span><br><br>Ahora sí, vamos a comenzar con la evaluación CEPER-III.<br><br><div class="flex flex-col gap-1 mt-2 text-sm text-teal-800 bg-white border border-teal-100 p-2.5 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">1</span> = Nada característico</div><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">7</span> = Totalmente característico</div></div>`);
             
             setTimeout(() => {
                 askNextQuestion();
-            }, 3000);
+            }, 5500); // Dar tiempo para leer el mensaje largo
         }
 
         function askNextQuestion() {

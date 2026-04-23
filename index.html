@@ -1097,11 +1097,16 @@
             progressText.innerText = `Progreso: 100%`;
             questionCounter.innerText = `${totalQuestions}/${totalQuestions}`;
 
-            addMessage("¡Hemos terminado! 🎉<br><br>Muchas gracias por tu tiempo y sinceridad. Tus respuestas han sido procesadas de forma segura.");
+            const nombre = patientData.demographics.nombres.split(' ')[0];
+            const psicologo = patientData.demographics.psicologo;
+
+            const mensajeFinal = `¡Hemos terminado, ${nombre}! 🎉<br><br>Quiero agradecerte profundamente por el tiempo, la paciencia y la sinceridad que dedicaste a estas 170 preguntas. Sabemos que puede ser un proceso exigente, pero dedicarte este espacio de autoconocimiento es un acto muy valiente e importante para tu bienestar emocional.<br><br>Tus respuestas han sido guardadas con estricta confidencialidad. Trabajaré esta información de la mano de <strong>${psicologo}</strong> para que puedan continuar este proceso de la mejor manera.<br><br>¡Has dado un paso excelente hoy! Descansa y siéntete muy orgulloso/a de tu compromiso contigo mismo/a. 🌟`;
+
+            addMessage(mensajeFinal);
             
             interactionArea.innerHTML = `
                 <div class="flex justify-center text-sm text-teal-600 py-4 font-medium bg-teal-50 rounded-lg max-w-sm mx-auto border border-teal-100 shadow-sm">
-                    Evaluación completada con éxito.
+                    Evaluación completada con éxito. Puedes cerrar esta pestaña.
                 </div>
             `;
             

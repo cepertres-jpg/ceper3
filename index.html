@@ -573,7 +573,14 @@
             patientData.demographics.psicologo = psicologo;
             clearInteraction();
             addMessage(psicologo, 'user');
-            setTimeout(askPrivacy, 500);
+            
+            // Mensaje empático antes de pasar a la privacidad
+            setTimeout(() => {
+                addMessage(`¡Perfecto! Trabajaré de la mano de <strong>${psicologo}</strong> para acompañarte y apoyarte en este proceso evaluativo. 🤝`);
+                
+                // Hacemos una pausa un poco más larga (1.5s) para que pueda leer este bonito mensaje
+                setTimeout(askPrivacy, 1500);
+            }, 500);
         }
 
         // NUEVO: Petición de consentimiento de datos

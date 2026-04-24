@@ -1,82 +1,245 @@
-import jwt from 'jsonwebtoken';
-import { db } from './lib/firebaseAdmin.js';
-
-export default async function handler(req, res) {
-    // Solo permitimos peticiones GET (solicitar información)
-    if (req.method !== 'GET') {
-        return res.status(405).json({ message: 'Método no permitido' });
-    }
-
-    try {
-        // 1. Verificación de Seguridad (Token)
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ message: 'No autorizado. Token faltante.' });
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Paciente - CEPER-III</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --bg-color: #f8fafc; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); }
+        /* Ocultar elementos no necesarios al imprimir a PDF */
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white; }
+            .print-shadow-none { box-shadow: none !important; border: 1px solid #e2e8f0; }
         }
+    </style>
+</head>
+<body class="text-slate-800 hidden" id="app-body">
 
-        const token = authHeader.split(' ')[1];
-        let decodedToken;
+    <!-- Navbar superior -->
+    <header class="bg-teal-800 text-white h-16 flex items-center px-6 shadow-md justify-between no-print sticky top-0 z-10">
+        <div class="flex items-center gap-4">
+            <a href="javascript:void(0)" onclick="goToPortal()" class="hover:bg-teal-700 p-2 rounded-full transition text-teal-100 hover:text-white" title="Volver al Portal">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </a>
+            <h1 class="font-bold text-lg tracking-wide">CEPER-III <span class="font-normal opacity-75">| Visor de Resultados</span></h1>
+        </div>
+        <button onclick="window.print()" class="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 px-4 py-2 rounded-lg font-medium transition text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            Exportar PDF
+        </button>
+    </header>
 
-        try {
-            decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'clave_secreta_temporal_solo_desarrollo');
-        } catch (err) {
-            return res.status(401).json({ message: 'Sesión expirada o token inválido.' });
-        }
-
-        const requestUser = decodedToken.user; // ej: "jorge", "martha" o "admin"
-
-        // 2. Consultar Base de Datos
-        // Traemos todos los documentos de la colección
-        const snapshot = await db.collection('evaluaciones_ceper').get();
+    <main class="max-w-5xl mx-auto p-6 md:p-8 space-y-6">
         
-        let todasLasEvaluaciones = [];
-        snapshot.forEach(doc => {
-            todasLasEvaluaciones.push({ id: doc.id, ...doc.data() });
-        });
+        <!-- Alerta de Carga -->
+        <div id="loading-state" class="flex flex-col items-center justify-center py-20 text-teal-600">
+            <svg class="animate-spin h-10 w-10 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <p class="font-medium">Cargando datos del paciente...</p>
+        </div>
 
-        // 3. Filtrar según los permisos del usuario
-        let pacientesPermitidos = [];
-        if (requestUser === 'admin') {
-            // El Super Admin ve toda la base de datos
-            pacientesPermitidos = todasLasEvaluaciones;
-        } else {
-            // Los psicólogos solo ven los pacientes que los eligieron a ellos
-            pacientesPermitidos = todasLasEvaluaciones.filter(p => 
-                p.demographics && p.demographics.psicologo === requestUser
-            );
+        <div id="report-content" class="hidden space-y-6">
+            <!-- Encabezado de Identificación -->
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 print-shadow-none">
+                <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 uppercase" id="pat-name">Nombre del Paciente</h2>
+                        <p class="text-sm font-medium text-slate-500 mt-1">ID Referencia: <span id="pat-id" class="font-mono text-teal-600">---</span></p>
+                    </div>
+                    <div class="text-right text-sm">
+                        <p class="text-slate-500">Fecha de evaluación</p>
+                        <p class="font-bold text-slate-700" id="pat-date">--/--/----</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+                    <div>
+                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Edad</p>
+                        <p class="font-semibold text-slate-800 text-lg" id="pat-age">-- años</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Género</p>
+                        <p class="font-semibold text-slate-800 text-lg" id="pat-gender">--</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Nacimiento</p>
+                        <p class="font-semibold text-slate-800 text-lg" id="pat-dob">--</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Psicólogo a cargo</p>
+                        <p class="font-semibold text-teal-700 text-lg capitalize" id="pat-psi">--</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Respuestas -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 print-shadow-none overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                    <h3 class="font-bold text-slate-800">Resultados Directos (Ítems 1 al 170)</h3>
+                    <p class="text-xs text-slate-500 mt-1">Escala de respuesta: 1 (Nada característico) a 7 (Totalmente característico).</p>
+                </div>
+                <div class="p-6">
+                    <!-- Cuadrícula dinámica donde irán los 170 resultados -->
+                    <div id="answers-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 text-center">
+                        <!-- Las respuestas se inyectan con JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="error-state" class="hidden text-center py-20">
+            <p class="text-red-500 font-bold text-lg mb-2">No se pudo cargar el reporte</p>
+            <p class="text-slate-500 text-sm mb-6" id="error-message">Verifica que tengas permisos o que el reporte exista.</p>
+            <a href="javascript:void(0)" onclick="goToPortal()" class="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700">Volver al Portal</a>
+        </div>
+    </main>
+
+    <script>
+        // Función auxiliar para manejar redirecciones de forma segura
+        function redirectOrShowError(message, title = "Acceso Requerido") {
+            try {
+                window.location.href = 'login.html';
+            } catch (e) {
+                console.warn("Navegación bloqueada por el entorno iframe.");
+                document.getElementById('app-body').innerHTML = `
+                    <div class="flex h-screen w-full items-center justify-center bg-slate-50 no-print">
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center max-w-md mx-4">
+                            <h2 class="text-xl font-bold text-slate-800 mb-2">${title}</h2>
+                            <p class="text-slate-600 mb-6">${message}</p>
+                            <p class="text-sm font-medium text-teal-600">Por favor, abre el archivo <span class="font-bold">login.html</span> para ingresar.</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('app-body').classList.remove('hidden');
+            }
         }
 
-        // 4. Limpiar y estructurar los datos antes de enviarlos al portal.html
-        // (No enviamos las 170 respuestas aquí para no saturar la tabla, solo los datos de resumen)
-        const datosParaTabla = pacientesPermitidos.map(p => {
-            // Formatear la fecha de ISO a algo legible (DD/MM/YYYY)
-            const fechaFormateada = p.createdAt 
-                ? new Date(p.createdAt).toLocaleDateString('es-CO') 
-                : 'Sin fecha';
+        function goToPortal() {
+            try {
+                window.location.href = 'portal.html';
+            } catch (e) {
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('report-content').classList.add('hidden');
+                document.getElementById('error-message').innerText = "La navegación está bloqueada en esta vista previa. Abre portal.html directamente.";
+                document.getElementById('error-state').classList.remove('hidden');
+            }
+        }
 
-            return {
-                id: p.id,
-                nombre: p.demographics.nombres,
-                apellidos: `${p.demographics.primer_apellido} ${p.demographics.segundo_apellido}`,
-                edad: p.demographics.edad,
-                genero: p.demographics.genero,
-                fecha: fechaFormateada,
-                psicologo: p.demographics.psicologo,
-                createdAt_raw: p.createdAt || "" // Lo usamos para ordenar a continuación
-            };
-        });
+        // Verificación de autenticación y carga de datos
+        window.onload = async () => {
+            const token = sessionStorage.getItem('ceper_token');
+            if (!token) {
+                redirectOrShowError("No tienes una sesión activa o ha expirado. Por razones de seguridad debes volver a autenticarte.");
+                return;
+            }
 
-        // 5. Ordenar la tabla: los más recientes arriba
-        datosParaTabla.sort((a, b) => new Date(b.createdAt_raw) - new Date(a.createdAt_raw));
+            document.getElementById('app-body').classList.remove('hidden');
+            
+            // Extraer ID de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const reporteId = urlParams.get('id');
 
-        // 6. Enviar la información al portal
-        return res.status(200).json({ 
-            success: true, 
-            data: datosParaTabla 
-        });
+            if (!reporteId) {
+                showError("No se proporcionó un ID de reporte válido.");
+                return;
+            }
 
-    } catch (error) {
-        console.error('Error al obtener pacientes desde Firebase:', error);
-        return res.status(500).json({ message: 'Error interno del servidor.' });
-    }
-}
+            await loadReport(reporteId, token);
+        };
+
+        async function loadReport(id, token) {
+            try {
+                const response = await fetch(`/api/get-report?id=${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                // Prevención de error "Unexpected token" verificando qué devuelve el servidor
+                const contentType = response.headers.get("content-type");
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error("Ruta no encontrada (Error 404). Asegúrate de haber subido el archivo 'api/get-report.js' a Vercel/GitHub.");
+                    }
+                    if (contentType && contentType.includes("application/json")) {
+                        const errData = await response.json();
+                        throw new Error(errData.message || "Error de permisos o conexión.");
+                    } else {
+                        throw new Error(`El servidor devolvió un error (Código ${response.status}). Intenta de nuevo.`);
+                    }
+                }
+
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("El servidor no devolvió datos válidos. Revisa la ruta de la API.");
+                }
+
+                const result = await response.json();
+                renderReport(result.data);
+
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function renderReport(data) {
+            // Ocultar carga, mostrar contenido
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('report-content').classList.remove('hidden');
+
+            const demo = data.demographics || {};
+
+            // Datos principales
+            document.getElementById('pat-name').innerText = `${demo.nombres || ''} ${demo.primer_apellido || ''} ${demo.segundo_apellido || ''}`.trim();
+            document.getElementById('pat-id').innerText = data.id;
+            
+            // Fecha segura (puede venir como string o timestamp)
+            const fechaDoc = data.createdAt ? new Date(data.createdAt).toLocaleDateString('es-CO') : '--/--/----';
+            document.getElementById('pat-date').innerText = fechaDoc;
+            
+            document.getElementById('pat-age').innerText = `${demo.edad || '--'} años`;
+            document.getElementById('pat-gender').innerText = demo.genero || '--';
+            document.getElementById('pat-dob').innerText = demo.fecha_nacimiento || '--';
+            document.getElementById('pat-psi').innerText = demo.psicologo || '--';
+
+            // Respuestas 1 a 170
+            const answersGrid = document.getElementById('answers-grid');
+            let gridHTML = '';
+            
+            // Iteramos sobre las preguntas q1, q2, etc.
+            for (let i = 1; i <= 170; i++) {
+                const valor = (data.answers && data.answers[`q${i}`]) ? data.answers[`q${i}`] : '-';
+                
+                // Darle color a las respuestas altas (5, 6, 7) para visualización rápida
+                let bgColor = 'bg-slate-50';
+                let textColor = 'text-slate-600';
+                let fontWeight = 'font-normal';
+                
+                if (valor !== '-' && valor >= 5) {
+                    bgColor = 'bg-red-50';
+                    textColor = 'text-red-700';
+                    fontWeight = 'font-bold';
+                } else if (valor !== '-' && valor == 4) {
+                    bgColor = 'bg-amber-50';
+                    textColor = 'text-amber-700';
+                }
+
+                gridHTML += `
+                    <div class="border border-slate-200 rounded-md p-2 flex flex-col items-center justify-center ${bgColor}">
+                        <span class="text-[10px] text-slate-400 font-semibold mb-1">Ítem ${i}</span>
+                        <span class="text-base ${textColor} ${fontWeight}">${valor}</span>
+                    </div>
+                `;
+            }
+            
+            answersGrid.innerHTML = gridHTML;
+        }
+
+        function showError(msg) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-message').innerText = msg;
+            document.getElementById('error-state').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

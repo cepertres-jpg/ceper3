@@ -1,29 +1,40 @@
 import admin from 'firebase-admin';
+import { Buffer } from 'buffer';
 
-// Verificamos si Firebase Admin ya fue inicializado para evitar errores 
-// de duplicación en entornos Serverless (Vercel)
-if (!admin.apps.length) {
+// Esta función asegura que la inicialización de Firebase ocurra solo una vez.
+function initializeFirebaseAdmin() {
+    // Si ya hay una app de Firebase inicializada, la retornamos para no crear duplicados.
+    if (admin.apps.length) {
+        return admin.app();
+    }
+
+    // Leemos la variable de entorno que contiene la llave en Base64.
+    // Esta variable debe estar configurada en Vercel (FIREBASE_SERVICE_ACCOUNT_BASE64).
+    const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+    if (!serviceAccountBase64) {
+        console.error("CRITICAL: La variable de entorno FIREBASE_SERVICE_ACCOUNT_BASE64 no está definida.");
+        // Lanzar un error para detener la ejecución de la función serverless si no hay clave.
+        throw new Error('La configuración del servidor de Firebase no está completa.');
+    }
+    
     try {
-        admin.initializeApp({
-            credential: admin.credential.cert({
-                // Estas variables deben venir de tu archivo JSON de cuenta de servicio de Firebase
-                // y deben ser configuradas en las Variables de Entorno de Vercel
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                // Reemplazamos los saltos de línea literales (\\n) por saltos reales (\n)
-                // Esto es crucial porque Vercel a veces escapa los caracteres de la llave privada
-                privateKey: process.env.FIREBASE_PRIVATE_KEY 
-                    ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') 
-                    : undefined,
-            }),
+        // Decodificamos la clave desde Base64 para que Firebase pueda leerla como JSON.
+        const serviceAccountJson = Buffer.from(serviceAccountBase64, 'base64').toString('utf-8');
+        const serviceAccount = JSON.parse(serviceAccountJson);
+
+        // Inicializamos la app con las credenciales.
+        return admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
         });
-        console.log('Firebase Admin inicializado correctamente.');
     } catch (error) {
-        console.error('Error inicializando Firebase Admin:', error.stack);
+        console.error("Error al decodificar FIREBASE_SERVICE_ACCOUNT_BASE64:", error);
+        throw new Error('La llave de la cuenta de servicio de Firebase está malformada o es inválida.');
     }
 }
 
-// Exportamos la instancia de la base de datos (Firestore) 
-// para usarla directamente en save-report.js y get-patients.js
-export const db = admin.firestore();
-export default admin;
+// Inicializamos la app y exportamos la instancia de Firestore.
+// Esto permite que otros archivos importen 'db' y la usen directamente.
+const app = initializeFirebaseAdmin();
+const db = admin.firestore();
+
+export { db };

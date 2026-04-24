@@ -3,112 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Paciente - CEPER-III</title>
+    <title>Dashboard - Portal CEPER-III</title>
+    <!-- Tailwind CSS para un diseño profesional -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --bg-color: #f8fafc; }
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); }
-        /* Ocultar elementos no necesarios al imprimir a PDF */
-        @media print {
-            .no-print { display: none !important; }
-            body { background-color: white; }
-            .print-shadow-none { box-shadow: none !important; border: 1px solid #e2e8f0; }
+        :root {
+            --bg-color: #f8fafc;
+            --sidebar-bg: #0f766e; /* Teal 700 */
         }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+        }
+        /* Scrollbar personalizado para la tabla */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="text-slate-800 hidden" id="app-body">
-
-    <!-- Navbar superior -->
-    <header class="bg-teal-800 text-white h-16 flex items-center px-6 shadow-md justify-between no-print sticky top-0 z-10">
-        <div class="flex items-center gap-4">
-            <a href="javascript:void(0)" onclick="goToPortal()" class="hover:bg-teal-700 p-2 rounded-full transition text-teal-100 hover:text-white" title="Volver al Portal">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            </a>
-            <h1 class="font-bold text-lg tracking-wide">CEPER-III <span class="font-normal opacity-75">| Visor de Resultados</span></h1>
+<body class="flex h-screen overflow-hidden bg-slate-50 text-slate-800 hidden" id="app-body">
+    
+    <!-- BARRA LATERAL (SIDEBAR) -->
+    <aside class="w-64 bg-teal-800 text-teal-50 flex flex-col shadow-xl z-20 hidden md:flex shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-teal-700/50 bg-teal-900/20">
+            <h1 class="text-xl font-bold tracking-wider text-white">CEPER-III</h1>
         </div>
-        <button onclick="window.print()" class="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 px-4 py-2 rounded-lg font-medium transition text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-            Exportar PDF
-        </button>
-    </header>
-
-    <main class="max-w-5xl mx-auto p-6 md:p-8 space-y-6">
         
-        <!-- Alerta de Carga -->
-        <div id="loading-state" class="flex flex-col items-center justify-center py-20 text-teal-600">
-            <svg class="animate-spin h-10 w-10 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <p class="font-medium">Cargando datos del paciente...</p>
+        <nav class="flex-1 py-6 px-4 space-y-2">
+            <a href="javascript:void(0)" class="flex items-center gap-3 bg-teal-700/50 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Inicio / Dashboard
+            </a>
+            <a href="javascript:void(0)" class="flex items-center gap-3 hover:bg-teal-700/30 text-teal-100 px-4 py-3 rounded-lg font-medium transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Pacientes evaluados
+            </a>
+        </nav>
+        
+        <div class="p-4 border-t border-teal-700/50">
+            <button onclick="logout()" class="flex items-center gap-2 w-full px-4 py-2 text-teal-200 hover:text-white hover:bg-teal-700/50 rounded-lg transition-colors font-medium">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Cerrar Sesión
+            </button>
         </div>
+    </aside>
 
-        <div id="report-content" class="hidden space-y-6">
-            <!-- Encabezado de Identificación -->
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 print-shadow-none">
-                <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800 uppercase" id="pat-name">Nombre del Paciente</h2>
-                        <p class="text-sm font-medium text-slate-500 mt-1">ID Referencia: <span id="pat-id" class="font-mono text-teal-600">---</span></p>
+    <!-- ÁREA DE CONTENIDO PRINCIPAL -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <!-- HEADER SUPERIOR -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shadow-sm shrink-0 z-10">
+            <div class="flex items-center gap-3">
+                <button class="md:hidden text-slate-500 hover:text-teal-600 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <h2 class="text-lg md:text-xl font-semibold text-slate-800" id="welcome-message">Cargando...</h2>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold border border-teal-200" id="user-avatar">
+                    ?
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENIDO DINÁMICO -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50/50">
+            
+            <div class="max-w-7xl mx-auto space-y-6">
+                <!-- Tarjetas Informativas -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+                        <div class="p-3 bg-teal-50 text-teal-600 rounded-lg">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Pacientes Registrados</p>
+                            <h3 class="text-2xl font-bold text-slate-800" id="stat-total">0</h3>
+                        </div>
                     </div>
-                    <div class="text-right text-sm">
-                        <p class="text-slate-500">Fecha de evaluación</p>
-                        <p class="font-bold text-slate-700" id="pat-date">--/--/----</p>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Reportes Generados</p>
+                            <h3 class="text-2xl font-bold text-slate-800" id="stat-reportes">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+                        <div class="p-3 bg-purple-50 text-purple-600 rounded-lg">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Última evaluación</p>
+                            <h3 class="text-lg font-bold text-slate-800 mt-1" id="stat-fecha">--</h3>
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
-                    <div>
-                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Edad</p>
-                        <p class="font-semibold text-slate-800 text-lg" id="pat-age">-- años</p>
+                <!-- TABLA DE EVALUACIONES -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+                        <h3 class="text-lg font-semibold text-slate-800">Evaluaciones Recientes</h3>
+                        <div class="relative">
+                            <input type="text" id="table-search" placeholder="Buscar paciente..." class="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white shadow-sm">
+                            <svg class="h-4 w-4 text-slate-400 absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Género</p>
-                        <p class="font-semibold text-slate-800 text-lg" id="pat-gender">--</p>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                    <th class="px-6 py-4 font-medium">Paciente / Referencia</th>
+                                    <th class="px-6 py-4 font-medium">Edad / Género</th>
+                                    <th class="px-6 py-4 font-medium">Fecha</th>
+                                    <th id="th-psi" class="px-6 py-4 font-medium hidden lg:table-cell" style="display: none;">Psicólogo</th>
+                                    <th class="px-6 py-4 font-medium text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patients-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                <!-- Las filas se inyectan dinámicamente con JavaScript -->
+                            </tbody>
+                        </table>
                     </div>
-                    <div>
-                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Nacimiento</p>
-                        <p class="font-semibold text-slate-800 text-lg" id="pat-dob">--</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Psicólogo a cargo</p>
-                        <p class="font-semibold text-teal-700 text-lg capitalize" id="pat-psi">--</p>
+                    
+                    <!-- Estado cuando la tabla está vacía -->
+                    <div id="empty-state" class="hidden p-12 text-center flex flex-col items-center justify-center">
+                        <svg class="h-14 w-14 text-slate-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <p class="text-slate-400 font-medium">No se encontraron evaluaciones registradas.</p>
                     </div>
                 </div>
             </div>
-
-            <!-- Tabla de Respuestas -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 print-shadow-none overflow-hidden">
-                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
-                    <h3 class="font-bold text-slate-800">Resultados Directos (Ítems 1 al 170)</h3>
-                    <p class="text-xs text-slate-500 mt-1">Escala de respuesta: 1 (Nada característico) a 7 (Totalmente característico).</p>
-                </div>
-                <div class="p-6">
-                    <!-- Cuadrícula dinámica donde irán los 170 resultados -->
-                    <div id="answers-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 text-center">
-                        <!-- Las respuestas se inyectan con JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="error-state" class="hidden text-center py-20">
-            <p class="text-red-500 font-bold text-lg mb-2">No se pudo cargar el reporte</p>
-            <p class="text-slate-500 text-sm mb-6" id="error-message">Verifica que tengas permisos o que el reporte exista.</p>
-            <a href="javascript:void(0)" onclick="goToPortal()" class="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700">Volver al Portal</a>
         </div>
     </main>
 
+    <!-- MODAL DE ELIMINACIÓN -->
+    <div id="delete-modal" class="fixed inset-0 bg-slate-900/50 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">¿Eliminar Reporte?</h3>
+            <p class="text-slate-600 text-sm mb-6">Esta acción es permanente y eliminará todos los datos de este paciente de la base de datos.</p>
+            <div id="delete-error" class="hidden text-red-600 text-sm mb-4 bg-red-50 p-3 rounded-lg"></div>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeDeleteModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">Cancelar</button>
+                <button id="confirm-delete-btn" onclick="confirmDelete()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors shadow-sm">
+                    <span id="delete-btn-text">Eliminar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Función auxiliar para manejar redirecciones de forma segura
-        function redirectOrShowError(message, title = "Acceso Requerido") {
+        let currentUser = "";
+        let currentToken = "";
+        let pacientesList = [];
+        let pacienteAEliminar = null;
+
+        // Función segura de redirección (evita el error de Location en iframes)
+        function redirectOrShowError(message, target = 'login.html') {
             try {
-                window.location.href = 'login.html';
+                window.location.href = target;
             } catch (e) {
-                console.warn("Navegación bloqueada por el entorno iframe.");
+                console.warn("Navegación bloqueada por el entorno.");
                 document.getElementById('app-body').innerHTML = `
-                    <div class="flex h-screen w-full items-center justify-center bg-slate-50 no-print">
-                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center max-w-md mx-4">
-                            <h2 class="text-xl font-bold text-slate-800 mb-2">${title}</h2>
+                    <div class="flex h-screen items-center justify-center p-6">
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border text-center max-w-md">
+                            <h2 class="text-xl font-bold mb-4">Acceso Requerido</h2>
                             <p class="text-slate-600 mb-6">${message}</p>
-                            <p class="text-sm font-medium text-teal-600">Por favor, abre el archivo <span class="font-bold">login.html</span> para ingresar.</p>
+                            <p class="text-teal-600 font-medium">Por favor, abre el archivo <span class="font-bold">${target}</span> manualmente.</p>
                         </div>
                     </div>
                 `;
@@ -116,130 +188,162 @@
             }
         }
 
-        function goToPortal() {
+        async function checkAuth() {
+            currentToken = sessionStorage.getItem('ceper_token');
+            currentUser = sessionStorage.getItem('ceper_user');
+
+            if (!currentToken || !currentUser) {
+                redirectOrShowError("Tu sesión ha expirado o no has iniciado sesión.");
+                return;
+            }
+            
+            document.getElementById('app-body').classList.remove('hidden');
+            const nombreCap = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
+            document.getElementById('welcome-message').innerText = `Hola, ${nombreCap} 👋`;
+            document.getElementById('user-avatar').innerText = currentUser.charAt(0).toUpperCase();
+
+            // Mostrar columna psicólogo solo si es admin
+            if(currentUser === 'admin') {
+                document.getElementById('th-psi').style.display = 'table-cell';
+            }
+
+            await fetchPacientes();
+        }
+
+        async function fetchPacientes() {
             try {
-                window.location.href = 'portal.html';
-            } catch (e) {
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('report-content').classList.add('hidden');
-                document.getElementById('error-message').innerText = "La navegación está bloqueada en esta vista previa. Abre portal.html directamente.";
-                document.getElementById('error-state').classList.remove('hidden');
+                const res = await fetch('/api/get-patients', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                
+                if (res.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const result = await res.json();
+                if (res.ok) {
+                    pacientesList = result.data;
+                    renderTable(pacientesList);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                document.getElementById('empty-state').innerHTML = `<p class="text-red-500">Error de conexión con el servidor.</p>`;
+                document.getElementById('empty-state').classList.remove('hidden');
             }
         }
 
-        // Verificación de autenticación y carga de datos
-        window.onload = async () => {
-            const token = sessionStorage.getItem('ceper_token');
-            if (!token) {
-                redirectOrShowError("No tienes una sesión activa o ha expirado. Por razones de seguridad debes volver a autenticarte.");
-                return;
-            }
-
-            document.getElementById('app-body').classList.remove('hidden');
+        function renderTable(data) {
+            const tbody = document.getElementById('patients-table-body');
+            const emptyState = document.getElementById('empty-state');
             
-            // Extraer ID de la URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const reporteId = urlParams.get('id');
+            document.getElementById('stat-total').innerText = data.length;
+            document.getElementById('stat-reportes').innerText = data.length;
+            document.getElementById('stat-fecha').innerText = data.length > 0 ? data[0].fecha : "--";
 
-            if (!reporteId) {
-                showError("No se proporcionó un ID de reporte válido.");
-                return;
+            if (data.length === 0) {
+                emptyState.classList.remove('hidden');
+                tbody.innerHTML = '';
+            } else {
+                emptyState.classList.add('hidden');
+                tbody.innerHTML = data.map(p => `
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-slate-800">${p.nombre} ${p.apellidos}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">REF: ${p.id.substring(0,8)}</div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-600">${p.edad} años | ${p.genero}</td>
+                        <td class="px-6 py-4 text-slate-600">${p.fecha}</td>
+                        ${currentUser === 'admin' ? `<td class="px-6 py-4 lg:table-cell"><span class="bg-teal-50 text-teal-700 px-2 py-0.5 rounded text-xs font-semibold capitalize">${p.psicologo}</span></td>` : ''}
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="goToReport('${p.id}')" class="bg-white border border-teal-500 text-teal-600 hover:bg-teal-50 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm">Ver Reporte</button>
+                                <button onclick="openDeleteModal('${p.id}')" class="p-1.5 text-red-400 hover:text-red-600 transition-colors" title="Eliminar">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
             }
+        }
 
-            await loadReport(reporteId, token);
-        };
-
-        async function loadReport(id, token) {
+        // Navegación segura al reporte detallado
+        function goToReport(id) {
             try {
-                const response = await fetch(`/api/get-report?id=${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                window.location.href = `reporte.html?id=${id}`;
+            } catch (e) {
+                console.error("Navegación bloqueada.");
+                redirectOrShowError("Por favor abre reporte.html para ver este detalle.", `reporte.html?id=${id}`);
+            }
+        }
+
+        // Búsqueda en tiempo real
+        document.getElementById('table-search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = pacientesList.filter(p => 
+                p.nombre.toLowerCase().includes(term) || 
+                p.apellidos.toLowerCase().includes(term) ||
+                p.id.toLowerCase().includes(term)
+            );
+            renderTable(filtered);
+        });
+
+        // Lógica de eliminación
+        function openDeleteModal(id) {
+            pacienteAEliminar = id;
+            const modal = document.getElementById('delete-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.firstElementChild.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('delete-modal');
+            modal.classList.add('opacity-0');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function confirmDelete() {
+            const btn = document.getElementById('confirm-delete-btn');
+            const txt = document.getElementById('delete-btn-text');
+            btn.disabled = true;
+            txt.innerText = "Eliminando...";
+
+            try {
+                const res = await fetch(`/api/eliminar-report?id=${pacienteAEliminar}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
                 });
 
-                // Prevención de error "Unexpected token" verificando qué devuelve el servidor
-                const contentType = response.headers.get("content-type");
-                
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error("Ruta no encontrada (Error 404). Asegúrate de haber subido el archivo 'api/get-report.js' a Vercel/GitHub.");
-                    }
-                    if (contentType && contentType.includes("application/json")) {
-                        const errData = await response.json();
-                        throw new Error(errData.message || "Error de permisos o conexión.");
-                    } else {
-                        throw new Error(`El servidor devolvió un error (Código ${response.status}). Intenta de nuevo.`);
-                    }
+                if (res.ok) {
+                    pacientesList = pacientesList.filter(p => p.id !== pacienteAEliminar);
+                    renderTable(pacientesList);
+                    closeDeleteModal();
+                } else {
+                    const err = await res.json();
+                    throw new Error(err.message || "No se pudo eliminar.");
                 }
-
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("El servidor no devolvió datos válidos. Revisa la ruta de la API.");
-                }
-
-                const result = await response.json();
-                renderReport(result.data);
-
             } catch (error) {
-                showError(error.message);
+                const errBox = document.getElementById('delete-error');
+                errBox.innerText = error.message;
+                errBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                txt.innerText = "Eliminar";
             }
         }
 
-        function renderReport(data) {
-            // Ocultar carga, mostrar contenido
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('report-content').classList.remove('hidden');
-
-            const demo = data.demographics || {};
-
-            // Datos principales
-            document.getElementById('pat-name').innerText = `${demo.nombres || ''} ${demo.primer_apellido || ''} ${demo.segundo_apellido || ''}`.trim();
-            document.getElementById('pat-id').innerText = data.id;
-            
-            // Fecha segura (puede venir como string o timestamp)
-            const fechaDoc = data.createdAt ? new Date(data.createdAt).toLocaleDateString('es-CO') : '--/--/----';
-            document.getElementById('pat-date').innerText = fechaDoc;
-            
-            document.getElementById('pat-age').innerText = `${demo.edad || '--'} años`;
-            document.getElementById('pat-gender').innerText = demo.genero || '--';
-            document.getElementById('pat-dob').innerText = demo.fecha_nacimiento || '--';
-            document.getElementById('pat-psi').innerText = demo.psicologo || '--';
-
-            // Respuestas 1 a 170
-            const answersGrid = document.getElementById('answers-grid');
-            let gridHTML = '';
-            
-            // Iteramos sobre las preguntas q1, q2, etc.
-            for (let i = 1; i <= 170; i++) {
-                const valor = (data.answers && data.answers[`q${i}`]) ? data.answers[`q${i}`] : '-';
-                
-                // Darle color a las respuestas altas (5, 6, 7) para visualización rápida
-                let bgColor = 'bg-slate-50';
-                let textColor = 'text-slate-600';
-                let fontWeight = 'font-normal';
-                
-                if (valor !== '-' && valor >= 5) {
-                    bgColor = 'bg-red-50';
-                    textColor = 'text-red-700';
-                    fontWeight = 'font-bold';
-                } else if (valor !== '-' && valor == 4) {
-                    bgColor = 'bg-amber-50';
-                    textColor = 'text-amber-700';
-                }
-
-                gridHTML += `
-                    <div class="border border-slate-200 rounded-md p-2 flex flex-col items-center justify-center ${bgColor}">
-                        <span class="text-[10px] text-slate-400 font-semibold mb-1">Ítem ${i}</span>
-                        <span class="text-base ${textColor} ${fontWeight}">${valor}</span>
-                    </div>
-                `;
-            }
-            
-            answersGrid.innerHTML = gridHTML;
+        function logout() {
+            sessionStorage.clear();
+            redirectOrShowError("Has cerrado sesión exitosamente.");
         }
 
-        function showError(msg) {
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('error-message').innerText = msg;
-            document.getElementById('error-state').classList.remove('hidden');
-        }
+        window.onload = checkAuth;
     </script>
 </body>
 </html>

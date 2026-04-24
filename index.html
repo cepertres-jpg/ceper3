@@ -127,6 +127,7 @@
         const interactionArea = document.getElementById('interaction-area');
         const progressBar = document.getElementById('progress-bar');
         const progressText = document.getElementById('progress-text');
+        const questionCounter = document.getElementById('question-counter');
         const sidebar = document.getElementById('sidebar');
 
         function toggleMenu() { sidebar.classList.toggle('-translate-x-full'); document.getElementById('mobile-menu-overlay').classList.toggle('hidden'); }
@@ -155,6 +156,7 @@
         }
 
         function savePsicologo(p) {
+            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium text-sm">Procesando...</div>`;
             patientData.demographics.psicologo = p;
             addMessage(p, "user");
             addMessage(`Perfecto! Trabajaré de la mano de <strong>${p}</strong> para acompañarte en este proceso evaluativo. 🤝`);
@@ -167,6 +169,7 @@
         }
 
         function handlePrivacy(accepted) {
+            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium text-sm">Procesando...</div>`;
             if(!accepted) {
                 addMessage("No acepto", "user");
                 addMessage("<span class='text-red-600 font-bold'>Evaluación cancelada.</span> No se ha guardado ningún dato personal.");
@@ -193,9 +196,14 @@
                 </form>`;
             document.getElementById('dob-form').onsubmit = (e) => {
                 e.preventDefault();
+                
                 const d = parseInt(document.getElementById('d').value);
                 const m = parseInt(document.getElementById('m').value);
                 const y = parseInt(document.getElementById('y').value);
+                const mesTexto = document.getElementById('m').options[m].text;
+                
+                // Limpiamos el área al instante para evitar el doble clic
+                interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium text-sm">Procesando...</div>`;
                 
                 const dob = `${y}-${m}-${d}`;
                 patientData.demographics.fecha_nacimiento = dob;
@@ -208,7 +216,7 @@
                 }
                 
                 patientData.demographics.edad = age;
-                addMessage(`${d}/${document.getElementById('m').options[m].text}/${y}`, "user");
+                addMessage(`${d}/${mesTexto}/${y}`, "user");
                 addMessage(`Tienes ${age} años. ¡Excelente!`);
                 setTimeout(startTest, 1000);
             };

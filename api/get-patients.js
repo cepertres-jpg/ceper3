@@ -2,81 +2,80 @@ import jwt from 'jsonwebtoken';
 import { db } from './lib/firebaseAdmin.js';
 
 export default async function handler(req, res) {
-    // Solo permitimos peticiones GET (solicitar información)
+    // Solo permitimos peticiones GET para obtener datos
     if (req.method !== 'GET') {
         return res.status(405).json({ message: 'Método no permitido' });
     }
 
     try {
-        // 1. Verificación de Seguridad (Token)
+        // 1. Verificación de Seguridad: Validar el Token del psicólogo
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ message: 'No autorizado. Token faltante.' });
+            return res.status(401).json({ message: 'No autorizado. Por favor inicia sesión.' });
         }
 
         const token = authHeader.split(' ')[1];
         let decodedToken;
 
         try {
+            // Verificamos que el token sea auténtico
             decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'clave_secreta_temporal_solo_desarrollo');
         } catch (err) {
-            return res.status(401).json({ message: 'Sesión expirada o token inválido.' });
+            return res.status(401).json({ message: 'Sesión expirada. Vuelve a ingresar.' });
         }
 
-        const requestUser = decodedToken.user; // ej: "jorge", "martha" o "admin"
+        const requestUser = decodedToken.user; // Ej: "claudia" o "admin"
 
-        // 2. Consultar Base de Datos
-        // Traemos todos los documentos de la colección
+        // 2. Consulta a Firebase Firestore
         const snapshot = await db.collection('evaluaciones_ceper').get();
-        
-        let todasLasEvaluaciones = [];
+        let patients = [];
+
         snapshot.forEach(doc => {
-            todasLasEvaluaciones.push({ id: doc.id, ...doc.data() });
-        });
-
-        // 3. Filtrar según los permisos del usuario
-        let pacientesPermitidos = [];
-        if (requestUser === 'admin') {
-            // El Super Admin ve toda la base de datos
-            pacientesPermitidos = todasLasEvaluaciones;
-        } else {
-            // Los psicólogos solo ven los pacientes que los eligieron a ellos
-            pacientesPermitidos = todasLasEvaluaciones.filter(p => 
-                p.demographics && p.demographics.psicologo === requestUser
-            );
-        }
-
-        // 4. Limpiar y estructurar los datos antes de enviarlos al portal.html
-        // (No enviamos las 170 respuestas aquí para no saturar la tabla, solo los datos de resumen)
-        const datosParaTabla = pacientesPermitidos.map(p => {
-            // Formatear la fecha de ISO a algo legible (DD/MM/YYYY)
-            const fechaFormateada = p.createdAt 
-                ? new Date(p.createdAt).toLocaleDateString('es-CO') 
-                : 'Sin fecha';
-
-            return {
-                id: p.id,
-                nombre: p.demographics.nombres,
-                apellidos: `${p.demographics.primer_apellido} ${p.demographics.segundo_apellido}`,
-                edad: p.demographics.edad,
-                genero: p.demographics.genero,
-                fecha: fechaFormateada,
-                psicologo: p.demographics.psicologo,
-                createdAt_raw: p.createdAt || "" // Lo usamos para ordenar a continuación
+            const data = doc.data();
+            const demo = data.demographics || {};
+            
+            // Formateamos la fecha para que el portal la muestre bien
+            const fechaDoc = data.createdAt ? new Date(data.createdAt) : new Date();
+            const fechaString = fechaDoc.toLocaleDateString('es-CO');
+            const timestamp = fechaDoc.getTime();
+            
+            const patientSummary = {
+                id: doc.id,
+                nombre: demo.nombres || '',
+                apellidos: `${demo.primer_apellido || ''} ${demo.segundo_apellido || ''}`.trim(),
+                edad: demo.edad || '--',
+                genero: demo.genero || '--',
+                fecha: fechaString,
+                psicologo: demo.psicologo || '',
+                timestamp: timestamp
             };
+
+            // 3. LÓGICA DE FILTRADO (El corazón del problema)
+            if (requestUser === 'admin') {
+                // El Super Admin siempre ve todo
+                patients.push(patientSummary);
+            } else {
+                // Para los psicólogos, comparamos ignorando mayúsculas/minúsculas y espacios
+                const psiDB = (demo.psicologo || '').trim().toLowerCase();
+                const userSession = requestUser.trim().toLowerCase();
+
+                if (psiDB === userSession) {
+                    patients.push(patientSummary);
+                }
+            }
         });
 
-        // 5. Ordenar la tabla: los más recientes arriba
-        datosParaTabla.sort((a, b) => new Date(b.createdAt_raw) - new Date(a.createdAt_raw));
+        // 4. Ordenar: El último paciente evaluado aparece de primero en la lista
+        patients.sort((a, b) => b.timestamp - a.timestamp);
 
-        // 6. Enviar la información al portal
+        // 5. Respuesta exitosa
         return res.status(200).json({ 
             success: true, 
-            data: datosParaTabla 
+            data: patients 
         });
 
     } catch (error) {
-        console.error('Error al obtener pacientes desde Firebase:', error);
-        return res.status(500).json({ message: 'Error interno del servidor.' });
+        console.error('Error crítico en get-patients:', error);
+        return res.status(500).json({ message: 'Error interno al consultar la base de datos.' });
     }
 }

@@ -33,20 +33,20 @@
         </div>
         
         <nav class="flex-1 py-6 px-4 space-y-2">
-            <a href="#" class="flex items-center gap-3 bg-teal-700/50 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+            <a href="javascript:void(0)" class="flex items-center gap-3 bg-teal-700/50 text-white px-4 py-3 rounded-lg font-medium transition-colors">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
                 Dashboard
             </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-teal-700/30 text-teal-100 px-4 py-3 rounded-lg font-medium transition-colors">
+            <a href="javascript:void(0)" class="flex items-center gap-3 hover:bg-teal-700/30 text-teal-100 px-4 py-3 rounded-lg font-medium transition-colors">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
                 Pacientes evaluados
             </a>
-            <!-- Botón exclusivo para Admin (Se oculta en JS si no es admin) -->
-            <a href="#" id="menu-admin" class="hidden items-center gap-3 hover:bg-teal-700/30 text-teal-100 px-4 py-3 rounded-lg font-medium transition-colors">
+            <!-- Botón exclusivo para Admin -->
+            <a href="javascript:void(0)" id="menu-admin" class="hidden items-center gap-3 hover:bg-teal-700/30 text-teal-100 px-4 py-3 rounded-lg font-medium transition-colors">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -175,33 +175,51 @@
     </div>
 
     <script>
-        // --- SISTEMA DE AUTENTICACIÓN Y CONEXIÓN API ---
+        // --- SISTEMA DE AUTENTICACIÓN Y CONEXIÓN API REAL ---
         let currentUser = "";
         let currentToken = "";
         let pacientesList = [];
-        let pacienteAEliminar = null; // Guarda el ID del paciente temporalmente
+        let pacienteAEliminar = null;
+
+        // Función auxiliar para redirigir a Login de forma segura en la vista previa
+        function redirectOrShowError(message, title = "Acceso Requerido") {
+            try {
+                window.location.href = 'login.html';
+            } catch (e) {
+                console.warn("Navegación bloqueada por el entorno iframe, mostrando mensaje en su lugar.");
+                document.getElementById('app-body').innerHTML = `
+                    <div class="flex h-screen w-full items-center justify-center bg-slate-50">
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center max-w-md mx-4">
+                            <h2 class="text-xl font-bold text-slate-800 mb-2">${title}</h2>
+                            <p class="text-slate-600 mb-6">${message}</p>
+                            <p class="text-sm font-medium text-teal-600">Por favor, abre el archivo <span class="font-bold">login.html</span> para ingresar.</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('app-body').classList.remove('hidden');
+            }
+        }
 
         async function checkAuth() {
             currentToken = sessionStorage.getItem('ceper_token');
             currentUser = sessionStorage.getItem('ceper_user');
 
-            // Simulación para entorno local (Vista Previa) si no hay token real
+            // SEGURIDAD REAL: Si no hay token de inicio de sesión, lo devolvemos al login de forma segura.
             if (!currentToken || !currentUser) {
-                currentUser = "admin"; // Entrar como admin por defecto en pruebas locales
-                currentToken = "mock-token";
+                redirectOrShowError("No tienes una sesión activa o ha expirado. Por razones de seguridad debes volver a autenticarte.");
+                return;
             }
             
             document.getElementById('app-body').classList.remove('hidden');
             setupBasicUI();
             
-            // Reemplazamos la "simulación" por el llamado REAL a la base de datos
             await fetchPacientes();
         }
 
         function logout() {
             sessionStorage.removeItem('ceper_user');
             sessionStorage.removeItem('ceper_token');
-            window.location.href = 'login.html';
+            redirectOrShowError("Has cerrado tu sesión exitosamente de forma segura.", "Sesión Finalizada");
         }
 
         function setupBasicUI() {
@@ -218,34 +236,27 @@
             }
         }
 
-        // --- CONEXIÓN REAL AL BACKEND (GET Y DELETE) ---
-
         async function fetchPacientes() {
             try {
-                // Petición a tu API Vercel
                 const response = await fetch('/api/get-patients', {
                     headers: { 'Authorization': `Bearer ${currentToken}` }
                 });
 
                 if (response.ok) {
                     const result = await response.json();
-                    pacientesList = result.data; // Carga los datos reales de Firebase
+                    pacientesList = result.data; 
+                    renderTable();
+                } else if (response.status === 401) {
+                    // Token expirado o inválido
+                    logout();
                 } else {
-                    throw new Error('Error al cargar de la API real');
+                    throw new Error('Error al cargar datos del servidor');
                 }
             } catch (error) {
-                console.log("No se pudo conectar a la API. Usando datos locales de prueba para vista previa.");
-                // Datos de prueba (fallback) si la API falla o estamos en vista previa
-                pacientesList = [
-                    { id: "doc-1", nombre: "María José", apellidos: "Pérez Gómez", edad: 28, genero: "Mujer", fecha: "24/04/2026", psicologo: "jorge" },
-                    { id: "doc-2", nombre: "Carlos", apellidos: "Ramírez Silva", edad: 35, genero: "Hombre", fecha: "23/04/2026", psicologo: "martha" },
-                    { id: "doc-3", nombre: "Andrés", apellidos: "Vargas", edad: 41, genero: "Hombre", fecha: "20/04/2026", psicologo: "victor" }
-                ];
-                if (currentUser !== 'admin') {
-                    pacientesList = pacientesList.filter(p => p.psicologo === currentUser);
-                }
+                console.error("Error conectando con la base de datos:", error);
+                document.getElementById('empty-state').innerHTML = `<p class="text-red-500 font-medium">Error de conexión con la base de datos. Verifica tu conexión a internet e inténtalo de nuevo.</p>`;
+                document.getElementById('empty-state').classList.remove('hidden');
             }
-            renderTable();
         }
 
         function renderTable() {
@@ -291,7 +302,6 @@
                                     <button class="bg-white border border-teal-500 text-teal-600 hover:bg-teal-50 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200">
                                         Ver Reporte
                                     </button>
-                                    <!-- NUEVO: Botón Eliminar con Ícono de Basurero -->
                                     <button onclick="openDeleteModal('${paciente.id}')" class="bg-white border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 px-2 py-1.5 rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200" title="Eliminar Reporte">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
@@ -336,14 +346,12 @@
             deleteError.classList.add('hidden');
 
             try {
-                // Aquí llamamos a tu API eliminar-report.js que acabamos de crear
                 const response = await fetch(`/api/eliminar-report?id=${pacienteAEliminar}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${currentToken}` }
                 });
 
                 if (response.ok) {
-                    // Éxito: Eliminamos visualmente del arreglo y re-renderizamos la tabla
                     pacientesList = pacientesList.filter(p => p.id !== pacienteAEliminar);
                     renderTable();
                     closeDeleteModal();
@@ -352,11 +360,8 @@
                     throw new Error(errorData.message || 'Error al eliminar el reporte.');
                 }
             } catch (error) {
-                console.log("Modo local: Simulando eliminación");
-                // Fallback visual para cuando pruebas localmente sin conexión a Firebase
-                pacientesList = pacientesList.filter(p => p.id !== pacienteAEliminar);
-                renderTable();
-                closeDeleteModal();
+                deleteError.innerText = error.message;
+                deleteError.classList.remove('hidden');
             } finally {
                 confirmBtnText.innerText = "Sí, eliminar";
             }

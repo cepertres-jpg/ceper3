@@ -1,0 +1,14 @@
+{
+  "name": "ceper-iii-api",
+  "version": "1.0.0",
+  "description": "Backend Serverless para la plataforma clínica CEPER-III",
+  "main": "api/authenticate.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  },
+  "author": "Portal Clínico",
+  "license": "ISC"
+}

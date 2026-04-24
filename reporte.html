@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Paciente - CEPER-III</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --bg-color: #f8fafc; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); }
+        /* Ocultar elementos no necesarios al imprimir a PDF */
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white; }
+            .print-shadow-none { box-shadow: none !important; border: 1px solid #e2e8f0; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 hidden" id="app-body">
+
+    <!-- Navbar superior -->
+    <header class="bg-teal-800 text-white h-16 flex items-center px-6 shadow-md justify-between no-print sticky top-0 z-10">
+        <div class="flex items-center gap-4">
+            <a href="javascript:void(0)" onclick="goToPortal()" class="hover:bg-teal-700 p-2 rounded-full transition text-teal-100 hover:text-white" title="Volver al Portal">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </a>
+            <h1 class="font-bold text-lg tracking-wide">CEPER-III <span class="font-normal opacity-75">| Visor de Resultados</span></h1>
+        </div>
+        <button onclick="window.print()" class="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 px-4 py-2 rounded-lg font-medium transition text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            Exportar PDF
+        </button>
+    </header>
+
+    <main class="max-w-5xl mx-auto p-6 md:p-8 space-y-6">
+        
+        <!-- Alerta de Carga -->
+        <div id="loading-state" class="flex flex-col items-center justify-center py-20 text-teal-600">
+            <svg class="animate-spin h-10 w-10 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <p class="font-medium">Cargando datos del paciente...</p>
+        </div>
+
+        <div id="report-content" class="hidden space-y-6">
+            <!-- Encabezado de Identificación -->
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 print-shadow-none">
+                <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 uppercase" id="pat-name">Nombre del Paciente</h2>
+                        <p class="text-sm font-medium text-slate-500 mt-1">ID Referencia: <span id="pat-id" class="font-mono text-teal-600">---</span></p>
+                    </div>
+                    <div class="text-right text-sm">
+                        <p class="text-slate-500">Fecha de evaluación</p>
+                        <p class="font-bold text-slate-700" id="pat-date">--/--/----</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+                    <div>
+                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Edad</p>
+                        <p class="font-semibold text-slate-800 text-lg" id="pat-age">-- años</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Género</p>
+                        <p class="font-semibold text-slate-800 text-lg" id="pat-gender">--</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Nacimiento</p>
+                        <p class="font-semibold text-slate-800 text-lg" id="pat-dob">--</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Psicólogo a cargo</p>
+                        <p class="font-semibold text-teal-700 text-lg capitalize" id="pat-psi">--</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Respuestas -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 print-shadow-none overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                    <h3 class="font-bold text-slate-800">Resultados Directos (Ítems 1 al 170)</h3>
+                    <p class="text-xs text-slate-500 mt-1">Escala de respuesta: 1 (Nada característico) a 7 (Totalmente característico).</p>
+                </div>
+                <div class="p-6">
+                    <!-- Cuadrícula dinámica donde irán los 170 resultados -->
+                    <div id="answers-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 text-center">
+                        <!-- Las respuestas se inyectan con JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="error-state" class="hidden text-center py-20">
+            <p class="text-red-500 font-bold text-lg mb-2">No se pudo cargar el reporte</p>
+            <p class="text-slate-500 text-sm mb-6" id="error-message">Verifica que tengas permisos o que el reporte exista.</p>
+            <a href="javascript:void(0)" onclick="goToPortal()" class="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700">Volver al Portal</a>
+        </div>
+    </main>
+
+    <script>
+        // Función auxiliar para manejar redirecciones de forma segura
+        function redirectOrShowError(message, title = "Acceso Requerido") {
+            try {
+                window.location.href = 'login.html';
+            } catch (e) {
+                console.warn("Navegación bloqueada por el entorno iframe, mostrando mensaje en su lugar.");
+                document.getElementById('app-body').innerHTML = `
+                    <div class="flex h-screen w-full items-center justify-center bg-slate-50 no-print">
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center max-w-md mx-4">
+                            <h2 class="text-xl font-bold text-slate-800 mb-2">${title}</h2>
+                            <p class="text-slate-600 mb-6">${message}</p>
+                            <p class="text-sm font-medium text-teal-600">Por favor, abre el archivo <span class="font-bold">login.html</span> para ingresar.</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('app-body').classList.remove('hidden');
+            }
+        }
+
+        // Función para volver al portal de forma segura
+        function goToPortal() {
+            try {
+                window.location.href = 'portal.html';
+            } catch (e) {
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('report-content').classList.add('hidden');
+                document.getElementById('error-message').innerText = "La navegación está bloqueada en esta vista previa. Por favor, abre el archivo portal.html directamente para volver a la tabla.";
+                document.getElementById('error-state').classList.remove('hidden');
+            }
+        }
+
+        // Verificación de autenticación y carga de datos
+        window.onload = async () => {
+            const token = sessionStorage.getItem('ceper_token');
+            if (!token) {
+                redirectOrShowError("No tienes una sesión activa o ha expirado. Por razones de seguridad debes volver a autenticarte.");
+                return;
+            }
+
+            document.getElementById('app-body').classList.remove('hidden');
+            
+            // Extraer ID de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const reporteId = urlParams.get('id');
+
+            if (!reporteId) {
+                showError("No se proporcionó un ID de reporte válido.");
+                return;
+            }
+
+            await loadReport(reporteId, token);
+        };
+
+        async function loadReport(id, token) {
+            try {
+                const response = await fetch(`/api/get-report?id=${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    renderReport(result.data);
+                } else {
+                    throw new Error(result.message || "Error de permisos o conexión.");
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function renderReport(data) {
+            // Ocultar carga, mostrar contenido
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('report-content').classList.remove('hidden');
+
+            const demo = data.demographics;
+
+            // Datos principales
+            document.getElementById('pat-name').innerText = `${demo.nombres || ''} ${demo.primer_apellido || ''} ${demo.segundo_apellido || ''}`.trim();
+            document.getElementById('pat-id').innerText = data.id;
+            document.getElementById('pat-date').innerText = new Date(data.createdAt).toLocaleDateString('es-CO');
+            
+            document.getElementById('pat-age').innerText = `${demo.edad || '--'} años`;
+            document.getElementById('pat-gender').innerText = demo.genero || '--';
+            document.getElementById('pat-dob').innerText = demo.fecha_nacimiento || '--';
+            document.getElementById('pat-psi').innerText = demo.psicologo || '--';
+
+            // Respuestas 1 a 170
+            const answersGrid = document.getElementById('answers-grid');
+            let gridHTML = '';
+            
+            // Asumiendo que las respuestas se guardaron como q1, q2, q3...
+            for (let i = 1; i <= 170; i++) {
+                const valor = data.answers[`q${i}`] || '-';
+                
+                // Darle color a las respuestas altas (5, 6, 7) para visualización rápida
+                let bgColor = 'bg-slate-50';
+                let textColor = 'text-slate-600';
+                let fontWeight = 'font-normal';
+                
+                if (valor >= 5) {
+                    bgColor = 'bg-red-50';
+                    textColor = 'text-red-700';
+                    fontWeight = 'font-bold';
+                } else if (valor >= 4) {
+                    bgColor = 'bg-amber-50';
+                    textColor = 'text-amber-700';
+                }
+
+                gridHTML += `
+                    <div class="border border-slate-200 rounded-md p-2 flex flex-col items-center justify-center ${bgColor}">
+                        <span class="text-[10px] text-slate-400 font-semibold mb-1">Ítem ${i}</span>
+                        <span class="text-base ${textColor} ${fontWeight}">${valor}</span>
+                    </div>
+                `;
+            }
+            
+            answersGrid.innerHTML = gridHTML;
+        }
+
+        function showError(msg) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-message').innerText = msg;
+            document.getElementById('error-state').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

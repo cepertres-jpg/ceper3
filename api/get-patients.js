@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { db } from '../lib/firebaseAdmin.js';
+import { db } from './lib/firebaseAdmin.js';
 
 export default async function handler(req, res) {
     // Solo permitimos peticiones GET (solicitar información)

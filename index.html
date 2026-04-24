@@ -133,14 +133,14 @@
     </div>
 
     <script>
-        // --- GEODATA Y ESTADO ---
-        const geoData = { "América del Sur": { "Colombia": { "Amazonas": ["Leticia"], "Antioquia": ["Medellín", "Envigado", "Itagüí", "Bello", "Rionegro", "Sabaneta", "La Estrella"], "Atlántico": ["Barranquilla", "Soledad"], "Bogotá": ["Bogotá D.C."], "Valle del Cauca": ["Cali", "Palmira", "Tuluá"] } }, "Otros": { "Argentina": {}, "Chile": {}, "España": {}, "México": {}, "Estados Unidos": {} } };
+        // --- ESTADO GLOBAL ---
         let currentQuestionIndex = 0;
         const totalQuestions = 170;
         const patientData = { demographics: {}, answers: {} };
 
-        // --- PREGUNTAS (Simplificadas para el ejemplo, deben ser las 170 reales) ---
-        const questionsList = Array(170).fill("Pregunta de evaluación de personalidad CEPER-III...");
+        // --- PREGUNTAS DEL CEPER-III ---
+        // Aquí debes reemplazar los textos con las 170 preguntas reales de tu instrumento.
+        const questionsList = Array(170).fill("").map((_, i) => `Pregunta o ítem #${i + 1} del cuestionario CEPER-III para ser evaluado por el paciente.`);
 
         // --- UI HELPERS ---
         const chatContainer = document.getElementById('chat-container');
@@ -154,6 +154,10 @@
         function openPrivacyPolicy() { if(sidebar.classList.contains('-translate-x-full')) toggleMenu(); document.getElementById('privacy-section').open = true; document.getElementById('privacy-section').scrollIntoView({ behavior: 'smooth' }); }
         function acceptCookies() { localStorage.setItem('cookiesAccepted', 'true'); document.getElementById('cookie-banner').classList.add('translate-y-full'); }
         
+        function showProcessing() {
+            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium text-sm">Procesando...</div>`;
+        }
+
         function addMessage(text, sender = 'bot') {
             const div = document.createElement('div');
             div.className = `flex w-full ${sender === 'user' ? 'justify-end' : 'justify-start'} message-fade-in`;
@@ -162,42 +166,96 @@
             chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
         }
 
-        // --- FLOW ---
+        // --- FLUJO CONVERSACIONAL Y DEMOGRÁFICO ---
+        
         function startIntro() {
-            addMessage("¡Hola! Soy tu asistente virtual para la evaluación CEPER-III. 😊 Antes de comenzar las 170 preguntas, necesito conocerte un poco.");
-            interactionArea.innerHTML = `<button onclick="askPsicologo()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-full font-medium shadow-md w-full md:w-auto">Empezar Evaluación</button>`;
+            addMessage("¡Hola! Soy tu asistente virtual para la evaluación CEPER-III. 😊 Antes de comenzar con las preguntas, necesito conocer algunos datos básicos sobre ti para crear tu perfil clínico de forma segura.");
+            interactionArea.innerHTML = `<button onclick="askPsicologo()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-full font-medium shadow-md w-full md:w-auto transition-transform active:scale-95">Comenzar Registro</button>`;
         }
 
         function askPsicologo() {
-            addMessage("Empezar Evaluación", "user");
-            addMessage("¿Quién es tu psicólogo/a asignado/a?");
-            const psis = ['Jorge', 'Victor', 'Martha', 'Claudia', 'Johanna'];
-            interactionArea.innerHTML = `<div class="grid grid-cols-2 gap-2">${psis.map(p => `<button onclick="savePsicologo('${p}')" class="bg-white border border-teal-200 p-3 rounded-xl hover:bg-teal-50">${p}</button>`).join('')}</div>`;
+            showProcessing();
+            addMessage("Comenzar Registro", "user");
+            setTimeout(() => {
+                addMessage("Para empezar, ¿quién es tu psicólogo/a clínico/a asignado/a?");
+                const psis = ['Jorge', 'Victor', 'Martha', 'Claudia', 'Johanna'];
+                interactionArea.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${psis.map(p => `<button onclick="savePsicologo('${p}')" class="bg-white border border-teal-200 p-3 rounded-xl hover:bg-teal-50 font-medium text-teal-800 transition-colors">${p}</button>`).join('')}</div>`;
+            }, 600);
         }
 
         function savePsicologo(p) {
-            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium text-sm">Procesando...</div>`;
+            showProcessing();
             patientData.demographics.psicologo = p;
             addMessage(p, "user");
-            addMessage(`Perfecto! Trabajaré de la mano de <strong>${p}</strong> para acompañarte en este proceso evaluativo. 🤝`);
-            setTimeout(askPrivacy, 1000);
+            setTimeout(() => {
+                addMessage(`¡Perfecto! Trabajaré de la mano de <strong>${p}</strong> para acompañarte en este proceso evaluativo. 🤝`);
+                setTimeout(askPrivacy, 800);
+            }, 500);
         }
 
         function askPrivacy() {
-            addMessage("Por disposición legal, ¿aceptas nuestra <a href='#' onclick='event.preventDefault(); openPrivacyPolicy();' class='underline font-bold text-teal-600'>política de tratamiento de datos</a>?");
-            interactionArea.innerHTML = `<div class="flex gap-2"><button onclick="handlePrivacy(true)" class="flex-1 bg-teal-600 text-white p-3 rounded-xl">Sí, acepto</button><button onclick="handlePrivacy(false)" class="flex-1 border border-red-300 text-red-600 p-3 rounded-xl">No acepto</button></div>`;
+            addMessage("Por disposición legal, ¿aceptas nuestra <a href='#' onclick='event.preventDefault(); openPrivacyPolicy();' class='underline font-bold text-teal-600 hover:text-teal-800'>política de tratamiento de datos personales</a>?");
+            interactionArea.innerHTML = `
+                <div class="flex gap-3 max-w-md mx-auto">
+                    <button onclick="handlePrivacy(true)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white p-3 rounded-xl font-medium transition-colors">Sí, acepto</button>
+                    <button onclick="handlePrivacy(false)" class="flex-1 border-2 border-red-200 text-red-600 hover:bg-red-50 p-3 rounded-xl font-medium transition-colors">No acepto</button>
+                </div>`;
         }
 
         function handlePrivacy(accepted) {
-            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium text-sm">Procesando...</div>`;
+            showProcessing();
             if(!accepted) {
                 addMessage("No acepto", "user");
-                addMessage("<span class='text-red-600 font-bold'>Evaluación cancelada.</span> No se ha guardado ningún dato personal.");
-                interactionArea.innerHTML = "";
+                setTimeout(() => {
+                    addMessage("<span class='text-red-600 font-bold'>Evaluación cancelada.</span> Respetamos tu decisión. No se ha guardado ningún dato personal en nuestro sistema.");
+                    interactionArea.innerHTML = "";
+                }, 500);
                 return;
             }
             addMessage("Sí, acepto", "user");
-            askDob();
+            setTimeout(askNombres, 600);
+        }
+
+        function askNombres() {
+            addMessage("¡Excelente! Empecemos por tu identidad. ¿Cuáles son tus nombres?");
+            interactionArea.innerHTML = `
+                <form id="names-form" class="flex gap-2 max-w-md mx-auto">
+                    <input type="text" id="nombres-input" required placeholder="Tus nombres..." class="flex-1 border border-teal-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-medium">Enviar</button>
+                </form>`;
+            
+            document.getElementById('names-form').onsubmit = (e) => {
+                e.preventDefault();
+                const nombres = document.getElementById('nombres-input').value.trim();
+                showProcessing();
+                patientData.demographics.nombres = nombres;
+                addMessage(nombres, "user");
+                setTimeout(askApellidos, 600);
+            };
+        }
+
+        function askApellidos() {
+            const primerNombre = patientData.demographics.nombres.split(' ')[0];
+            addMessage(`Mucho gusto, ${primerNombre}. Ahora, por favor ingresa tus apellidos.`);
+            interactionArea.innerHTML = `
+                <form id="apellidos-form" class="flex flex-col gap-2 max-w-md mx-auto">
+                    <div class="flex gap-2">
+                        <input type="text" id="apellido1-input" required placeholder="Primer apellido" class="flex-1 border border-teal-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <input type="text" id="apellido2-input" placeholder="Segundo apellido" class="flex-1 border border-teal-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white p-3 rounded-xl font-medium mt-1">Guardar Apellidos</button>
+                </form>`;
+            
+            document.getElementById('apellidos-form').onsubmit = (e) => {
+                e.preventDefault();
+                const ap1 = document.getElementById('apellido1-input').value.trim();
+                const ap2 = document.getElementById('apellido2-input').value.trim();
+                showProcessing();
+                patientData.demographics.primer_apellido = ap1;
+                patientData.demographics.segundo_apellido = ap2;
+                addMessage(`${ap1} ${ap2}`.trim(), "user");
+                setTimeout(askDob, 600);
+            };
         }
 
         function askDob() {
@@ -205,64 +263,215 @@
             let yHtml = `<option value="" disabled selected>Año</option>`;
             const currentYear = new Date().getFullYear();
             for(let i=currentYear; i>=1920; i--) yHtml += `<option value="${i}">${i}</option>`;
+            
             interactionArea.innerHTML = `
-                <form id="dob-form" class="flex flex-col gap-2">
-                    <div class="flex gap-1">
-                        <select id="d" required class="flex-1 border p-3 rounded-xl"><option value="">Día</option>${Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select>
-                        <select id="m" required class="flex-1 border p-3 rounded-xl"><option value="">Mes</option>${['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'].map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select>
-                        <select id="y" required class="flex-1 border p-3 rounded-xl">${yHtml}</select>
+                <form id="dob-form" class="flex flex-col gap-2 max-w-md mx-auto">
+                    <div class="flex gap-2">
+                        <select id="d" required class="flex-1 border border-teal-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"><option value="" disabled selected>Día</option>${Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select>
+                        <select id="m" required class="flex-1 border border-teal-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"><option value="" disabled selected>Mes</option>${['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'].map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select>
+                        <select id="y" required class="flex-1 border border-teal-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">${yHtml}</select>
                     </div>
-                    <button type="submit" class="bg-teal-600 text-white p-3 rounded-xl">Siguiente</button>
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white p-3 rounded-xl font-medium mt-1">Siguiente</button>
                 </form>`;
+                
             document.getElementById('dob-form').onsubmit = (e) => {
                 e.preventDefault();
-                
                 const d = parseInt(document.getElementById('d').value);
                 const m = parseInt(document.getElementById('m').value);
                 const y = parseInt(document.getElementById('y').value);
                 const mesTexto = document.getElementById('m').options[m].text;
+                const primerNombre = patientData.demographics.nombres.split(' ')[0];
                 
-                // Limpiamos el área al instante para evitar el doble clic
-                interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium text-sm">Procesando...</div>`;
+                showProcessing();
                 
-                const dob = `${y}-${m}-${d}`;
+                const dob = `${y}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
                 patientData.demographics.fecha_nacimiento = dob;
                 
-                // Cálculo exacto de la edad tomando en cuenta el mes y el día
+                // Cálculo exacto de la edad
                 const today = new Date();
                 let age = today.getFullYear() - y;
                 if (today.getMonth() + 1 < m || (today.getMonth() + 1 === m && today.getDate() < d)) {
                     age--;
                 }
-                
                 patientData.demographics.edad = age;
-                addMessage(`${d}/${mesTexto}/${y}`, "user");
-                addMessage(`Tienes ${age} años. ¡Excelente!`);
-                setTimeout(startTest, 1000);
+                
+                addMessage(`${d} de ${mesTexto} de ${y}`, "user");
+                setTimeout(() => {
+                    addMessage(`Tienes ${age} años, ${primerNombre}. ¡Estamos en una gran etapa!`);
+                    setTimeout(askGenero, 800);
+                }, 500);
             };
         }
 
+        function askGenero() {
+            addMessage("¿Con qué género te identificas?");
+            const generos = ['Mujer', 'Hombre', 'Otro', 'Prefiero no decirlo'];
+            interactionArea.innerHTML = `
+                <div class="grid grid-cols-2 gap-2 max-w-md mx-auto">
+                    ${generos.map(g => `<button onclick="saveGenero('${g}')" class="bg-white border border-teal-200 p-3 rounded-xl hover:bg-teal-50 font-medium text-teal-800 transition-colors">${g}</button>`).join('')}
+                </div>`;
+        }
+
+        function saveGenero(g) {
+            showProcessing();
+            patientData.demographics.genero = g;
+            addMessage(g, "user");
+            setTimeout(askEstadoCivil, 600);
+        }
+
+        function askEstadoCivil() {
+            addMessage("¿Cuál es tu estado civil actual?");
+            const estados = ['Soltero/a', 'Casado/a', 'Unión Libre', 'Separado/a', 'Divorciado/a', 'Viudo/a'];
+            interactionArea.innerHTML = `
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-md mx-auto">
+                    ${estados.map(e => `<button onclick="saveEstadoCivil('${e}')" class="bg-white border border-teal-200 p-3 rounded-xl hover:bg-teal-50 font-medium text-teal-800 text-sm transition-colors">${e}</button>`).join('')}
+                </div>`;
+        }
+
+        function saveEstadoCivil(e) {
+            showProcessing();
+            patientData.demographics.estado_civil = e;
+            addMessage(e, "user");
+            setTimeout(askOcupacion, 600);
+        }
+
+        function askOcupacion() {
+            addMessage("¿A qué te dedicas actualmente? (Tu ocupación o profesión)");
+            interactionArea.innerHTML = `
+                <form id="ocupacion-form" class="flex gap-2 max-w-md mx-auto">
+                    <input type="text" id="ocupacion-input" required placeholder="Ej: Estudiante, Ingeniera, etc." class="flex-1 border border-teal-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-medium">Siguiente</button>
+                </form>`;
+            
+            document.getElementById('ocupacion-form').onsubmit = (e) => {
+                e.preventDefault();
+                const ocupacion = document.getElementById('ocupacion-input').value.trim();
+                showProcessing();
+                patientData.demographics.ocupacion = ocupacion;
+                addMessage(ocupacion, "user");
+                setTimeout(askEducacion, 600);
+            };
+        }
+
+        function askEducacion() {
+            addMessage("¿Cuál es tu nivel educativo más alto alcanzado?");
+            const educacion = ['Primaria', 'Bachillerato', 'Técnico/Tecnólogo', 'Pregrado', 'Especialización', 'Maestría', 'Doctorado'];
+            
+            let eduOptions = `<option value="" disabled selected>Selecciona tu nivel educativo</option>`;
+            educacion.forEach(edu => eduOptions += `<option value="${edu}">${edu}</option>`);
+
+            interactionArea.innerHTML = `
+                <form id="edu-form" class="flex gap-2 max-w-md mx-auto">
+                    <select id="edu-select" required class="flex-1 border border-teal-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">${eduOptions}</select>
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-medium">Guardar</button>
+                </form>`;
+            
+            document.getElementById('edu-form').onsubmit = (e) => {
+                e.preventDefault();
+                const edu = document.getElementById('edu-select').value;
+                showProcessing();
+                patientData.demographics.nivel_educativo = edu;
+                addMessage(edu, "user");
+                setTimeout(askUbicacion, 600);
+            };
+        }
+
+        function askUbicacion() {
+            addMessage("Finalmente, ¿en qué ciudad y país resides actualmente?");
+            interactionArea.innerHTML = `
+                <form id="ubicacion-form" class="flex flex-col gap-2 max-w-md mx-auto">
+                    <input type="text" id="ciudad-input" required placeholder="Ciudad de residencia" class="flex-1 border border-teal-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <input type="text" id="pais-input" required placeholder="País" class="flex-1 border border-teal-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white p-3 rounded-xl font-medium mt-1">Terminar Perfil</button>
+                </form>`;
+            
+            document.getElementById('ubicacion-form').onsubmit = (e) => {
+                e.preventDefault();
+                const ciudad = document.getElementById('ciudad-input').value.trim();
+                const pais = document.getElementById('pais-input').value.trim();
+                showProcessing();
+                patientData.demographics.ciudad = ciudad;
+                patientData.demographics.pais = pais;
+                addMessage(`${ciudad}, ${pais}`, "user");
+                
+                setTimeout(() => {
+                    const primerNombre = patientData.demographics.nombres.split(' ')[0];
+                    addMessage(`¡Perfil completado, ${primerNombre}! Gracias por tu paciencia.`);
+                    setTimeout(startTest, 1500);
+                }, 600);
+            };
+        }
+
+        // --- LÓGICA DE LA EVALUACIÓN CEPER-III ---
+
         function startTest() {
-            addMessage("¡Perfil completado! Ahora iniciamos el CEPER-III. Responde del 1 (Nada característico) al 7 (Totalmente característico).");
-            askNextQuestion();
+            addMessage("Ahora iniciaremos la evaluación clínica CEPER-III.<br><br>Recuerda: <strong>1</strong> significa <em>Nada característico</em> y <strong>7</strong> <em>Totalmente característico</em> en ti.");
+            setTimeout(askNextQuestion, 2000);
         }
 
         function askNextQuestion() {
             if(currentQuestionIndex >= totalQuestions) return finishTest();
+            
             progressBar.style.width = `${(currentQuestionIndex/totalQuestions)*100}%`;
             questionCounter.innerText = `${currentQuestionIndex+1}/170`;
-            addMessage(`<strong>${currentQuestionIndex+1}.</strong> ${questionsList[currentQuestionIndex]}`);
-            interactionArea.innerHTML = `<div class="grid grid-cols-7 gap-1">${[1,2,3,4,5,6,7].map(v => `<button onclick="handleAnswer(${v})" class="likert-btn border-2 p-3 rounded-xl font-bold">${v}</button>`).join('')}</div>`;
+            
+            addMessage(`<strong>Ítem ${currentQuestionIndex+1}:</strong><br>${questionsList[currentQuestionIndex]}`);
+            
+            interactionArea.innerHTML = `
+                <div class="max-w-lg mx-auto w-full">
+                    <div class="flex justify-between text-xs text-teal-600 font-medium px-2 mb-2">
+                        <span>1 (Nada)</span>
+                        <span>7 (Totalmente)</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 md:gap-2">
+                        ${[1,2,3,4,5,6,7].map(v => `<button onclick="handleAnswer(${v})" class="likert-btn border border-teal-200 bg-white text-teal-800 p-3 md:py-4 rounded-xl font-bold shadow-sm focus:outline-none">${v}</button>`).join('')}
+                    </div>
+                </div>`;
         }
 
         function handleAnswer(v) {
+            showProcessing();
             patientData.answers[`q${currentQuestionIndex+1}`] = v;
             currentQuestionIndex++;
-            askNextQuestion();
+            
+            const nombre = patientData.demographics.nombres.split(' ')[0];
+
+            // SISTEMA DE RAPPORT / EMPATÍA (Hitos de progreso)
+            if (currentQuestionIndex === 42) { // 25% aprox
+                setTimeout(() => {
+                    addMessage(`¡Vas muy bien, ${nombre}! Ya hemos completado la primera cuarta parte. Respira profundo y sigamos adelante. 💪`);
+                    setTimeout(askNextQuestion, 2000);
+                }, 300);
+                return;
+            } else if (currentQuestionIndex === 85) { // 50%
+                setTimeout(() => {
+                    addMessage(`¡Excelente ritmo! Ya llegamos a la mitad de la prueba. Recuerda que no hay respuestas correctas ni incorrectas, solo tu perspectiva genuina. ✨`);
+                    setTimeout(askNextQuestion, 2000);
+                }, 300);
+                return;
+            } else if (currentQuestionIndex === 127) { // 75%
+                setTimeout(() => {
+                    addMessage(`Ya estamos en la recta final, ${nombre}. Falta muy poco, gracias por tu gran compromiso e introspección hasta ahora. 🎯`);
+                    setTimeout(askNextQuestion, 2000);
+                }, 300);
+                return;
+            }
+
+            setTimeout(askNextQuestion, 200);
         }
 
         async function finishTest() {
-            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium">Guardando tus respuestas de forma segura... <svg class="inline animate-spin ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>`;
+            progressBar.style.width = `100%`;
+            progressText.innerText = `Progreso: 100%`;
+            questionCounter.innerText = `Finalizado`;
+            
+            const nombre = patientData.demographics.nombres.split(' ')[0];
+            const psicologo = patientData.demographics.psicologo;
+
+            addMessage(`¡Hemos terminado, ${nombre}! 🎉<br><br>Dame un segundo mientras encripto y guardo tus respuestas de forma segura... ⏳`);
+            
+            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium">Guardando evaluación en el servidor... <svg class="inline animate-spin ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>`;
+            
             try {
                 const res = await fetch('/api/save-report', {
                     method: 'POST',
@@ -270,19 +479,27 @@
                     body: JSON.stringify(patientData)
                 });
                 const data = await res.json();
+                
                 if(res.ok) {
-                    addMessage(`¡Listo! ✅ Gracias por tu tiempo y sinceridad. Tus respuestas se han encriptado y guardado bajo la referencia confidencial <strong>${data.id_referencia.substring(0,6)}</strong>. Puedes cerrar esta pestaña con total tranquilidad. ¡Feliz día!`);
-                    interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium">Evaluación completada con éxito.</div>`;
+                    const mensajeFinal = `¡Todo listo! ✅<br><br>Quiero agradecerte profundamente por el tiempo, la paciencia y la sinceridad que dedicaste a estas 170 preguntas. Dedicarte este espacio de autoconocimiento es un acto muy valiente e importante para tu bienestar emocional.<br><br>Tus respuestas han sido guardadas con estricta confidencialidad (Ref: <strong class="text-teal-800">${data.id_referencia.substring(0,8)}</strong>). Trabajaré esta información de la mano de <strong>${psicologo}</strong> para que puedan continuar este proceso de la mejor manera.<br><br>¡Has dado un paso excelente hoy! 🌟`;
+
+                    addMessage(mensajeFinal);
+                    interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-bold bg-teal-50 border border-teal-200 rounded-xl mx-4">Evaluación completada con éxito. Ya puedes cerrar esta pestaña.</div>`;
                 } else {
-                    throw new Error("Error del servidor");
+                    throw new Error(data.message || "Error del servidor");
                 }
             } catch (e) { 
-                addMessage("Hubo un error de conexión al guardar tus respuestas. Por favor, toma una captura de pantalla y avisa a tu psicólogo."); 
-                interactionArea.innerHTML = `<button onclick="finishTest()" class="w-full bg-red-600 text-white p-3 rounded-xl font-bold">Intentar enviar de nuevo</button>`;
+                addMessage(`Hubo un problema de conexión al guardar tus respuestas, ${nombre}. Por favor, no cierres esta ventana y presiona el botón para intentar de nuevo.`, 'bot'); 
+                interactionArea.innerHTML = `<div class="p-4 flex justify-center"><button onclick="finishTest()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-colors">Intentar enviar de nuevo</button></div>`;
             }
         }
 
-        window.onload = () => { if(!localStorage.getItem('cookiesAccepted')) document.getElementById('cookie-banner').classList.remove('translate-y-full'); startIntro(); };
+        window.onload = () => { 
+            if(!localStorage.getItem('cookiesAccepted')) {
+                document.getElementById('cookie-banner').classList.remove('translate-y-full'); 
+            }
+            startIntro(); 
+        };
     </script>
 </body>
 </html>

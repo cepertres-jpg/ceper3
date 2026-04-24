@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Portal Administrativo CEPER-III</title>
+    <!-- Tailwind CSS para diseño -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-soft: #0f766e;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+        }
+        /* Ocultar el ojito de contraseñas por defecto en algunos navegadores */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+
+    <!-- Elementos decorativos de fondo -->
+    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-teal-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
+
+    <!-- Tarjeta de Login -->
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-teal-50 p-8 relative z-10">
+        
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-teal-800 tracking-tight">CEPER-III</h1>
+            <p class="text-sm text-teal-600 mt-1 font-medium">Portal Administrativo Clínico</p>
+        </div>
+
+        <!-- Formulario -->
+        <form id="login-form" class="space-y-5">
+            <div>
+                <label for="username" class="block text-sm font-medium text-teal-800 mb-1.5">Usuario asignado</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <select id="username" required class="block w-full pl-10 pr-3 py-3 border border-teal-200 rounded-xl text-teal-900 bg-teal-50/30 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors appearance-none cursor-pointer">
+                        <option value="" disabled selected>Selecciona tu usuario</option>
+                        <option value="admin">Super Admin</option>
+                        <option value="jorge">Jorge</option>
+                        <option value="victor">Victor</option>
+                        <option value="martha">Martha</option>
+                        <option value="claudia">Claudia</option>
+                        <option value="johanna">Johanna</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-teal-800 mb-1.5">Contraseña</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <input type="password" id="password" placeholder="••••••••" required class="block w-full pl-10 pr-10 py-3 border border-teal-200 rounded-xl text-teal-900 bg-teal-50/30 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors">
+                    
+                    <!-- Botón para ver/ocultar contraseña -->
+                    <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-teal-500 hover:text-teal-700 focus:outline-none">
+                        <svg id="eye-icon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de Mensajes de Error (Oculta por defecto) -->
+            <div id="error-message" class="hidden bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg flex items-center gap-2">
+                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span id="error-text">Credenciales incorrectas.</span>
+            </div>
+
+            <button type="submit" id="submit-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 rounded-xl transition-all shadow-md active:scale-[0.98] flex justify-center items-center gap-2 mt-4">
+                <span>Ingresar al Portal</span>
+                <svg id="loading-spinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </form>
+
+        <div class="mt-8 text-center">
+            <a href="index.html" class="text-sm text-teal-600 hover:text-teal-800 font-medium transition-colors inline-flex items-center gap-1">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Volver a la evaluación
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer legal -->
+    <div class="absolute bottom-4 text-center w-full z-0 text-xs text-teal-600/60 font-medium">
+        Acceso restringido a personal clínico autorizado.<br>Toda actividad está monitoreada.
+    </div>
+
+    <script>
+        // --- LÓGICA DE INTERFAZ ---
+
+        // Mostrar/Ocultar contraseña
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('toggle-password');
+        const eyeIcon = document.getElementById('eye-icon');
+
+        togglePasswordBtn.addEventListener('click', function() {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                // Cambiar icono a ojo tachado
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />`;
+            } else {
+                passwordInput.type = 'password';
+                // Cambiar icono a ojo normal
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+            }
+        });
+
+        // --- LÓGICA DE AUTENTICACIÓN (Preparada para Vercel Serverless) ---
+
+        const loginForm = document.getElementById('login-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const errorBox = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault(); // Evitar que la página recargue
+
+            const username = document.getElementById('username').value;
+            const password = passwordInput.value;
+
+            // 1. Estado de carga visual
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-90', 'cursor-not-allowed');
+            loadingSpinner.classList.remove('hidden');
+            errorBox.classList.add('hidden'); // Ocultar error previo si existe
+
+            try {
+                /*
+                ===================================================================
+                AQUÍ IRÁ TU CÓDIGO REAL CUANDO TENGAS LA CARPETA /api
+                ===================================================================
+                
+                const response = await fetch('/api/authenticate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // El backend en Vercel validó la clave correctamente
+                    // Guardamos la llave de acceso (Token) en el navegador de forma segura
+                    sessionStorage.setItem('ceper_token', data.token);
+                    sessionStorage.setItem('ceper_user', data.user); // ej: "martha"
+                    
+                    // Redirigir al portal
+                    window.location.href = 'portal.html';
+                } else {
+                    // Contraseña incorrecta
+                    throw new Error(data.message || 'Credenciales inválidas.');
+                }
+                */
+
+                // ===================================================================
+                // SIMULACIÓN TEMPORAL (Solo para que veas cómo reacciona visualmente)
+                // ===================================================================
+                await new Promise(resolve => setTimeout(resolve, 1500)); // Simula tiempo del servidor
+                
+                // Simulemos un error para que veas el mensaje rojo (Para desarrollo)
+                if(password !== "secreta123") {
+                     throw new Error('Usuario o contraseña incorrectos. El acceso está restringido.');
+                } else {
+                    // Simulación de éxito
+                    alert("¡Login Exitoso! (Esto redirigirá a portal.html en el futuro)");
+                    window.location.href = 'portal.html';
+                }
+
+            } catch (error) {
+                // Mostrar el error
+                errorText.innerText = error.message;
+                errorBox.classList.remove('hidden');
+                
+                // Limpiar contraseña
+                passwordInput.value = '';
+                passwordInput.focus();
+            } finally {
+                // Restaurar botón
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-90', 'cursor-not-allowed');
+                loadingSpinner.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

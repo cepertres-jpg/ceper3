@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Portal CEPER-III</title>
+    <!-- Tailwind CSS para diseño -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --sidebar-bg: #0f766e; /* Teal 700 */
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+        }
+        /* Scrollbar suave para la tabla */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-slate-50 text-slate-800 hidden" id="app-body">
+    
+    <!-- Seguridad: El body inicia 'hidden' hasta que verifiquemos el login en JS -->
+
+    <!-- MENÚ LATERAL (SIDEBAR) -->
+    <aside class="w-64 bg-teal-800 text-teal-50 flex flex-col shadow-xl z-20 hidden md:flex shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-teal-700/50 bg-teal-900/20">
+            <h1 class="text-xl font-bold tracking-wider text-white">CEPER-III</h1>
+        </div>
+        
+        <nav class="flex-1 py-6 px-4 space-y-2">
+            <a href="#" class="flex items-center gap-3 bg-teal-700/50 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-3 hover:bg-teal-700/30 text-teal-100 px-4 py-3 rounded-lg font-medium transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Pacientes evaluados
+            </a>
+            <!-- Botón exclusivo para Admin (Se oculta en JS si no es admin) -->
+            <a href="#" id="menu-admin" class="hidden items-center gap-3 hover:bg-teal-700/30 text-teal-100 px-4 py-3 rounded-lg font-medium transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Gestión de Plataforma
+            </a>
+        </nav>
+        
+        <div class="p-4 border-t border-teal-700/50">
+            <button onclick="logout()" class="flex items-center gap-2 w-full px-4 py-2 text-teal-200 hover:text-white hover:bg-teal-700/50 rounded-lg transition-colors font-medium">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <!-- HEADER (Barra superior) -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shadow-sm shrink-0 z-10">
+            <div class="flex items-center gap-3">
+                <button class="md:hidden text-slate-500 hover:text-teal-600 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <h2 class="text-lg md:text-xl font-semibold text-slate-800" id="welcome-message">Cargando...</h2>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold border border-teal-200" id="user-avatar">
+                    ?
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENIDO DEL DASHBOARD -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50/50">
+            
+            <div class="max-w-7xl mx-auto space-y-6">
+                <!-- Tarjetas de Resumen -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+                        <div class="p-3 bg-teal-50 text-teal-600 rounded-lg">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Total Pacientes Evaluados</p>
+                            <h3 class="text-2xl font-bold text-slate-800" id="stat-total">0</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Reportes Generados</p>
+                            <h3 class="text-2xl font-bold text-slate-800" id="stat-reportes">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+                        <div class="p-3 bg-purple-50 text-purple-600 rounded-lg">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Última evaluación</p>
+                            <h3 class="text-lg font-bold text-slate-800 mt-1" id="stat-fecha">--</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Pacientes -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+                        <h3 class="text-lg font-semibold text-slate-800">Evaluaciones Recientes</h3>
+                        <div class="relative">
+                            <input type="text" placeholder="Buscar paciente..." class="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">
+                            <svg class="h-4 w-4 text-slate-400 absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                    <th class="px-6 py-4 font-medium">Paciente</th>
+                                    <th class="px-6 py-4 font-medium hidden md:table-cell">Edad / Género</th>
+                                    <th class="px-6 py-4 font-medium">Fecha</th>
+                                    <th id="th-psicologo" class="px-6 py-4 font-medium hidden lg:table-cell" style="display: none;">Psicólogo Asignado</th>
+                                    <th class="px-6 py-4 font-medium text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patients-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                <!-- Las filas se inyectan con JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Estado Vacío -->
+                    <div id="empty-state" class="hidden p-10 text-center flex flex-col items-center justify-center">
+                        <svg class="h-12 w-12 text-slate-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <p class="text-slate-500 font-medium">No hay evaluaciones registradas aún.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- BASE DE DATOS SIMULADA (Pruebas) ---
+        // Esto vendrá de la Base de Datos (Firebase/MongoDB/Supabase) en el futuro
+        const mockPacientes = [
+            { id: 1, nombre: "María José", apellidos: "Pérez Gómez", edad: 28, genero: "Mujer", fecha: "24/04/2026", psicologo: "jorge" },
+            { id: 2, nombre: "Carlos", apellidos: "Ramírez Silva", edad: 35, genero: "Hombre", fecha: "23/04/2026", psicologo: "martha" },
+            { id: 3, nombre: "Laura", apellidos: "Martínez", edad: 22, genero: "Mujer", fecha: "22/04/2026", psicologo: "jorge" },
+            { id: 4, nombre: "Andrés", apellidos: "Vargas", edad: 41, genero: "Hombre", fecha: "20/04/2026", psicologo: "victor" },
+            { id: 5, nombre: "Camila", apellidos: "Díaz", edad: 19, genero: "Mujer", fecha: "19/04/2026", psicologo: "claudia" },
+            { id: 6, nombre: "Roberto", apellidos: "García", edad: 50, genero: "Hombre", fecha: "18/04/2026", psicologo: "johanna" },
+        ];
+
+        // --- SISTEMA DE AUTENTICACIÓN FRONTAL ---
+        let currentUser = "";
+
+        function checkAuth() {
+            // Simulamos la lectura de un token en memoria.
+            // Para probar el portal aquí en la vista previa sin pasar por login,
+            // si no hay usuario, forzamos temporalmente a "jorge" (o "admin").
+            
+            // Lógica Real:
+            /*
+            const user = sessionStorage.getItem('ceper_user');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUser = user;
+            */
+
+            // Lógica de desarrollo para el entorno Preview:
+            currentUser = sessionStorage.getItem('ceper_user') || "jorge"; // Cambia a "admin" para probar el super admin
+            
+            // Si pasó la verificación, mostramos el cuerpo de la página
+            document.getElementById('app-body').classList.remove('hidden');
+            
+            setupUI();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('ceper_user');
+            sessionStorage.removeItem('ceper_token');
+            window.location.href = 'login.html';
+        }
+
+        function setupUI() {
+            // 1. Mensaje de Bienvenida (Capitalizando el nombre)
+            const nombreCapitalizado = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
+            document.getElementById('welcome-message').innerText = `Hola, ${nombreCapitalizado} 👋`;
+            document.getElementById('user-avatar').innerText = currentUser.charAt(0).toUpperCase();
+
+            // 2. Permisos de Admin
+            if (currentUser === 'admin') {
+                document.getElementById('menu-admin').classList.remove('hidden');
+                document.getElementById('menu-admin').classList.add('flex');
+                document.getElementById('th-psicologo').style.display = ''; // Muestra la columna
+            } else {
+                document.getElementById('th-psicologo').style.display = 'none'; // Oculta la columna
+            }
+
+            // 3. Filtrar datos según el usuario
+            let pacientesFiltrados = [];
+            if (currentUser === 'admin') {
+                pacientesFiltrados = mockPacientes; // El admin ve todo
+            } else {
+                pacientesFiltrados = mockPacientes.filter(p => p.psicologo === currentUser); // El psicólogo ve lo suyo
+            }
+
+            // 4. Actualizar Estadísticas
+            document.getElementById('stat-total').innerText = pacientesFiltrados.length;
+            document.getElementById('stat-reportes').innerText = pacientesFiltrados.length;
+            document.getElementById('stat-fecha').innerText = pacientesFiltrados.length > 0 ? pacientesFiltrados[0].fecha : "--";
+
+            // 5. Renderizar Tabla
+            const tbody = document.getElementById('patients-table-body');
+            const emptyState = document.getElementById('empty-state');
+            
+            if (pacientesFiltrados.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                let filas = '';
+                pacientesFiltrados.forEach(paciente => {
+                    const psiNombre = paciente.psicologo.charAt(0).toUpperCase() + paciente.psicologo.slice(1);
+                    
+                    // Columna de psicólogo condicional (solo visible para admin)
+                    const tdPsicologo = currentUser === 'admin' ? `
+                            <td class="px-6 py-4 hidden lg:table-cell">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800 border border-teal-200">
+                                    ${psiNombre}
+                                </span>
+                            </td>
+                    ` : '';
+
+                    filas += `
+                        <tr class="hover:bg-slate-50 transition-colors group">
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-slate-800">${paciente.nombre} ${paciente.apellidos}</div>
+                                <div class="text-xs text-slate-400">ID: CEPER-${1000 + paciente.id}</div>
+                            </td>
+                            <td class="px-6 py-4 hidden md:table-cell">
+                                ${paciente.edad} años<br><span class="text-slate-500 text-xs">${paciente.genero}</span>
+                            </td>
+                            <td class="px-6 py-4 text-slate-600">
+                                ${paciente.fecha}
+                            </td>
+                            ${tdPsicologo}
+                            <td class="px-6 py-4 text-center">
+                                <button class="bg-white border border-teal-500 text-teal-600 hover:bg-teal-50 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200">
+                                    Ver Reporte
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = filas;
+            }
+        }
+
+        // Iniciar la verificación al cargar la página
+        window.onload = checkAuth;
+
+    </script>
+</body>
+</html>

@@ -216,6 +216,17 @@
             await fetchPacientes();
         }
 
+        function goToReport(id) {
+            try {
+                window.location.href = `reporte.html?id=${id}`;
+            } catch (e) {
+                console.warn("Navegación bloqueada por el entorno iframe.");
+                document.getElementById('patients-table-body').innerHTML = '';
+                document.getElementById('empty-state').innerHTML = `<p class="text-amber-600 font-medium">La navegación directa está bloqueada en esta vista previa de código.<br>Para probar esta redirección, abre la aplicación en una pestaña normal de tu navegador.</p>`;
+                document.getElementById('empty-state').classList.remove('hidden');
+            }
+        }
+
         function logout() {
             sessionStorage.removeItem('ceper_user');
             sessionStorage.removeItem('ceper_token');
@@ -299,7 +310,7 @@
                             ${tdPsicologo}
                             <td class="px-6 py-4 text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <button class="bg-white border border-teal-500 text-teal-600 hover:bg-teal-50 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200">
+                                    <button onclick="goToReport('${paciente.id}')" class="bg-white border border-teal-500 text-teal-600 hover:bg-teal-50 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200">
                                         Ver Reporte
                                     </button>
                                     <button onclick="openDeleteModal('${paciente.id}')" class="bg-white border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 px-2 py-1.5 rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200" title="Eliminar Reporte">

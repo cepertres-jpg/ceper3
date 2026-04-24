@@ -180,7 +180,8 @@
         function askDob() {
             addMessage("¿Cuál es tu fecha de nacimiento?");
             let yHtml = `<option value="" disabled selected>Año</option>`;
-            for(let i=2024; i>=1920; i--) yHtml += `<option value="${i}">${i}</option>`;
+            const currentYear = new Date().getFullYear();
+            for(let i=currentYear; i>=1920; i--) yHtml += `<option value="${i}">${i}</option>`;
             interactionArea.innerHTML = `
                 <form id="dob-form" class="flex flex-col gap-2">
                     <div class="flex gap-1">
@@ -192,11 +193,22 @@
                 </form>`;
             document.getElementById('dob-form').onsubmit = (e) => {
                 e.preventDefault();
-                const dob = `${document.getElementById('y').value}-${document.getElementById('m').value}-${document.getElementById('d').value}`;
+                const d = parseInt(document.getElementById('d').value);
+                const m = parseInt(document.getElementById('m').value);
+                const y = parseInt(document.getElementById('y').value);
+                
+                const dob = `${y}-${m}-${d}`;
                 patientData.demographics.fecha_nacimiento = dob;
-                const age = new Date().getFullYear() - document.getElementById('y').value;
+                
+                // Cálculo exacto de la edad tomando en cuenta el mes y el día
+                const today = new Date();
+                let age = today.getFullYear() - y;
+                if (today.getMonth() + 1 < m || (today.getMonth() + 1 === m && today.getDate() < d)) {
+                    age--;
+                }
+                
                 patientData.demographics.edad = age;
-                addMessage(`${document.getElementById('d').value}/${document.getElementById('m').value}/${document.getElementById('y').value}`, "user");
+                addMessage(`${d}/${document.getElementById('m').options[m].text}/${y}`, "user");
                 addMessage(`Tienes ${age} años. ¡Excelente!`);
                 setTimeout(startTest, 1000);
             };

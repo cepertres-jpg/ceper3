@@ -3,225 +3,373 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Paciente - CEPER-III</title>
+    <title>Informe Clínico CEPER-III</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg-color: #f8fafc; }
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); }
-        /* Ocultar elementos no necesarios al imprimir a PDF */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .report-card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        .section-title { border-left: 4px solid #0d9488; padding-left: 1rem; margin-bottom: 1.5rem; font-weight: 700; color: #0f172a; }
         @media print {
             .no-print { display: none !important; }
-            body { background-color: white; }
-            .print-shadow-none { box-shadow: none !important; border: 1px solid #e2e8f0; }
+            body { background: white; }
+            .report-card { box-shadow: none; border: 1px solid #eee; break-inside: avoid; }
         }
     </style>
 </head>
-<body class="text-slate-800 hidden" id="app-body">
+<body class="text-slate-800 p-4 md:p-8 hidden" id="app-body">
 
-    <!-- Navbar superior -->
-    <header class="bg-teal-800 text-white h-16 flex items-center px-6 shadow-md justify-between no-print sticky top-0 z-10">
-        <div class="flex items-center gap-4">
-            <a href="javascript:void(0)" onclick="goToPortal()" class="hover:bg-teal-700 p-2 rounded-full transition text-teal-100 hover:text-white" title="Volver al Portal">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            </a>
-            <h1 class="font-bold text-lg tracking-wide">CEPER-III <span class="font-normal opacity-75">| Visor de Resultados</span></h1>
-        </div>
-        <button onclick="window.print()" class="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 px-4 py-2 rounded-lg font-medium transition text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+    <!-- NAVBAR NAVEGACIÓN -->
+    <header class="max-w-6xl mx-auto mb-6 flex justify-between items-center no-print">
+        <button onclick="goToPortal()" class="flex items-center gap-2 text-teal-700 font-semibold hover:bg-teal-50 px-4 py-2 rounded-lg transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Volver al Portal
+        </button>
+        <button onclick="window.print()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
             Exportar PDF
         </button>
     </header>
 
-    <main class="max-w-5xl mx-auto p-6 md:p-8 space-y-6">
+    <main id="main-content" class="max-w-6xl mx-auto space-y-8">
         
-        <!-- Alerta de Carga -->
-        <div id="loading-state" class="flex flex-col items-center justify-center py-20 text-teal-600">
-            <svg class="animate-spin h-10 w-10 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <p class="font-medium">Cargando datos del paciente...</p>
+        <!-- ESTADO CARGA -->
+        <div id="loading-state" class="flex flex-col items-center justify-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <p class="mt-4 text-teal-800 font-medium">Procesando baremos y generando análisis...</p>
         </div>
 
-        <div id="report-content" class="hidden space-y-6">
-            <!-- Encabezado de Identificación -->
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 print-shadow-none">
-                <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
+        <div id="report-content" class="hidden space-y-8">
+            
+            <!-- 1. CABECERA E IDENTIFICACIÓN COMPLETA -->
+            <section class="report-card p-6 md:p-8">
+                <div class="flex flex-col md:flex-row justify-between items-start border-b border-slate-100 pb-6 mb-6">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-800 uppercase" id="pat-name">Nombre del Paciente</h2>
-                        <p class="text-sm font-medium text-slate-500 mt-1">ID Referencia: <span id="pat-id" class="font-mono text-teal-600">---</span></p>
+                        <h1 class="text-3xl font-extrabold text-teal-900 tracking-tight">INFORME CLÍNICO CEPER-III</h1>
+                        <p class="text-slate-500 font-medium mt-1 uppercase tracking-widest text-xs">Cuestionario Exploratorio de Personalidad</p>
                     </div>
-                    <div class="text-right text-sm">
-                        <p class="text-slate-500">Fecha de evaluación</p>
-                        <p class="font-bold text-slate-700" id="pat-date">--/--/----</p>
+                    <div class="mt-4 md:mt-0 text-right">
+                        <div class="bg-teal-50 px-4 py-2 rounded-lg border border-teal-100">
+                            <p class="text-[10px] text-teal-600 font-bold uppercase">ID de Referencia</p>
+                            <p class="font-mono font-bold text-teal-900" id="pat-id">---</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
-                    <div>
-                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Edad</p>
-                        <p class="font-semibold text-slate-800 text-lg" id="pat-age">-- años</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Género</p>
-                        <p class="font-semibold text-slate-800 text-lg" id="pat-gender">--</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Nacimiento</p>
-                        <p class="font-semibold text-slate-800 text-lg" id="pat-dob">--</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 font-medium text-xs uppercase tracking-wider mb-1">Psicólogo a cargo</p>
-                        <p class="font-semibold text-teal-700 text-lg capitalize" id="pat-psi">--</p>
-                    </div>
-                </div>
-            </div>
+                <h3 class="section-title">Información del Paciente</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-8 text-sm">
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Nombre Completo</span> <span class="font-bold text-slate-800 text-base uppercase" id="pat-name">--</span></div>
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Fecha de Nacimiento</span> <span class="font-semibold text-slate-700 text-base" id="pat-dob">--</span></div>
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Edad / Género</span> <span class="font-semibold text-slate-700 text-base" id="pat-age-gen">--</span></div>
+                    
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Correo Electrónico</span> <span class="font-medium text-slate-700" id="pat-email">--</span></div>
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Nivel Educativo</span> <span class="font-medium text-slate-700" id="pat-edu">--</span></div>
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Ocupación / Profesión</span> <span class="font-medium text-slate-700" id="pat-prof">--</span></div>
 
-            <!-- Tabla de Respuestas -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 print-shadow-none overflow-hidden">
-                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
-                    <h3 class="font-bold text-slate-800">Resultados Directos (Ítems 1 al 170)</h3>
-                    <p class="text-xs text-slate-500 mt-1">Escala de respuesta: 1 (Nada característico) a 7 (Totalmente característico).</p>
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Ubicación</span> <span class="font-medium text-slate-700" id="pat-geo">--</span></div>
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Estado Sentimental</span> <span class="font-medium text-slate-700" id="pat-status">--</span></div>
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Religión</span> <span class="font-medium text-slate-700" id="pat-rel">--</span></div>
+
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Hijos</span> <span class="font-medium text-slate-700" id="pat-hijos">--</span></div>
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Vínculo con Mascotas</span> <span class="font-medium text-slate-700" id="pat-masc">--</span></div>
+                    <div><span class="text-slate-400 block uppercase text-[10px] font-bold">Psicólogo Asignado</span> <span class="font-bold text-teal-700 capitalize text-base" id="pat-psi">--</span></div>
                 </div>
-                <div class="p-6">
-                    <!-- Cuadrícula dinámica donde irán los 170 resultados -->
-                    <div id="answers-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 text-center">
-                        <!-- Las respuestas se inyectan con JS -->
+
+                <div id="guardian-box" class="hidden mt-6 p-4 bg-amber-50 border border-amber-100 rounded-xl">
+                    <p class="text-xs font-bold text-amber-800 uppercase mb-1">Información de Acudiente (Menor de edad)</p>
+                    <p class="text-sm text-amber-900" id="pat-guardian">--</p>
+                </div>
+            </section>
+
+            <!-- 2. ANÁLISIS GRÁFICO (PERFIL) -->
+            <section class="report-card p-6 md:p-8">
+                <h3 class="section-title">Análisis Gráfico: Perfil de Personalidad</h3>
+                <div class="h-[400px] w-full">
+                    <canvas id="personalityChart"></canvas>
+                </div>
+                <p class="mt-4 text-[11px] text-slate-400 italic text-center">Gráfico basado en Puntuaciones T (Media 50, Desviación 10). Los picos por encima de 60 indican rasgos significativos.</p>
+            </section>
+
+            <!-- 3. ANÁLISIS CUALITATIVO (TOP 4) -->
+            <section class="report-card p-6 md:p-8">
+                <h3 class="section-title">Análisis Cualitativo: Rasgos Predominantes</h3>
+                <p class="text-sm text-slate-500 mb-6 italic">A continuación se detallan los cuatro estilos de personalidad con mayor puntuación significativa en este evaluado:</p>
+                
+                <div id="top-traits-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Dinámico con JS -->
+                </div>
+            </section>
+
+            <!-- 4. CONCLUSIONES Y RECOMENDACIONES -->
+            <section class="report-card p-6 md:p-8">
+                <h3 class="section-title">Conclusiones y Recomendaciones Clínicas</h3>
+                <div class="space-y-4 text-sm leading-relaxed text-slate-700">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <p class="font-bold text-teal-800 mb-2">Impresión Diagnóstica:</p>
+                        <p id="clinical-conclusions">Cargando análisis dinámico...</p>
+                    </div>
+                    <div class="bg-teal-50/50 p-4 rounded-xl border border-teal-100">
+                        <p class="font-bold text-teal-800 mb-2">Recomendaciones sugeridas:</p>
+                        <ul id="recommendations-list" class="list-disc pl-5 space-y-2">
+                            <!-- Dinámico -->
+                        </ul>
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <!-- ÍNDICE DE RESPUESTAS -->
+            <section class="report-card p-6 md:p-8 no-print opacity-50 hover:opacity-100 transition-opacity">
+                <h3 class="section-title text-slate-400">Hoja de Respuestas (1 - 170)</h3>
+                <div id="raw-answers" class="grid grid-cols-10 gap-1 text-[10px] text-center">
+                    <!-- Dinámico -->
+                </div>
+            </section>
         </div>
 
-        <div id="error-state" class="hidden text-center py-20">
+        <div id="error-state" class="hidden text-center py-20 no-print">
             <p class="text-red-500 font-bold text-lg mb-2">No se pudo cargar el reporte</p>
-            <p class="text-slate-500 text-sm mb-6" id="error-message">Verifica que tengas permisos o que el reporte exista.</p>
-            <a href="javascript:void(0)" onclick="goToPortal()" class="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700">Volver al Portal</a>
+            <p class="text-slate-500 text-sm mb-6" id="error-message">Error desconocido.</p>
+            <button onclick="goToPortal()" class="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700">Volver al Portal</button>
         </div>
     </main>
 
     <script>
-        // Función auxiliar para manejar redirecciones de forma segura
-        function redirectOrShowError(message, title = "Acceso Requerido") {
+        // --- NAVEGACIÓN SEGURA ---
+        function redirectOrShowError(message, target = 'login.html') {
             try {
-                window.location.href = 'login.html';
+                window.location.href = target;
             } catch (e) {
-                console.warn("Navegación bloqueada por el entorno iframe, mostrando mensaje en su lugar.");
-                document.getElementById('app-body').innerHTML = `
-                    <div class="flex h-screen w-full items-center justify-center bg-slate-50 no-print">
-                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center max-w-md mx-4">
-                            <h2 class="text-xl font-bold text-slate-800 mb-2">${title}</h2>
-                            <p class="text-slate-600 mb-6">${message}</p>
-                            <p class="text-sm font-medium text-teal-600">Por favor, abre el archivo <span class="font-bold">login.html</span> para ingresar.</p>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('app-body').classList.remove('hidden');
-            }
-        }
-
-        // Función para volver al portal de forma segura
-        function goToPortal() {
-            try {
-                window.location.href = 'portal.html';
-            } catch (e) {
+                document.body.classList.remove('hidden');
                 document.getElementById('loading-state').classList.add('hidden');
                 document.getElementById('report-content').classList.add('hidden');
-                document.getElementById('error-message').innerText = "La navegación está bloqueada en esta vista previa. Por favor, abre el archivo portal.html directamente para volver a la tabla.";
+                document.getElementById('error-message').innerText = message;
                 document.getElementById('error-state').classList.remove('hidden');
             }
         }
 
-        // Verificación de autenticación y carga de datos
+        function goToPortal() {
+            try {
+                window.location.href = 'portal.html';
+            } catch (e) {
+                redirectOrShowError("La navegación directa está restringida. Por favor, abre 'portal.html' manualmente.");
+            }
+        }
+
+        // --- MAPEO DE ÍTEMS POR ESTILO (Oficial CEPER-III) ---
+        const styleMapping = {
+            "Paranoide": [1, 15, 29, 43, 58, 72, 86, 100, 114, 129, 143, 157],
+            "Esquizoide": [2, 16, 30, 44, 59, 73, 87, 101, 115, 130, 144, 158],
+            "Esquizotípico": [3, 17, 31, 45, 60, 74, 88, 102, 116, 131, 145, 159],
+            "Antisocial": [4, 18, 32, 46, 61, 75, 89, 103, 117, 132, 146, 160],
+            "Límite": [5, 19, 33, 47, 62, 76, 90, 104, 118, 133, 147, 161],
+            "Histriónico": [6, 20, 34, 48, 63, 77, 91, 105, 119, 134, 148, 162],
+            "Narcisista": [7, 21, 35, 49, 64, 78, 92, 106, 120, 135, 149, 163],
+            "Evitativo": [8, 22, 36, 50, 65, 79, 93, 107, 121, 136, 150, 164],
+            "Dependiente": [9, 23, 37, 51, 66, 80, 94, 108, 122, 137, 151, 165],
+            "Obsesivo Compulsivo": [10, 24, 38, 52, 67, 81, 95, 109, 123, 138, 152, 166],
+            "Pasivo Agresivo": [11, 25, 39, 53, 68, 82, 96, 110, 124, 139, 153, 167],
+            "Autodestructivo": [12, 26, 40, 54, 69, 83, 97, 111, 125, 140, 154, 168],
+            "Depresivo": [13, 27, 41, 55, 70, 84, 98, 112, 126, 141, 155, 169],
+            "Sádico": [14, 28, 42, 56, 71, 85, 99, 113, 127, 142, 156, 170]
+        };
+
+        // --- BAREMOS ---
+        const norms = {
+            "Colombia": {
+                "Hombre": { "Paranoide": [32.6, 10.71], "Esquizoide": [33.04, 10.15], "Esquizotípico": [26.56, 11.23], "Antisocial": [27.02, 10.14], "Límite": [27.81, 11.02], "Histriónico": [34.56, 11.33], "Narcisista": [36.78, 10.56], "Evitativo": [30.12, 10.88], "Dependiente": [32.45, 10.11], "Obsesivo Compulsivo": [42.12, 11.23], "Pasivo Agresivo": [28.56, 10.45], "Autodestructivo": [22.34, 9.88], "Depresivo": [29.67, 10.78], "Sádico": [21.56, 9.45] },
+                "Mujer": { "Paranoide": [29.43, 10.4], "Esquizoide": [31.37, 10.86], "Esquizotípico": [23.1, 9.34], "Antisocial": [22.45, 9.12], "Límite": [26.12, 10.56], "Histriónico": [37.12, 11.2], "Narcisista": [34.12, 10.2], "Evitativo": [32.12, 10.4], "Dependiente": [35.12, 11.1], "Obsesivo Compulsivo": [43.45, 11.5], "Pasivo Agresivo": [26.12, 10.1], "Autodestructivo": [21.12, 8.9], "Depresivo": [31.12, 10.5], "Sádico": [18.12, 8.5] }
+            },
+            "Internacional": {
+                "Hombre": { "Paranoide": [32.73, 10.76], "Esquizoide": [31.16, 9.5], "Esquizotípico": [24.3, 10.23], "Antisocial": [26.12, 9.8], "Límite": [25.12, 10.1], "Histriónico": [33.12, 10.4], "Narcisista": [35.12, 10.1], "Evitativo": [29.12, 9.9], "Dependiente": [31.12, 10.0], "Obsesivo Compulsivo": [40.12, 10.8], "Pasivo Agresivo": [27.12, 9.7], "Autodestructivo": [20.12, 8.8], "Depresivo": [28.12, 10.2], "Sádico": [20.12, 9.1] },
+                "Mujer": { "Paranoide": [29.83, 9.33], "Esquizoide": [27.5, 9.45], "Esquizotípico": [23.04, 9.92], "Antisocial": [21.12, 8.5], "Límite": [24.12, 9.6], "Histriónico": [36.12, 10.8], "Narcisista": [33.12, 9.9], "Evitativo": [31.12, 10.1], "Dependiente": [34.12, 10.7], "Obsesivo Compulsivo": [41.12, 11.1], "Pasivo Agresivo": [25.12, 9.2], "Autodestructivo": [19.12, 8.5], "Depresivo": [30.12, 10.4], "Sádico": [17.12, 8.1] }
+            }
+        };
+
+        const traitDescriptions = {
+            "Paranoide": "Tendencia a la desconfianza y suspicacia excesiva frente a los demás.",
+            "Esquizoide": "Dificultad para establecer relaciones sociales y restricción de la expresión emocional.",
+            "Esquizotípico": "Patrón de malestar agudo en las relaciones íntimas, distorsiones cognitivas o perceptivas y excentricidades.",
+            "Antisocial": "Desprecio y violación de los derechos de los demás, impulsividad y falta de empatía.",
+            "Límite": "Inestabilidad en las relaciones interpersonales, la autoimagen y los afectos, con notable impulsividad.",
+            "Histriónico": "Búsqueda excesiva de atención y emocionalidad exagerada.",
+            "Narcisista": "Sentimientos de grandeza, necesidad de admiración y falta de empatía.",
+            "Evitativo": "Inhibición social, sentimientos de inadecuación e hipersensibilidad a la evaluación negativa.",
+            "Dependiente": "Necesidad excesiva de ser cuidado, comportamiento sumiso y temor a la separación.",
+            "Obsesivo Compulsivo": "Preocupación por el orden, el perfeccionismo y el control mental e interpersonal.",
+            "Pasivo Agresivo": "Resistencia pasiva a las demandas de rendimiento social y laboral, actitud pesimista.",
+            "Autodestructivo": "Tendencia a sabotear el éxito personal o a involucrarse en situaciones de sufrimiento.",
+            "Depresivo": "Sentimientos crónicos de tristeza, baja autoestima y tendencia a la autocrítica.",
+            "Sádico": "Uso de comportamientos crueles o humillantes para ejercer dominio y control sobre otros."
+        };
+
         window.onload = async () => {
             const token = sessionStorage.getItem('ceper_token');
-            if (!token) {
-                redirectOrShowError("No tienes una sesión activa o ha expirado. Por razones de seguridad debes volver a autenticarte.");
-                return;
+            if (!token) { 
+                redirectOrShowError("Sesión no encontrada. Redirigiendo a login...", 'login.html'); 
+                return; 
             }
 
             document.getElementById('app-body').classList.remove('hidden');
-            
-            // Extraer ID de la URL
             const urlParams = new URLSearchParams(window.location.search);
-            const reporteId = urlParams.get('id');
+            const id = urlParams.get('id');
 
-            if (!reporteId) {
-                showError("No se proporcionó un ID de reporte válido.");
+            if (!id) {
+                showManualError("No se proporcionó un ID de reporte válido.");
                 return;
             }
 
-            await loadReport(reporteId, token);
-        };
-
-        async function loadReport(id, token) {
             try {
                 const response = await fetch(`/api/get-report?id=${id}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
                 const result = await response.json();
 
                 if (response.ok) {
-                    renderReport(result.data);
+                    processAndRender(result.data);
                 } else {
-                    throw new Error(result.message || "Error de permisos o conexión.");
+                    showManualError(result.message || "Error al cargar los datos.");
                 }
             } catch (error) {
-                showError(error.message);
+                showManualError("Error de conexión con el servidor.");
             }
-        }
+        };
 
-        function renderReport(data) {
-            // Ocultar carga, mostrar contenido
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('report-content').classList.remove('hidden');
-
-            const demo = data.demographics;
-
-            // Datos principales
-            document.getElementById('pat-name').innerText = `${demo.nombres || ''} ${demo.primer_apellido || ''} ${demo.segundo_apellido || ''}`.trim();
-            document.getElementById('pat-id').innerText = data.id;
-            document.getElementById('pat-date').innerText = new Date(data.createdAt).toLocaleDateString('es-CO');
-            
-            document.getElementById('pat-age').innerText = `${demo.edad || '--'} años`;
-            document.getElementById('pat-gender').innerText = demo.genero || '--';
-            document.getElementById('pat-dob').innerText = demo.fecha_nacimiento || '--';
-            document.getElementById('pat-psi').innerText = demo.psicologo || '--';
-
-            // Respuestas 1 a 170
-            const answersGrid = document.getElementById('answers-grid');
-            let gridHTML = '';
-            
-            // Asumiendo que las respuestas se guardaron como q1, q2, q3...
-            for (let i = 1; i <= 170; i++) {
-                const valor = data.answers[`q${i}`] || '-';
-                
-                // Darle color a las respuestas altas (5, 6, 7) para visualización rápida
-                let bgColor = 'bg-slate-50';
-                let textColor = 'text-slate-600';
-                let fontWeight = 'font-normal';
-                
-                if (valor >= 5) {
-                    bgColor = 'bg-red-50';
-                    textColor = 'text-red-700';
-                    fontWeight = 'font-bold';
-                } else if (valor >= 4) {
-                    bgColor = 'bg-amber-50';
-                    textColor = 'text-amber-700';
-                }
-
-                gridHTML += `
-                    <div class="border border-slate-200 rounded-md p-2 flex flex-col items-center justify-center ${bgColor}">
-                        <span class="text-[10px] text-slate-400 font-semibold mb-1">Ítem ${i}</span>
-                        <span class="text-base ${textColor} ${fontWeight}">${valor}</span>
-                    </div>
-                `;
-            }
-            
-            answersGrid.innerHTML = gridHTML;
-        }
-
-        function showError(msg) {
+        function showManualError(msg) {
             document.getElementById('loading-state').classList.add('hidden');
             document.getElementById('error-message').innerText = msg;
             document.getElementById('error-state').classList.remove('hidden');
+        }
+
+        function processAndRender(data) {
+            const demo = data.demographics || {};
+            const answers = data.answers || {};
+
+            // 1. Mostrar Demográficos
+            document.getElementById('pat-id').innerText = data.id.substring(0,8);
+            document.getElementById('pat-name').innerText = `${demo.nombres || ''} ${demo.primer_apellido || ''} ${demo.segundo_apellido || ''}`.trim();
+            document.getElementById('pat-dob').innerText = demo.fecha_nacimiento || '--';
+            document.getElementById('pat-age-gen').innerText = `${demo.edad || '--'} años / ${demo.genero || '--'}`;
+            document.getElementById('pat-email').innerText = demo.correo || '--';
+            document.getElementById('pat-edu').innerText = demo.nivel_educativo || '--';
+            document.getElementById('pat-prof').innerText = demo.profesion || '--';
+            document.getElementById('pat-geo').innerText = `${demo.ciudad || ''}, ${demo.departamento || ''} (${demo.pais || ''})`.replace(/^, ,/, '');
+            document.getElementById('pat-status').innerText = demo.situacion_sentimental || '--';
+            document.getElementById('pat-rel').innerText = demo.religion || '--';
+            document.getElementById('pat-hijos').innerText = demo.hijos !== undefined ? demo.hijos : '--';
+            document.getElementById('pat-masc').innerText = demo.mascotas || '--';
+            document.getElementById('pat-psi').innerText = demo.psicologo || '--';
+
+            if(demo.acudiente) {
+                document.getElementById('guardian-box').classList.remove('hidden');
+                document.getElementById('pat-guardian').innerText = `${demo.acudiente.nombre} (${demo.acudiente.parentesco})`;
+            }
+
+            // 2. Cálculos Clínicos
+            const region = (demo.pais === 'Colombia') ? 'Colombia' : 'Internacional';
+            const genderKey = (demo.genero === 'Hombre' || demo.genero === 'Masculino') ? 'Hombre' : 'Mujer';
+            const userNorms = norms[region][genderKey];
+
+            let calculatedScores = [];
+            for (const style in styleMapping) {
+                const itemIndices = styleMapping[style];
+                let rawScore = 0;
+                itemIndices.forEach(idx => {
+                    rawScore += parseInt(answers[`q${idx}`] || 0);
+                });
+
+                const [mean, sd] = userNorms[style];
+                const zScore = (rawScore - mean) / sd;
+                const tScore = Math.round(50 + (10 * zScore));
+                calculatedScores.push({ style, rawScore, tScore });
+            }
+
+            // 3. Renderizar Gráfico
+            renderChart(calculatedScores);
+
+            // 4. Análisis Cualitativo (Top 4)
+            const top4 = [...calculatedScores].sort((a, b) => b.tScore - a.tScore).slice(0, 4);
+            renderQualitative(top4);
+
+            // 5. Conclusiones y Respuestas Raw
+            renderConclusions(top4, demo.nombres || 'El paciente');
+            renderRawTable(answers);
+
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('report-content').classList.remove('hidden');
+        }
+
+        function renderChart(scores) {
+            const ctx = document.getElementById('personalityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: scores.map(s => s.style),
+                    datasets: [{
+                        label: 'Puntuación T',
+                        data: scores.map(s => s.tScore),
+                        backgroundColor: scores.map(s => s.tScore >= 60 ? '#f43f5e' : '#0d9488'),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 20, max: 90, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function renderQualitative(top4) {
+            const container = document.getElementById('top-traits-container');
+            container.innerHTML = top4.map(s => `
+                <div class="p-5 rounded-2xl border ${s.tScore >= 60 ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-200'}">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-slate-800">${s.style}</h4>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold ${s.tScore >= 60 ? 'bg-red-600 text-white' : 'bg-teal-600 text-white'}">T: ${s.tScore}</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">${traitDescriptions[s.style]}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderConclusions(top4, nombre) {
+            const nombreP = nombre.split(' ')[0];
+            const picos = top4.filter(s => s.tScore >= 60);
+            
+            let conclusionText = `A nivel general, ${nombreP} presenta un perfil con predominancia en los estilos <strong>${top4[0].style}</strong> y <strong>${top4[1].style}</strong>. `;
+            
+            if(picos.length > 0) {
+                conclusionText += `Se observan puntuaciones T superiores a 60 en ${picos.length} áreas, lo cual sugiere rasgos con relevancia clínica que impactan su funcionamiento adaptativo. `;
+            } else {
+                conclusionText += `No se observan elevaciones clínicas significativas (T > 60), lo que sugiere un perfil dentro de los rangos de normalidad estadística para su grupo de referencia. `;
+            }
+
+            document.getElementById('clinical-conclusions').innerHTML = conclusionText;
+
+            const recList = document.getElementById('recommendations-list');
+            let recs = [
+                `Contrastar estos resultados con la entrevista clínica presencial para descartar sesgos de deseabilidad social.`,
+                `Profundizar en la historia personal de ${nombreP} asociada al estilo ${top4[0].style}.`
+            ];
+            if(picos.length > 0) recs.push(`Priorizar la intervención terapéutica sobre los rasgos del estilo ${picos[0].style}.`);
+            recs.push(`Realizar seguimiento psicométrico en 6 meses para evaluar la evolución de los rasgos identificados.`);
+
+            recList.innerHTML = recs.map(r => `<li>${r}</li>`).join('');
+        }
+
+        function renderRawTable(answers) {
+            const container = document.getElementById('raw-answers');
+            let html = '';
+            for(let i=1; i<=170; i++) {
+                const val = (answers && answers[`q${i}`]) ? answers[`q${i}`] : '-';
+                html += `<div class="p-1 border border-slate-100 bg-white">${i}:<br><span class="font-bold text-teal-600">${val}</span></div>`;
+            }
+            container.innerHTML = html;
         }
     </script>
 </body>

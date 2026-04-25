@@ -6,167 +6,1133 @@
     <title>Evaluación CEPER-III</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --bg-color: #ffffff; --text-soft: #0f766e; }
-        body { font-family: 'Segoe UI', sans-serif; color: var(--text-soft); overflow: hidden; touch-action: pan-y; }
-        .likert-btn { transition: all 0.2s; touch-action: manipulation; }
-        .likert-btn:hover { transform: scale(1.05); background-color: #f0fdfa; }
-        .message-fade-in { animation: fadeIn 0.3s ease-out forwards; opacity: 0; transform: translateY(10px); }
-        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        /* Personalización de colores suaves y scroll */
+        :root {
+            --bg-color: #ffffff;
+            --text-soft: #0f766e; /* Teal 700 */
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-soft);
+            background-color: var(--bg-color);
+            overflow: hidden; /* Evita scroll general, lo manejaremos en los paneles */
+            /* Evitar zoom en inputs en iOS */
+            touch-action: pan-y;
+        }
+        
+        /* Estilos para el scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #99f6e4; /* Teal 200 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5eead4; /* Teal 300 */
+        }
+
+        /* Animación suave para los mensajes */
+        .message-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Estilo para los botones de la escala Likert */
+        .likert-btn {
+            transition: all 0.2s;
+            touch-action: manipulation; 
+        }
+        .likert-btn:hover {
+            transform: scale(1.05);
+            background-color: #f0fdfa; /* Teal 50 */
+            border-color: #5eead4; /* Teal 300 */
+        }
+        .likert-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Ocultar flechas en input number */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
     </style>
 </head>
-<body class="flex h-[100dvh] w-full">
-    <!-- PANEL LATERAL -->
-    <div id="sidebar" class="hidden md:flex flex-col w-1/3 border-r border-teal-100 bg-white p-8 overflow-y-auto">
-        <h2 class="text-2xl font-bold text-teal-800">CEPER-III</h2>
-        <p class="text-sm text-teal-600 mb-6">Evaluación de Personalidad</p>
-        <div class="space-y-4 text-sm text-slate-600 leading-relaxed text-justify">
-            <p><strong>Privacidad:</strong> Los datos serán utilizados con fines investigativos y/o académicos, cuidando siempre la confidencialidad.</p>
-            <p><strong>Instrucciones:</strong> Responde del 1 (Nada característico) al 7 (Totalmente característico).</p>
+<body class="flex h-[100dvh] w-full relative">
+
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-teal-900/40 z-30 hidden backdrop-blur-sm transition-opacity" onclick="toggleMenu()"></div>
+
+    <div id="cookie-banner" class="fixed bottom-0 left-0 w-full bg-slate-800 text-slate-100 p-4 md:p-6 z-50 flex flex-col md:flex-row justify-between items-center shadow-2xl transition-transform duration-500 transform translate-y-full">
+        <div class="text-xs md:text-sm mb-4 md:mb-0 max-w-5xl pr-4 leading-relaxed">
+            <strong>Aviso de Privacidad y Cookies:</strong> Esta aplicación utiliza cookies técnicas estrictamente necesarias para su funcionamiento. Al continuar utilizando la plataforma, confirmas que estás de acuerdo con nuestra <a href="#" onclick="event.preventDefault(); openPrivacyPolicy();" class="underline font-bold text-teal-300 hover:text-teal-200 transition-colors">política de tratamiento de datos personales</a>.
+        </div>
+        <div class="flex shrink-0 w-full md:w-auto">
+            <button onclick="acceptCookies()" class="w-full md:w-auto bg-teal-500 hover:bg-teal-400 text-white px-8 py-2.5 rounded-lg font-medium transition-colors shadow-sm">Entendido y Aceptar</button>
         </div>
     </div>
 
-    <!-- PANEL CHAT -->
-    <div class="flex-1 flex flex-col bg-slate-50">
-        <header class="h-16 border-b bg-white flex items-center px-6 shadow-sm">
-            <div class="w-full bg-teal-100 h-1.5 rounded-full"><div id="progress-bar" class="bg-teal-500 h-1.5 rounded-full transition-all" style="width:0%"></div></div>
+    <div id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 flex flex-col w-[85%] sm:w-1/2 md:w-1/3 border-r border-teal-100 bg-white p-6 md:p-8 overflow-y-auto shadow-2xl md:shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        
+        <button onclick="toggleMenu()" class="md:hidden absolute top-6 right-6 text-teal-600 hover:text-teal-800 focus:outline-none bg-teal-50 p-2 rounded-full">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+
+        <div class="mb-8 mt-2 md:mt-0">
+            <a href="login.html" class="inline-block text-2xl font-semibold text-teal-800 tracking-wide mb-2 hover:text-teal-600 transition-colors cursor-pointer" title="Ir al Portal Administrativo">CEPER-III</a>
+            <p class="text-sm text-teal-600">Cuestionario Exploratorio de Personalidad</p>
+        </div>
+
+        <div class="space-y-4">
+            <details class="group border-b border-teal-50 pb-4" open>
+                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
+                    <span>Sobre la prueba</span>
+                    <span class="transition group-open:rotate-180 text-teal-500">
+                        <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                    </span>
+                </summary>
+                <p class="text-teal-700 mt-3 text-sm leading-relaxed text-justify">
+                    El <strong>Cuestionario Exploratorio de Personalidad (CEPER-III)</strong> es un instrumento de evaluación psicométrica estructurado para identificar y medir estilos y rasgos de personalidad.
+                    <br><br>
+                    Permite observar características comportamentales, de pensamiento y emocionales en 14 dimensiones clínicas. Su objetivo principal es trazar un perfil psicológico detallado para apoyar procesos de diagnóstico e investigación profesional.
+                </p>
+            </details>
+
+            <details class="group border-b border-teal-50 pb-4">
+                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
+                    <span>Instrucciones</span>
+                    <span class="transition group-open:rotate-180 text-teal-500">
+                        <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                    </span>
+                </summary>
+                <div class="text-teal-700 mt-3 text-sm leading-relaxed bg-teal-50/50 p-3 rounded-lg border border-teal-100">
+                    <p class="mb-3 text-justify">El proceso consta de dos fases principales:</p>
+                    <ol class="list-decimal pl-4 mb-3 text-justify space-y-1">
+                        <li><strong>Perfil Demográfico:</strong> Inicialmente te pediremos algunos datos básicos y confidenciales para conocerte mejor.</li>
+                        <li><strong>Evaluación CEPER-III:</strong> Posteriormente, iniciarás la prueba donde evaluarás distintas afirmaciones sobre ti.</li>
+                    </ol>
+                    <p class="text-justify">Para la evaluación, utilizarás una escala del 1 al 7, donde <strong>1</strong> significa "Nada característico de mí" y <strong>7</strong> "Totalmente característico de mí".</p>
+                </div>
+            </details>
+
+            <details id="privacy-section" class="group border-b border-teal-50 pb-4">
+                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
+                    <span>Privacidad de datos</span>
+                    <span class="transition group-open:rotate-180 text-teal-500">
+                        <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                    </span>
+                </summary>
+                <p class="text-teal-700 mt-3 text-sm leading-relaxed text-justify">
+                    En cumplimiento de las normativas de protección de datos vigentes (como la Ley 1581 de 2012 y equivalentes internacionales), tu información se maneja con <strong>estricta confidencialidad</strong> y altos estándares de seguridad.
+                    <br><br>
+                    <strong>Tus respuestas y datos personales serán utilizados única y exclusivamente con fines de evaluación clínica y de investigación académica. En ningún caso tu información será compartida, vendida ni utilizada con fines comerciales, de marketing o de terceros ajenos a este propósito.</strong>
+                    <br><br>
+                    Al iniciar la prueba, otorgas tu consentimiento explícito e informado para el tratamiento ético de tus datos y la generación de un reporte psicométrico exclusivo para tu profesional asignado.
+                </p>
+            </details>
+        </div>
+        
+        <div class="mt-auto pt-8">
+            <p class="text-xs text-teal-400 text-center font-medium">Plataforma de Evaluación Segura</p>
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col bg-slate-50 relative w-full md:w-2/3 h-full">
+        
+        <header class="h-[72px] border-b border-teal-100 bg-white/90 backdrop-blur flex items-center px-4 md:px-6 sticky top-0 z-20 shadow-sm">
+            
+            <button onclick="toggleMenu()" class="md:hidden mr-3 p-2 -ml-2 text-teal-700 hover:bg-teal-50 rounded-lg transition-colors focus:outline-none">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+
+            <div class="flex-1">
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-[11px] md:text-xs font-semibold text-teal-700 uppercase tracking-wider" id="progress-text">Progreso: 0%</span>
+                    <span class="text-[11px] md:text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100" id="question-counter">Preparación</span>
+                </div>
+                <div class="w-full bg-teal-100 rounded-full h-2">
+                    <div id="progress-bar" class="bg-teal-500 h-2 rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(20,184,166,0.4)]" style="width: 0%"></div>
+                </div>
+            </div>
         </header>
-        <main id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-6"></main>
-        <footer id="interaction-area" class="bg-white border-t p-4 min-h-[100px]"></footer>
+
+        <main id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 w-full scroll-smooth pb-32">
+            </main>
+
+        <footer id="interaction-area" class="w-full bg-white border-t border-teal-100 p-4 md:p-5 shadow-[0_-4px_24px_rgba(0,0,0,0.03)] z-10 shrink-0 min-h-[90px]">
+            </footer>
     </div>
 
     <script>
-        // --- BASE DE DATOS GEOGRÁFICA ---
-        const geoData = { "América del Sur": { "Colombia": { "Amazonas": ["Leticia"], "Antioquia": ["Medellín", "Envigado", "Bello"], "Atlántico": ["Barranquilla"], "Bogotá": ["Bogotá D.C."] } }, "España": { "España": { "Madrid": ["Madrid"], "Cataluña": ["Barcelona"] } } };
-        let currentIdx = 0;
-        const patientData = { demographics: {}, answers: {} };
-        const questions = Array(170).fill("Pregunta clínica CEPER-III..."); // Aquí van las reales
+        // --- BASE DE DATOS GEOGRÁFICA (A partir de Geodata.json) ---
+        const geoData = {
+          "América del Sur": {
+            "Colombia": {
+              "Amazonas": ["Leticia", "Puerto Nariño"],
+              "Antioquia": ["Medellín", "Abejorral", "Abriaquí", "Alejandría", "Amagá", "Amalfi", "Andes", "Angelópolis", "Angostura", "Anorí", "Anzá", "Apartadó", "Arboletes", "Argelia", "Armenia", "Barbosa", "Bello", "Belmira", "Betania", "Betulia", "Briceño", "Buriticá", "Cáceres", "Caicedo", "Caldas", "Campamento", "Cañasgordas", "Caracolí", "Caramanta", "Carepa", "Carmen de Viboral", "Carolina", "Caucasia", "Chigorodó", "Cisneros", "Cocorná", "Concepción", "Concordia", "Copacabana", "Dabeiba", "Donmatías", "Ebéjico", "El Bagre", "El Peñol", "El Retiro", "El Santuario", "Entrerríos", "Envigado", "Fredonia", "Frontino", "Giraldo", "Girardota", "Gómez Plata", "Granada", "Guadalupe", "Guarne", "Guatapé", "Heliconia", "Hispania", "Itagüí", "Ituango", "Jardín", "Jericó", "La Ceja", "La Estrella", "La Pintada", "La Unión", "Liborina", "Maceo", "Marinilla", "Montebello", "Murindó", "Mutatá", "Nariño", "Nechí", "Necoclí", "Olaya", "Peque", "Pueblorrico", "Puerto Berrío", "Puerto Nare", "Puerto Triunfo", "Remedios", "Rionegro", "Sabanalarga", "Sabaneta", "Salgar", "San Andrés de Cuerquia", "San Carlos", "San Francisco", "San Jerónimo", "San José de la Montaña", "San Juan de Urabá", "San Luis", "San Pedro de los Milagros", "San Pedro de Urabá", "San Rafael", "San Roque", "San Vicente", "Santa Bárbara", "Santa Fe de Antioquia", "Santa Rosa de Osos", "Santo Domingo", "Segovia", "Sonsón", "Sopetrán", "Támesis", "Tarazá", "Tarso", "Titiribí", "Toledo", "Turbo", "Uramita", "Urrao", "Valdivia", "Valparaíso", "Vegachí", "Venecia", "Vigía del Fuerte", "Yalí", "Yarumal", "Yolombó", "Yondó", "Zaragoza"],
+              "Arauca": ["Arauca", "Arauquita", "Cravo Norte", "Fortul", "Puerto Rondón", "Saravena", "Tame"],
+              "Atlántico": ["Barranquilla", "Baranoa", "Campo de la Cruz", "Candelaria", "Galapa", "Juan de Acosta", "Luruaco", "Malambo", "Manatí", "Palmar de Varela", "Piojó", "Polonuevo", "Ponedera", "Puerto Colombia", "Repelón", "Sabanagrande", "Sabanalarga", "Santa Lucía", "Santo Tomás", "Soledad", "Suán", "Tubará", "Usiacurí"],
+              "Bolívar": ["Cartagena de Indias", "Achí", "Altos del Rosario", "Arenal", "Arjona", "Arroyohondo", "Barranco de Loba", "Brazuelo de Papayal", "Calamar", "Cantagallo", "Cicuco", "Clemencia", "Córdoba", "El Carmen de Bolívar", "El Guamo", "El Peñón", "Hatillo de Loba", "Magangué", "Mahates", "Margarita", "María La Baja", "Mompós", "Montecristo", "Morales", "Norosí", "Pinillos", "Regidor", "Río Viejo", "San Cristóbal", "San Estanislao", "San Fernando", "San Jacinto", "San Jacinto del Cauca", "San Juan Nepomuceno", "San Martín de Loba", "San Pablo", "Santa Catalina", "Santa Cruz de Mompox", "Santa Rosa", "Santa Rosa del Sur", "Simití", "Soplaviento", "Talaigua Nuevo", "Tiquisio", "Turbaco", "Turbaná", "Villanueva", "Zambrano"],
+              "Boyacá": ["Tunja", "Almeida", "Aquitania", "Arcabuco", "Belén", "Berbeo", "Betéitiva", "Boavita", "Boyacá", "Briceño", "Buenavista", "Busbanzá", "Caldas", "Campohermoso", "Cerinza", "Chinavita", "Chiquinquirá", "Chíquiza", "Chiscas", "Chita", "Chitaraque", "Chivatá", "Chivor", "Ciénega", "Cómbita", "Coper", "Corrales", "Covarachía", "Cubará", "Cucaita", "Cuítiva", "Duitama", "El Cocuy", "El Espino", "Firavitoba", "Floresta", "Gachantivá", "Gámeza", "Garagoa", "Guateque", "Guayatá", "Güicán", "Iza", "Jenesano", "Jericó", "La Capilla", "La Uvita", "La Victoria", "Labranzagrande", "Macanal", "Maripí", "Miraflores", "Mongua", "Monguí", "Moniquirá", "Motavita", "Muzo", "Nobsa", "Nuevo Colón", "Oicatá", "Otanche", "Pachavita", "Páez", "Paipa", "Pajarito", "Panqueba", "Pauna", "Paya", "Paz de Río", "Pesca", "Pisba", "Puerto Boyacá", "Quípama", "Ramiriquí", "Ráquira", "Rondón", "Saboyá", "Sáchica", "Samacá", "San Eduardo", "San José de Pare", "San Luis de Gaceno", "San Mateo", "San Miguel de Sema", "San Pablo de Borbur", "Santa María", "Santa Rosa de Viterbo", "Santa Sofía", "Santana", "Sativanorte", "Sativasur", "Siachoque", "Soatá", "Socha", "Socotá", "Sogamoso", "Somondoco", "Sora", "Soracá", "Sotaquirá", "Susacón", "Sutamarchán", "Sutatenza", "Tasco", "Tenza", "Tibaná", "Tibasosa", "Tinjacá", "Tipacoque", "Toca", "Togüí", "Tópaga", "Tota", "Tununguá", "Turmequé", "Tuta", "Tutazá", "Úmbita", "Ventaquemada", "Villa de Leyva", "Viracachá", "Zetaquira"],
+              "Caldas": ["Manizales", "Aguadas", "Anserma", "Aranzazu", "Belalcázar", "Chinchiná", "Filadelfia", "La Dorada", "La Merced", "Manzanares", "Marmato", "Marquetalia", "Marulanda", "Neira", "Norcasia", "Pácora", "Palestina", "Pensilvania", "Riosucio", "Risaralda", "Salamina", "Samaná", "San José", "Supía", "Victoria", "Villamaría", "Viterbo"],
+              "Caquetá": ["Florencia", "Albania", "Belén de los Andaquíes", "Cartagena del Chairá", "Curillo", "El Doncello", "El Paujil", "La Montañita", "Milán", "Morelia", "Puerto Rico", "San José del Fragua", "San Vicente del Caguán", "Solano", "Solita", "Valparaíso"],
+              "Casanare": ["Yopal", "Aguazul", "Chámeza", "Hato Corozal", "La Salina", "Maní", "Monterrey", "Nunchía", "Orocué", "Paz de Ariporo", "Pore", "Recetor", "Sabanalarga", "Sácama", "San Luis de Palenque", "Támara", "Tauramena", "Trinidad", "Villanueva"],
+              "Cauca": ["Popayán", "Almaguer", "Argelia", "Balboa", "Bolívar", "Buenos Aires", "Cajibío", "Caldono", "Caloto", "Corinto", "El Tambo", "Florencia", "Guachené", "Guapí", "Inzá", "Jambaló", "La Sierra", "La Vega", "López de Micay", "Mercaderes", "Miranda", "Morales", "Padilla", "Páez", "Patía", "Piamonte", "Piendamó", "Puerto Tejada", "Puracé", "Rosas", "San Sebastián", "Santander de Quilichao", "Santa Rosa", "Silvia", "Sotará", "Suárez", "Sucre", "Timbío", "Timbiquí", "Toribío", "Totoró", "Villa Rica"],
+              "Cesar": ["Valledupar", "Aguachica", "Agustín Codazzi", "Astrea", "Becerril", "Bosconia", "Chimichagua", "Chiriguaná", "Curumaní", "El Copey", "El Paso", "Gamarra", "González", "La Gloria", "La Jagua de Ibirico", "La Paz", "Manaure Balcón del Cesar", "Pailitas", "Pelaya", "Pueblo Bello", "Río de Oro", "San Alberto", "San Diego", "San Martín", "Tamalameque"],
+              "Chocó": ["Quibdó", "Acandí", "Alto Baudó", "Atrato", "Bagadó", "Bahía Solano", "Bajo Baudó", "Bojayá", "Cantón de San Pablo", "Carmen del Darién", "Cértegui", "Condoto", "El Carmen de Atrato", "Istmina", "Juradó", "Litoral del San Juan", "Lloró", "Medio Atrato", "Medio Baudó", "Medio San Juan", "Nóvita", "Nuquí", "Riosucio", "San José del Palmar", "Sipí", "Tadó", "Unguía", "Unión Panamericana"],
+              "Córdoba": ["Montería", "Ayapel", "Buenavista", "Canalete", "Cereté", "Chimá", "Chinú", "Ciénaga de Oro", "Cotorra", "La Apartada", "Lorica", "Los Córdobas", "Momil", "Montelíbano", "Moñitos", "Planeta Rica", "Pueblo Nuevo", "Puerto Escondido", "Puerto Libertador", "Purísima", "Sahagún", "San Andrés de Sotavento", "San Antero", "San Bernardo del Viento", "San Carlos", "San José de Uré", "San Pelayo", "Santa Cruz de Lorica", "Tierralta", "Tuchín", "Valencia"],
+              "Cundinamarca": ["Bogotá D.C.", "Agua de Dios", "Albán", "Anapoima", "Anolaima", "Apulo", "Arbeláez", "Beltrán", "Bituima", "Bojacá", "Cabrera", "Cachipay", "Cajicá", "Caparrapí", "Cáqueza", "Carmen de Carupa", "Chaguaní", "Chía", "Chipaque", "Choachí", "Chocontá", "Cogua", "Cota", "Cucunubá", "El Colegio", "El Peñón", "El Rosal", "Facatativá", "Fómeque", "Fosca", "Funza", "Fúquene", "Fusagasugá", "Gachalá", "Gachancipá", "Gachetá", "Gama", "Girardot", "Granada", "Guachetá", "Guaduas", "Guasca", "Guataquí", "Guatavita", "Guayabal de Síquima", "Guayabetal", "Gutiérrez", "Jerusalén", "Junín", "La Calera", "La Mesa", "La Palma", "La Peña", "La Vega", "Lenguazaque", "Machetá", "Madrid", "Manta", "Medina", "Mosquera", "Nariño", "Nemocón", "Nilo", "Nimaima", "Nocaima", "Pacho", "Paime", "Pandi", "Paratebueno", "Pasca", "Puerto Salgar", "Pulí", "Quebradanegra", "Quetame", "Quipile", "Ricaurte", "San Antonio del Tequendama", "San Bernardo", "San Cayetano", "San Francisco", "San Juan de Rioseco", "Sasaima", "Sesquilé", "Sibaté", "Silvania", "Simijaca", "Soacha", "Sopó", "Subachoque", "Suesca", "Supatá", "Susa", "Sutatausa", "Tabio", "Tausa", "Tena", "Tenjo", "Tibacuy", "Tibirita", "Tocaima", "Tocancipá", "Topaipí", "Ubalá", "Ubaque", "Ubaté", "Une", "Útica", "Venecia", "Vergara", "Vianí", "Villagómez", "Villapinzón", "Villeta", "Viotá", "Yacopí", "Zipacón", "Zipaquirá"],
+              "Guainía": ["Inírida", "Barrancominas", "Mapiripana", "San Felipe"],
+              "Guaviare": ["San José del Guaviare", "Calamar", "El Retorno", "Miraflores"],
+              "Huila": ["Neiva", "Acevedo", "Agrado", "Aipe", "Algeciras", "Altamira", "Baraya", "Campoalegre", "Colombia", "Elías", "Garzón", "Gigante", "Guadalupe", "Hobo", "Íquira", "Isnos", "La Argentina", "La Plata", "Nátaga", "Oporapa", "Paicol", "Palermo", "Palestina", "Pital", "Pitalito", "Rivera", "Saladoblanco", "San Agustín", "Santa María", "Suaza", "Tarqui", "Tello", "Teruel", "Tesalia", "Timaná", "Villavieja", "Yaguará"],
+              "La Guajira": ["Riohacha", "Albania", "Barrancas", "Dibulla", "Distracción", "El Molino", "Fonseca", "Hatonuevo", "La Jagua del Pilar", "Maicao", "Manaure", "San Juan del Cesar", "Uribia", "Urumita", "Villanueva"],
+              "Magdalena": ["Santa Marta", "Algarrobo", "Aracataca", "Ariguaní", "Cerro de San Antonio", "Chibolo", "Ciénaga", "Concordia", "El Banco", "El Piñón", "El Retén", "Fundación", "Guamal", "Nueva Granada", "Pedraza", "Pijiño del Carmen", "Pivijay", "Plato", "Puebloviejo", "Remolino", "Sabanas de San Ángel", "Salamina", "San Sebastián de Buenavista", "San Zenón", "Santa Ana", "Santa Bárbara de Pinto", "Sitionuevo", "Tenerife", "Zapayán", "Zona Bananera"],
+              "Meta": ["Villavicencio", "Acacías", "Barranca de Upía", "Cabuyaro", "Castilla la Nueva", "Cubarral", "Cumaral", "El Calvario", "El Castillo", "El Dorado", "Fuente de Oro", "Granada", "Guamal", "La Macarena", "Lejanías", "Mapiripán", "Mesetas", "Puerto Concordia", "Puerto Gaitán", "Puerto Lleras", "Puerto López", "Puerto Rico", "Restrepo", "San Carlos de Guaroa", "San Juan de Arama", "San Juanito", "San Martín", "Uribe", "Vista Hermosa"],
+              "Nariño": ["Pasto", "Albán", "Aldana", "Ancuyá", "Arboleda", "Barbacoas", "Belén", "Buesaco", "Chachagüí", "Colón", "Consacá", "Contadero", "Córdoba", "Cuaspud", "Cumbal", "Cumbitara", "El Charco", "El Peñol", "El Rosario", "El Tablón de Gómez", "El Tambo", "Francisco Pizarro", "Funes", "Guachucal", "Guaitarilla", "Gualmatán", "Iles", "Imués", "Ipiales", "La Cruz", "La Florida", "La Llanada", "La Tola", "La Unión", "Leiva", "Linares", "Los Andes", "Magüí Payán", "Mallama", "Mosquera", "Nariño", "Olaya Herrera", "Ospina", "Policarpa", "Potosí", "Providencia", "Puerres", "Pupiales", "Ricaurte", "Roberto Payán", "Samaniego", "San Bernardo", "San Lorenzo", "San Pablo", "San Pedro de Cartago", "Sandoná", "Santa Bárbara", "Santacruz", "Sapuyes", "Taminango", "Tangua", "Tumaco", "Túquerres", "Yacuanquer"],
+              "Norte de Santander": ["Cúcuta", "Ábrego", "Arboledas", "Bochalema", "Bucarasica", "Cáchira", "Cácota", "Chinácota", "Chitagá", "Convención", "Cucutilla", "Duranía", "El Carmen", "El Tarra", "El Zulia", "Gramalote", "Hacarí", "Herrán", "La Esperanza", "La Playa de Belén", "Labateca", "Los Patios", "Lourdes", "Mutiscua", "Ocaña", "Pamplona", "Pamplonita", "Puerto Santander", "Ragonvalia", "Salazar de Las Palmas", "San Calixto", "San Cayetano", "Santiago", "Sardinata", "Silos", "Teorama", "Tibú", "Toledo", "Villa Caro", "Villa del Rosario"],
+              "Putumayo": ["Mocoa", "Colón", "Orito", "Puerto Asís", "Puerto Caicedo", "Puerto Guzmán", "Puerto Leguízamo", "San Francisco", "San Miguel", "Santiago", "Sibundoy", "Valle del Guamuez", "Villagarzón"],
+              "Quindío": ["Armenia", "Buenavista", "Calarcá", "Circasia", "Córdoba", "Filandia", "Génova", "La Tebaida", "Montenegro", "Pijao", "Quimbaya", "Salento"],
+              "Risaralda": ["Pereira", "Apía", "Balboa", "Belén de Umbría", "Dosquebradas", "Guática", "La Celia", "La Virginia", "Marsella", "Mistrató", "Pueblo Rico", "Quinchía", "Santa Rosa de Cabal", "Santuario"],
+              "San Andrés y Providencia": ["San Andrés", "Providencia y Santa Catalina Islas"],
+              "Santander": ["Bucaramanga", "Aguada", "Albania", "Aratoca", "Barbosa", "Barichara", "Barrancabermeja", "Betulia", "Bolívar", "Cabrera", "California", "Capitanejo", "Carcasí", "Cepitá", "Cerrito", "Charalá", "Charta", "Chima", "Chipatá", "Cimitarra", "Concepción", "Confines", "Contratación", "Coromoro", "Curití", "El Carmen de Chucurí", "El Guacamayo", "El Peñón", "El Playón", "Encino", "Enciso", "Florián", "Floridablanca", "Galán", "Gámbita", "Girón", "Guaca", "Guadalupe", "Guapotá", "Guavatá", "Güepsa", "Hato", "Jesús María", "Jordán", "La Belleza", "La Paz", "Landázuri", "Lebrija", "Los Santos", "Macaravita", "Málaga", "Matanza", "Mogotes", "Molagavita", "Ocamonte", "Oiba", "Onzaga", "Palmar", "Palmas del Socorro", "Páramo", "Piedecuesta", "Pinchote", "Puente Nacional", "Puerto Parra", "Puerto Wilches", "Rionegro", "Sabana de Torres", "San Andrés", "San Benito", "San Gil", "San Joaquín", "San José de Miranda", "San Miguel", "San Vicente de Chucurí", "Santa Bárbara", "Santa Helena del Opón", "Simacota", "Socorro", "Suaita", "Sucre", "Suratá", "Tona", "Valle de San José", "Vélez", "Vetas", "Villanueva", "Zapatoca"],
+              "Sucre": ["Sincelejo", "Buenavista", "Caimito", "Chalán", "Colosó", "Corozal", "Coveñas", "El Roble", "Galeras", "Guaranda", "La Unión", "Los Palmitos", "Majagual", "Morroa", "Ovejas", "Palmito", "Sampués", "San Benito Abad", "San Juan de Betulia", "San Marcos", "San Onofre", "San Pedro", "Sincé", "Sucre", "Tolú", "Tolúviejo"],
+              "Tolima": ["Ibagué", "Alpujarra", "Alvarado", "Ambalema", "Anzoátegui", "Armero", "Ataco", "Cajamarca", "Carmen de Apicalá", "Casabianca", "Chaparral", "Coello", "Coyaima", "Cunday", "Dolores", "Espinal", "Falan", "Flandes", "Fresno", "Guamo", "Herveo", "Honda", "Icononzo", "Lérida", "Líbano", "Mariquita", "Melgar", "Murillo", "Natagaima", "Ortega", "Palocabildo", "Piedras", "Planadas", "Prado", "Purificación", "Rioblanco", "Roncesvalles", "Rovira", "Saldaña", "San Antonio", "San Luis", "Santa Isabel", "Suárez", "Valle de San Juan", "Venadillo", "Villahermosa", "Villarrica"],
+              "Valle del Cauca": ["Cali", "Alcalá", "Andalucía", "Ansermanuevo", "Argelia", "Bolívar", "Buenaventura", "Buga", "Bugalagrande", "Caicedonia", "Calima", "Candelaria", "Cartago", "Dagua", "El Águila", "El Cairo", "El Cerrito", "El Dovio", "Florida", "Ginebra", "Guacarí", "Jamundí", "La Cumbre", "La Unión", "La Victoria", "Obando", "Palmira", "Pradera", "Restrepo", "Riofrío", "Roldanillo", "San Pedro", "Sevilla", "Toro", "Trujillo", "Tuluá", "Ulloa", "Versalles", "Vijes", "Yotoco", "Yumbo", "Zarzal"],
+              "Vaupés": ["Mitú", "Carurú", "Pacoa", "Taraira", "Papunahua", "Yavaraté"],
+              "Vichada": ["Puerto Carreño", "Cumaribo", "La Primavera", "Santa Rosalía"]
+            },
+            "Argentina": {}, "Bolivia": {}, "Brasil": {}, "Chile": {}, "Ecuador": {}, "Paraguay": {}, "Perú": {}, "Uruguay": {}, "Venezuela": {}
+          },
+          "América Central": {
+            "Costa Rica": {}, "El Salvador": {}, "Guatemala": {}, "Honduras": {}, "Nicaragua": {}, "Panamá": {}
+          },
+          "América del Norte": {
+            "Canadá": {}, "Estados Unidos": {}, "México": {}
+          },
+          "Europa": {
+            "Alemania": {}, "España": {}, "Francia": {}, "Italia": {}, "Portugal": {}, "Reino Unido": {}
+          },
+          "Otro": { "Otro": {} }
+        };
 
-        function addMessage(t, s='bot') {
-            const d = document.createElement('div');
-            d.className = `flex w-full ${s==='user'?'justify-end':'justify-start'} message-fade-in`;
-            d.innerHTML = `<div class="${s==='bot'?'bg-teal-50':'bg-blue-100'} p-4 rounded-2xl max-w-[85%] shadow-sm text-sm">${t}</div>`;
-            document.getElementById('chat-container').appendChild(d);
-            document.getElementById('chat-container').scrollTo(0, 1e9);
+        let paisesGlobales = [];
+        for (let region in geoData) {
+            for (let country in geoData[region]) {
+                paisesGlobales.push(country);
+            }
+        }
+        paisesGlobales.sort();
+
+        // --- ESTADO DE LA APLICACIÓN ---
+        const totalQuestions = 170;
+        let currentQuestionIndex = 0;
+        
+        // Objeto donde se guarda todo para enviar a la API
+        const patientData = {
+            demographics: {
+                psicologo: "",
+                consentimiento_datos: false,
+                nombres: "",
+                primer_apellido: "",
+                segundo_apellido: "",
+                correo: "",
+                fecha_nacimiento: "",
+                edad: null,
+                acudiente: null,
+                pais: "",
+                departamento: "",
+                ciudad: "",
+                nivel_educativo: "",
+                profesion: "",
+                genero: "",
+                religion: "",
+                situacion_sentimental: "",
+                hijos: 0,
+                mascotas: ""
+            },
+            answers: {}
+        };
+
+        // --- PREGUNTAS CEPER III (170 Ítems Reales extraídos del PDF) ---
+        const questionsList = [
+            "Creo que hay personas que intentan aprovecharse de mis ideas o de lo que hago para su propio beneficio.",
+            "No me atraen las fiestas ni las reuniones sociales.",
+            "Con frecuencia tengo pensamientos extraños de los que me gustaría poder librarme.",
+            "Cuando quiero algo intento conseguirlo como sea, sin importar si alguien sale perjudicado.",
+            "A veces tengo explosiones de ira o de cólera que no puedo controlar.",
+            "Cuando estoy en reuniones sociales me gusta llamar la atención, que la gente se fije en mí.",
+            "Considero que mi inteligencia es superior a la de la mayoría.",
+            "Soy una persona tímida que habitualmente le cuesta establecer relaciones con los demás.",
+            "Me encuentro cómodo/a cuando los demás toman decisiones importantes por mí.",
+            "Lo más importante para mí es seguir un procedimiento y un order estricto a la hora de hacer las cosas.",
+            "Con frecuencia estoy irritado/a y de mal humor.",
+            "Al final siempre termino relacionándome con amigos/as que me tratan mal.",
+            "Me paso la vida preocupándome por una u otra cosa.",
+            "A veces digo cosas crueles a los demás para hacerles sufrir o que se sientan mal.",
+            "Cuando alguien me crítica por cometer un error, rápidamente le señalo los suyos.",
+            "Hay pocas cosas en la vida que me hagan disfrutar.",
+            "Cuando estoy solo/a siento, a veces, la presencia de alguien o de algo que no puedo ver.",
+            "Me gusta hacer cosas que nadie se atreve a hacer, aunque ponga en peligro mi seguridad.",
+            "Algunas veces me he causado daño o me he herido intencionadamente.",
+            "Cuando una reunión social se está poniendo aburrida suelo ser yo quien la anime.",
+            "Cualquier director de una empresa de mi especialidad desearía tenerme en ella.",
+            "Cuando empiezo una relación sentimental soy muy cauteloso/a por temor a pasar vergüenza o hacer el ridículo.",
+            "Muchas veces me siento desamparado/a o desvalido/a cuando estoy solo/a.",
+            "La gente me dice que soy una persona muy responsable y seria.",
+            "La gente me dice que siempre llevo la contraria.",
+            "Cuando logro algo por lo que he luchado, en lugar de sentirme satisfecho/a y aliviado/a, me siento triste o culpable.",
+            "Me descubro en muchas ocasiones pensando que no valgo para nada.",
+            "Cuando alguien está bajo mis órdenes y no las cumple, le castigo con dureza.",
+            "Creo que la gente habla de mí a mis espaldas.",
+            "Prefiero estar con personas que no me pidan muestras de cariño.",
+            "A menudo puedo leer la mente de las personas.",
+            "El peligro me estimula y me anima.",
+            "Mis sentimientos hacia personas importantes en mi vida a veces cambian rápidamente de un extremo a otro (p. ej., de admiración a decepción, de amor a odio).",
+            "Me gusta mucho asistir a fiestas y ser el centro de la atención.",
+            "Soy o seré un/a triunfador/a.",
+            "Pienso que me faltan habilidades a la hora de enfrentarme a la mayoría de las situaciones sociales.",
+            "Con frecuencia busco consejo a la hora de tomar decisiones en mi vida cotidiana.",
+            "Considero que siempre hay formas correctas de hacer las cosas y así suelo actuar yo.",
+            "Creo que los superiores se aprovechan siempre de la autoridad que les da su posición para manipular a su antojo a los demás.",
+            "No suelo pasármelo bien en situaciones que se suponen divertidas.",
+            "Siempre he criticado mi forma de pensar y actuar.",
+            "A veces disfruto cuando veo sufrir a los animales o a las personas.",
+            "Me cuido de las personas que son más amistosas de lo que espero.",
+            "La gente suele decir que soy poco cariñoso/a o poco afectivo/a.",
+            "Mis pensamientos pueden ser tan potentes que casi puedo oírlos.",
+            "Con frecuencia me olvido de cumplir con mis compromisos económicos (p. ej., pago alquiler, cuotas, etc.)",
+            "Mi estado de ánimo puede cambiar mucho de un día para otro.",
+            "Tengo muchos amigos/as.",
+            "Es importante que los demás admiren lo que hago.",
+            "Me angustia relacionarme con personas desconocidas o poco conocidas por temor a hacer el ridículo o que no les caiga bien.",
+            "Me preocupa estar solo/a, sin la protección de alguien cercano que me ayude.",
+            "Para que las cosas importantes salgan bien tengo que hacerlas yo y no dejarlas a cargo de los demás.",
+            "La gente con la que me relaciono suele tener más suerte de la que se merece.",
+            "Me cuesta mejorar a nivel personal o profesional aunque suelo ayudar a los demás a que consigan sus objetivos.",
+            "Generalmente tiendo a ver el lado negativo de las cosas.",
+            "Las personas suelen hacer lo que yo les digo porque si no podrían sufrir consecuencias negativas.",
+            "Me produce un gran malestar que alguno de mis padres caiga gravemente enfermo.",
+            "Me enfado y siento celos cuando alguna persona del sexo opuesto se acerca a mi pareja.",
+            "Prefiero los trabajos en solitario a los trabajos en grupo.",
+            "Siento que la gente está hablando de mí cuando paso a su lado.",
+            "Me gusta experimentar nuevas sensaciones constantemente.",
+            "Cuando me siento mal, suelo hacer cosas que no puedo controlar y de las que luego me arrepiento (p. ej., gastar mucho dinero, atracarme de comida, etc.)",
+            "Me es muy fácil hacer nuevos amigos/as.",
+            "Me gustaría que alguien escribiese mi biografía algún día.",
+            "Cuando voy a algún lugar donde no conozco a la gente, me suelo comportar de forma torpe y nerviosa.",
+            "Me resulta muy difícil iniciar nuevos proyectos o hacer las cosas a mi manera porque me siento inseguro/a.",
+            "Las normas y el orden suelen determinar el éxito en un trabajo o un proyecto.",
+            "Mi pareja o familiares cercanos se quejan con frecuencia de que no hago las cosas como a ellos les gustaría.",
+            "A veces me siento confuso/a y molesto/a cuando la gente es amable conmigo.",
+            "Con frecuencia me siento culpable o con remordimientos.",
+            "Con frecuencia controlo por la fuerza a mi pareja o a las personas que dependen de mí.",
+            "Prefiero ser reservado/a con mis cosas para que nadie las pueda usar en mi contra.",
+            "No me gusta que me feliciten aunque haga las cosas bien.",
+            "A veces la gente comenta que mi forma de vestir es diferente o excéntrica.",
+            "Cuando me enfado puedo ser violento/a y desagradable, incluso con mi familia.",
+            "A menudo me pregunto quien soy realmente.",
+            "Expreso mis emociones fácil y frecuentemente.",
+            "Suelo ser más capaz que los demás.",
+            "Me gustaría tener más amigos, pero me resulta difícil establecer relaciones con la gente.",
+            "En general, soy una persona agradable y sumisa.",
+            "Controlo muy bien mi dinero para estar preparado/a en caso de necesidad.",
+            "La gente que suele tener éxito se debe a que es afortunada o a que es deshonesta.",
+            "Muchas veces pienso que no merezco las cosas buenas que me pasan.",
+            "Desde niño/a he tenido frecuentemente sentimientos de tristeza.",
+            "De vez en cuando utilizo la violencia física para que quede claro quién manda.",
+            "Muchas veces sospecho que mis amigos/as están en mi contra.",
+            "Hay pocas personas imprescindibles en mi vida.",
+            "Poseo un sexto sentido que no suelen tener las demás personas.",
+            "Me importa mucho más conseguir lo que necesito ahora que lo que pueda suceder en el futuro.",
+            "A veces me siento culpable como si hubiera cometido un delito, aunque no lo he cometido realmente.",
+            "La gente me dice a menudo que cuento las cosas de forma muy exagerada.",
+            "Creo que soy una persona especialmente competente y espero que los demás me presten la atención que merezco.",
+            "Me siento menos interesante y divertido que los demás.",
+            "Cuando estoy en un grupo prefiero que sean otros quienes tomen las decisiones importantes.",
+            "La gente piensa que soy demasiado/a estricto/a con las reglas y las normas.",
+            "Me molestan las personas que piensan que pueden hacer las cosas mejor que yo.",
+            "Suelo elegir como pareja personas que terminan tratándome mal.",
+            "Desde hace mucho tiempo me encuentro triste y desanimado/a.",
+            "He tenido que ser realmente duro/a con algunas personas para mantenerlas a raya.",
+            "Siempre que hay un problema intentan culparme.",
+            "Estoy solo/a la mayor parte del tiempo y lo prefiero así.",
+            "A veces siento como si mi mente se separase de mi cuerpo.",
+            "Aprovecharme de los demás no me produce sentimientos de culpa.",
+            "Me siento desorientado/a, sin objetivos, y no se hacia dónde voy en la vida.",
+            "Tengo fama de que me gusta coquetear con personas del sexo opuesto.",
+            "Hay mucha gente que me tiene envidia por las cosas que consigo.",
+            "Las situaciones nuevas siempre me producen temor.",
+            "Me preocupa que me dejen solo/a y tenga que cuidar de mí mismo/a.",
+            "Una gran parte de mi tiempo la dedico a trabajar/estudiar, de modo que me queda poco tiempo para actividades de ocio.",
+            "Si no quiero hacer algo, por más que me lo pida el/a profesor/a, el/a jefe/a, mis padres o mi pareja, no lo voy a hacer o lo voy a hacer mal a propósito.",
+            "Cuando alguien se preocupa realmente por mí, pierdo enseguida el interés por esa persona.",
+            "Habitualmente me siento culpable.",
+            "Para conseguir el respeto de los demás tengo que ser duro/a y amenazante.",
+            "Suelo poner a prueba a las personas para saber si puedo confiar en ellas.",
+            "Tengo pocas ganas de hacer amigos/as íntimos/as.",
+            "Suelo tener sensaciones especiales que las demás personas no pueden comprender.",
+            "Suelo hacer las cosas sin pensar en los riesgos para mí o para los demás.",
+            "A veces, cuando las cosas van mal, siento que estoy viviendo un sueño o veo pasar la vida delante de mí como si fuera una película.",
+            "A veces utilizo mi apariencia física para llamar la atención de los demás.",
+            "La gente piensa que tengo un elevado concepto de mi mismo/a.",
+            "Con frecuencia evito asistir a reuniones o situaciones sociales por temor a no ser aceptado/a o que no caiga bien a la gente.",
+            "Suelo estar dispuesto/a a ceder ante los demás, aunque no esté de acuerdo con ellos/as, por temor a que se enfaden o me rechacen.",
+            "Siempre compruebo que mi trabajo esté terminado y bien hecho antes de tomarme un descanso para actividades de ocio.",
+            "Aunque mis superiores/profesores o mi pareja me pidan más de lo que soy capaz de hacer, sigo mi ritmo a la hora de hacerlo.",
+            "El sufrimiento me hace mejor persona, por lo que evito la ayuda de los demás.",
+            "Incluso en los buenos tiempos, siempre he tenido miedo a que las cosas de pronto fuesen mal.",
+            "A veces he mentido con el único propósito de ver sufrir a otras personas.",
+            "Me produciría mucho malestar o mucha rabia que un grupo de delincuentes armados atracase a una persona que quiero mucho.",
+            "Con frecuencia creo que las personas intentan engañar a los demás, incluso a mí.",
+            "Hago pocos intentos para establecer nuevas relaciones.",
+            "En ocasiones he tenido experiencias sobrenaturales.",
+            "Desde pequeño/a me meto en peleas con mucha facilidad.",
+            "Haría algo desesperado para impedir que una persona que quiero me abandone.",
+            "Las personas me dicen que a veces me comporto de forma muy teatral.",
+            "Gracias a mi otras personas han conseguido cosas importantes.",
+            "Me falta confianza en mí mismo/a para arriesgarme a probar algo nuevo.",
+            "Habitualmente hago lo posible por complacer a los demás, incluso a quienes no me gustan.",
+            "Siempre tengo organizadas mis actividades diarias porque no me gusta perder el tiempo.",
+            "Creo que los demás no valoran adecuadamente mis esfuerzos.",
+            "Los demás se aprovechan de mí, pero no hago nada para evitarlo.",
+            "Con frecuencia pienso que en el futuro las cosas no irán mejor.",
+            "Siento un gran placer cuando consigo humillar a los demás.",
+            "Cuando alguien me ha hecho una mala jugada, tardo mucho tiempo en olvidarlo.",
+            "Siempre he tenido menos interés por el sexo que la mayoría de la gente.",
+            "La gente piensa que en ocasiones hablo sobre cosas extrañas, raras o mágicas.",
+            "Me cuesta mucho seguir las mismas normas sociales que los demás.",
+            "La mayoría de las personas que quiero terminan decepcionándome.",
+            "Suelo ser una persona muy sociable y extravertida.",
+            "Tengo la capacidad de convencer a los demás para conseguir lo que me propongo.",
+            "Suelo pensar que los demás tienen de mí una imagen poco favorable.",
+            "Con frecuencia soy muy indeciso/a.",
+            "La gente me ve como una persona muy organizada y perfeccionista.",
+            "A menudo otras personas me culpan de cosas que no he hecho.",
+            "Con frecuencia he dejado de lado mis sueños para ayudar a otros a alcanzar los suyos.",
+            "Habitualmente estoy cansado/a y fatigado/a.",
+            "Con frecuencia me dicen que humillo o maltrato a otras personas.",
+            "A menudo me han dicho que suelo buscar el doble sentido o el significado oculto de las cosas cuando hablan conmigo.",
+            "Mis familiares realmente son mis únicos confidentes.",
+            "Me pongo nervioso/a cuando estoy con personas que no conozco bien porque pueden querer hacerme daño.",
+            "No me preocupan las consecuencias que puedan traerme mis actos si consigo lo que quiero.",
+            "Con frecuencia me siento vacío/a.",
+            "Dicen que soy muy exagerado/a al expresar mis emociones.",
+            "Algunas personas cercanas a mí me dicen que soy egoísta, que sólo pienso en mí.",
+            "Con frecuencia pienso que no voy a estar a la altura de las circunstancias cuando tengo que mantener una conversación con alguien a quien acabo de conocer.",
+            "Siempre estoy temiendo que alguna persona cercana me abandone.",
+            "Me molesta cuando tengo que modificar cosas de mi rutina diaria.",
+            "He tenido poca suerte en esta vida; me gustaría haber sido más afortunado/a.",
+            "Suelo sacrificar mi bienestar para tratar de ayudar a los demás.",
+            "La gente me dice que soy una persona triste y demasiado seria.",
+            "Con frecuencia consigo que los demás hagan lo que yo quiero por medio de la violencia o la coerción."
+        ];
+
+        // --- ELEMENTOS DEL DOM ---
+        const chatContainer = document.getElementById('chat-container');
+        const interactionArea = document.getElementById('interaction-area');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const questionCounter = document.getElementById('question-counter');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobile-menu-overlay');
+
+        // --- FUNCIONES DE INTERFAZ BÁSICAS ---
+        function checkCookies() {
+            if (!localStorage.getItem('cookiesAccepted')) {
+                setTimeout(() => {
+                    document.getElementById('cookie-banner').classList.remove('translate-y-full');
+                }, 1000);
+            }
         }
 
-        function clearInt() { document.getElementById('interaction-area').innerHTML = '<div class="text-center p-4 text-teal-600 animate-pulse">Procesando...</div>'; }
-
-        // --- FLUJO ---
-        function start() {
-            addMessage("¡Hola! Soy tu asistente virtual. Antes de empezar las 170 preguntas, necesito tus datos para el reporte clínico.");
-            document.getElementById('interaction-area').innerHTML = `<button onclick="askPsi()" class="bg-teal-600 text-white px-8 py-3 rounded-full w-full">Empezar Registro</button>`;
+        function acceptCookies() {
+            localStorage.setItem('cookiesAccepted', 'true');
+            document.getElementById('cookie-banner').classList.add('translate-y-full');
         }
 
-        function askPsi() {
-            clearInt(); addMessage("Empezar", 'user');
-            addMessage("¿Quién es tu psicólogo/a?");
-            const p = ['Jorge', 'Victor', 'Martha', 'Claudia', 'Johanna'];
-            document.getElementById('interaction-area').innerHTML = `<div class="grid grid-cols-2 gap-2">${p.map(x=>`<button onclick="savePsi('${x}')" class="border p-3 rounded-xl hover:bg-teal-50">${x}</button>`).join('')}</div>`;
+        function toggleMenu() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                mobileOverlay.classList.remove('hidden');
+                setTimeout(() => mobileOverlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                mobileOverlay.classList.add('opacity-0');
+                setTimeout(() => mobileOverlay.classList.add('hidden'), 300);
+            }
         }
 
-        function savePsi(x) { 
-            patientData.demographics.psicologo = x; addMessage(x, 'user'); 
-            addMessage(`Perfecto. ¿Cuáles son tus nombres y apellidos completos?`);
-            document.getElementById('interaction-area').innerHTML = `
-                <form onsubmit="event.preventDefault(); saveNames(this)" class="flex flex-col gap-2">
-                    <input name="n" placeholder="Nombres" required class="border p-3 rounded-xl">
-                    <input name="a1" placeholder="Primer Apellido" required class="border p-3 rounded-xl">
-                    <input name="a2" placeholder="Segundo Apellido" required class="border p-3 rounded-xl">
-                    <button class="bg-teal-600 text-white p-3 rounded-xl">Siguiente</button>
-                </form>`;
+        function openPrivacyPolicy() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                toggleMenu();
+            }
+            
+            const privacyDetails = document.getElementById('privacy-section');
+            if (privacyDetails) {
+                privacyDetails.open = true;
+                setTimeout(() => {
+                    privacyDetails.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
         }
 
-        function saveNames(f) {
-            patientData.demographics.nombres = f.n.value;
-            patientData.demographics.primer_apellido = f.a1.value;
-            patientData.demographics.segundo_apellido = f.a2.value;
-            addMessage(`${f.n.value} ${f.a1.value}`, 'user');
-            askDob();
+        function addMessage(text, sender = 'bot') {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex w-full ${sender === 'user' ? 'justify-end' : 'justify-start'} message-fade-in`;
+            
+            const bubble = document.createElement('div');
+            if(sender === 'bot') {
+                bubble.className = 'bg-teal-50 border border-teal-100 text-teal-900 px-4 py-3 md:px-5 md:py-3.5 rounded-2xl rounded-tl-sm max-w-[90%] md:max-w-[80%] shadow-sm text-[15px] leading-relaxed';
+            } else {
+                bubble.className = 'bg-blue-100 text-blue-900 px-4 py-3 md:px-5 md:py-3.5 rounded-2xl rounded-tr-sm max-w-[90%] md:max-w-[80%] font-medium text-[15px] shadow-sm';
+            }
+            
+            bubble.innerHTML = text;
+            msgDiv.appendChild(bubble);
+            chatContainer.appendChild(msgDiv);
+            
+            setTimeout(() => {
+                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+
+        function clearInteraction() {
+            interactionArea.innerHTML = '<div class="text-center p-4 text-teal-600 font-medium text-sm">Procesando...</div>';
+        }
+
+        // --- FLUJO DEL CHATBOT (DATOS DEMOGRÁFICOS Y PRIVACIDAD) ---
+
+        function goBackDemographics(stepFunction) {
+            clearInteraction();
+            addMessage("Necesito corregir el paso anterior.", 'user');
+            setTimeout(() => {
+                addMessage("<span class='text-teal-600 italic'>Claro, volvamos al paso anterior...</span>");
+                setTimeout(stepFunction, 600);
+            }, 500);
+        }
+
+        function startIntro() {
+            addMessage("¡Hola! Soy tu asistente virtual para esta evaluación. 😊<br><br>Te acompañaré paso a paso para que el proceso sea lo más cómodo posible. Antes de iniciar con las preguntas, necesito conocer algunos datos básicos.");
+            
+            interactionArea.innerHTML = `
+                <div class="flex justify-center max-w-2xl mx-auto">
+                    <button onclick="askPsicologo()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3.5 md:py-3 rounded-full font-medium transition-colors w-full md:w-auto shadow-md active:transform active:scale-95 text-[15px]">
+                        Empezar Evaluación
+                    </button>
+                </div>
+            `;
+        }
+
+        function askPsicologo() {
+            clearInteraction();
+            addMessage("Empezar Evaluación", 'user');
+            
+            setTimeout(() => {
+                addMessage("Para asegurar que tus resultados lleguen a la persona correcta, ¿quién es tu psicólogo/a asignado/a?");
+                interactionArea.innerHTML = `
+                    <div class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
+                        ${['Jorge', 'Victor', 'Martha', 'Claudia', 'Johanna'].map(p => 
+                            `<button onclick="savePsicologo('${p}')" class="bg-white border border-teal-200 text-teal-800 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors shadow-sm text-center active:scale-95">${p}</button>`
+                        ).join('')}
+                    </div>
+                `;
+            }, 600);
+        }
+
+        function savePsicologo(psicologo) {
+            patientData.demographics.psicologo = psicologo;
+            clearInteraction();
+            addMessage(psicologo, 'user');
+            
+            setTimeout(() => {
+                addMessage(`¡Perfecto! Trabajaré de la mano de <strong>${psicologo}</strong> para acompañarte y apoyarte en este proceso evaluativo. 🤝`);
+                setTimeout(askPrivacy, 1500);
+            }, 500);
+        }
+
+        function askPrivacy() {
+            clearInteraction();
+            addMessage("Por disposición legal y para proteger tu información, por favor confirma que has leído y aceptas nuestra <a href='#' onclick='event.preventDefault(); openPrivacyPolicy();' class='underline font-bold text-teal-600 hover:text-teal-800 transition-colors'>política de tratamiento de datos personales</a>.");
+            interactionArea.innerHTML = `
+                <div class="flex flex-col md:flex-row justify-center gap-3 max-w-xl mx-auto">
+                    <button onclick="goBackDemographics(askPsicologo)" class="w-full md:w-1/4 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                    <button onclick="handlePrivacy(true)" class="w-full md:w-auto flex-1 bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-md">Sí, acepto</button>
+                    <button onclick="handlePrivacy(false)" class="w-full md:w-auto flex-1 bg-white border border-red-300 text-red-600 hover:bg-red-50 px-4 py-3 rounded-xl font-medium transition-colors">No acepto</button>
+                </div>
+            `;
+        }
+
+        function handlePrivacy(accepted) {
+            clearInteraction();
+            if(accepted) {
+                patientData.demographics.consentimiento_datos = true;
+                addMessage("Sí, acepto.", 'user');
+                setTimeout(askNames, 500);
+            } else {
+                addMessage("No acepto.", 'user');
+                setTimeout(cancelAssessment, 500);
+            }
+        }
+
+        function cancelAssessment() {
+            addMessage("Entendemos completamente tu decisión. El cuestionario ha sido cancelado y la sesión ha terminado.<br><br><span class='text-red-600 font-semibold'>Importante: Te confirmamos que hasta este momento no se ha guardado, procesado ni almacenado ningún tipo de dato personal en nuestros servidores.</span><br><br>Puedes cerrar esta ventana de forma segura.", "bot");
+            interactionArea.innerHTML = `
+                <div class="flex flex-col items-center py-4">
+                    <div class="text-sm text-slate-500 font-medium bg-slate-50 px-6 py-3 rounded-lg border border-slate-200 shadow-sm">
+                        Evaluación cancelada.
+                    </div>
+                    <button onclick="location.reload()" class="mt-4 text-xs text-teal-600 hover:text-teal-800 hover:underline font-medium">Reiniciar evaluación desde cero</button>
+                </div>
+            `;
+            patientData.demographics = {};
+        }
+
+        function askNames() {
+            clearInteraction();
+            addMessage("Excelente. Ahora por favor dime tus nombres y apellidos.");
+            interactionArea.innerHTML = `
+                <form id="form-names" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" id="demo-nombres" placeholder="Nombres (Ej: María José)" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900 md:col-span-2">
+                    <input type="text" id="demo-apellido1" placeholder="Primer Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                    <input type="text" id="demo-apellido2" placeholder="Segundo Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                    <div class="md:col-span-2 flex gap-3 mt-1">
+                        <button type="button" onclick="goBackDemographics(askPrivacy)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('form-names').addEventListener('submit', function(e) {
+                e.preventDefault();
+                patientData.demographics.nombres = document.getElementById('demo-nombres').value.trim();
+                patientData.demographics.primer_apellido = document.getElementById('demo-apellido1').value.trim();
+                patientData.demographics.segundo_apellido = document.getElementById('demo-apellido2').value.trim();
+                
+                clearInteraction(); 
+                addMessage(`${patientData.demographics.nombres} ${patientData.demographics.primer_apellido} ${patientData.demographics.segundo_apellido}`, 'user');
+                setTimeout(askEmail, 500);
+            });
+        }
+
+        function askEmail() {
+            clearInteraction();
+            addMessage(`Mucho gusto, ${patientData.demographics.nombres.split(' ')[0]}. ¿Cuál es tu correo electrónico?`);
+            
+            interactionArea.innerHTML = `
+                <form id="form-email" class="max-w-xl mx-auto flex flex-col md:flex-row gap-3">
+                    <input type="email" id="demo-email" placeholder="tu@correo.com" required class="flex-1 border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-teal-50/30 text-teal-900">
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button type="button" onclick="goBackDemographics(askNames)" class="bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-5 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                        <button type="submit" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-md">Continuar</button>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('form-email').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const emailInput = document.getElementById('demo-email').value.trim();
+                clearInteraction(); 
+                addMessage(emailInput, 'user');
+                setTimeout(() => confirmEmail(emailInput), 500);
+            });
+        }
+
+        function confirmEmail(email) {
+            clearInteraction();
+            addMessage(`Has escrito: <strong>${email}</strong>.<br>¿Es correcto tu correo? Necesitamos que esté perfecto para contactarte.`);
+            
+            interactionArea.innerHTML = `
+                <div class="flex justify-center gap-3 max-w-xl mx-auto">
+                    <button onclick="saveEmail('${email}')" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-md">Sí, es correcto</button>
+                    <button onclick="goBackDemographics(askEmail)" class="flex-1 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">No, corregir</button>
+                </div>
+            `;
+        }
+
+        function saveEmail(email) {
+            patientData.demographics.correo = email;
+            clearInteraction();
+            addMessage("Sí, es correcto.", 'user');
+            setTimeout(askDob, 500);
         }
 
         function askDob() {
-            clearInt(); addMessage("¿Tu fecha de nacimiento?");
-            document.getElementById('interaction-area').innerHTML = `
-                <form onsubmit="event.preventDefault(); saveDob(this)" class="flex gap-2">
-                    <input name="d" type="number" placeholder="DD" required class="w-1/4 border p-3 rounded-xl">
-                    <input name="m" type="number" placeholder="MM" required class="w-1/4 border p-3 rounded-xl">
-                    <input name="y" type="number" placeholder="AAAA" required class="w-1/2 border p-3 rounded-xl">
-                    <button class="bg-teal-600 text-white p-3 rounded-xl">OK</button>
-                </form>`;
+            clearInteraction();
+            addMessage("Perfecto. ¿Cuál es tu fecha de nacimiento?");
+            
+            let daysHtml = '<option value="" disabled selected>Día</option>';
+            for(let i=1; i<=31; i++) daysHtml += `<option value="${i.toString().padStart(2, '0')}">${i}</option>`;
+            
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            let monthsHtml = '<option value="" disabled selected>Mes</option>';
+            months.forEach((m, idx) => monthsHtml += `<option value="${(idx+1).toString().padStart(2, '0')}">${m}</option>`);
+            
+            const currentYear = new Date().getFullYear();
+            let yearsHtml = '<option value="" disabled selected>Año</option>';
+            for(let i=currentYear; i>=currentYear - 100; i--) yearsHtml += `<option value="${i}">${i}</option>`;
+            
+            interactionArea.innerHTML = `
+                <form id="form-dob" class="max-w-xl mx-auto flex flex-col gap-3">
+                    <div class="flex gap-2 w-full">
+                        <select id="dob-day" required class="flex-1 border border-teal-200 rounded-xl px-2 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-900 cursor-pointer">
+                            ${daysHtml}
+                        </select>
+                        <select id="dob-month" required class="flex-[2] border border-teal-200 rounded-xl px-2 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-900 cursor-pointer">
+                            ${monthsHtml}
+                        </select>
+                        <select id="dob-year" required class="flex-[1.5] border border-teal-200 rounded-xl px-2 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-900 cursor-pointer">
+                            ${yearsHtml}
+                        </select>
+                    </div>
+                    <div id="dob-error" class="hidden text-red-500 text-xs font-medium px-1">Fecha inválida (Ej. 31 de Febrero). Por favor, revisa.</div>
+                    <div class="flex gap-2 w-full mt-1">
+                        <button type="button" onclick="goBackDemographics(askEmail)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('form-dob').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const day = document.getElementById('dob-day').value;
+                const month = document.getElementById('dob-month').value;
+                const year = document.getElementById('dob-year').value;
+
+                const d = parseInt(day, 10);
+                const m = parseInt(month, 10);
+                const y = parseInt(year, 10);
+                const testDate = new Date(y, m - 1, d);
+
+                if (testDate.getFullYear() !== y || testDate.getMonth() + 1 !== m || testDate.getDate() !== d) {
+                    document.getElementById('dob-error').innerText = "Fecha inválida (Ej. 31 de Febrero). Por favor, revisa.";
+                    document.getElementById('dob-error').classList.remove('hidden');
+                    return;
+                }
+
+                if (testDate > new Date()) {
+                    document.getElementById('dob-error').innerText = "La fecha no puede ser en el futuro.";
+                    document.getElementById('dob-error').classList.remove('hidden');
+                    return;
+                }
+
+                document.getElementById('dob-error').classList.add('hidden');
+                clearInteraction(); 
+                
+                const dobVal = `${year}-${month}-${day}`;
+                patientData.demographics.fecha_nacimiento = dobVal;
+                
+                const today = new Date();
+                let calculatedAge = today.getFullYear() - y;
+                if (today.getMonth() + 1 < m || (today.getMonth() + 1 === m && today.getDate() < d)) {
+                    calculatedAge--;
+                }
+                
+                patientData.demographics.edad = calculatedAge;
+
+                addMessage(`${day}/${months[m-1]}/${year}`, 'user'); 
+                
+                setTimeout(() => {
+                    addMessage(`Perfecto, tu edad es ${calculatedAge}.`);
+                    
+                    setTimeout(() => {
+                        if (calculatedAge < 18) {
+                            askGuardian();
+                        } else {
+                            askGeo();
+                        }
+                    }, 1000);
+                }, 500);
+            });
         }
 
-        function saveDob(f) {
-            const birth = new Date(f.y.value, f.m.value-1, f.d.value);
-            const age = new Date().getFullYear() - birth.getFullYear();
-            patientData.demographics.fecha_nacimiento = `${f.y.value}-${f.m.value}-${f.d.value}`;
-            patientData.demographics.edad = age;
-            addMessage(`Tienes ${age} años. ¿Con qué género te identificas?`);
-            const g = ['Mujer', 'Hombre', 'Otro'];
-            document.getElementById('interaction-area').innerHTML = `<div class="grid grid-cols-3 gap-2">${g.map(x=>`<button onclick="saveGen('${x}')" class="border p-3 rounded-xl">${x}</button>`).join('')}</div>`;
+        function askGuardian() {
+            clearInteraction();
+            addMessage(`Al ser menor de edad, necesitamos los datos y autorización de tu acudiente legal.`);
+            
+            interactionArea.innerHTML = `
+                <form id="form-guardian" class="max-w-xl mx-auto flex flex-col gap-3">
+                    <input type="text" id="g-name" placeholder="Nombre completo del acudiente" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-900">
+                    <input type="text" id="g-rel" placeholder="Parentesco (Ej: Madre, Padre, Tutor)" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-900">
+                    <label class="flex items-start gap-2 mt-2 text-sm text-teal-800 cursor-pointer">
+                        <input type="checkbox" required class="mt-1 w-4 h-4 text-teal-600 rounded focus:ring-teal-500">
+                        <span>El acudiente acepta la aplicación de esta prueba y el tratamiento de los datos.</span>
+                    </label>
+                    <div class="flex gap-3 mt-2">
+                        <button type="button" onclick="goBackDemographics(askDob)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Guardar autorización</button>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('form-guardian').addEventListener('submit', function(e) {
+                e.preventDefault();
+                patientData.demographics.acudiente = {
+                    nombre: document.getElementById('g-name').value.trim(),
+                    parentesco: document.getElementById('g-rel').value.trim(),
+                    autorizacion_dada: true
+                };
+                clearInteraction(); 
+                addMessage("Datos del acudiente y autorización proporcionados.", 'user');
+                setTimeout(askGeo, 600);
+            });
         }
 
-        function saveGen(x) {
-            patientData.demographics.genero = x; addMessage(x, 'user');
-            addMessage("¿En qué país resides?");
-            const p = ['Colombia', 'España', 'Otro'];
-            document.getElementById('interaction-area').innerHTML = `<div class="grid grid-cols-3 gap-2">${p.map(x=>`<button onclick="saveGeo('${x}')" class="border p-3 rounded-xl">${x}</button>`).join('')}</div>`;
+        function askGeo() {
+            clearInteraction();
+            addMessage("¿De qué país nos visitas?");
+            
+            let optionsPais = `<option value="" disabled selected>Selecciona tu país</option>`;
+            paisesGlobales.forEach(p => optionsPais += `<option value="${p}">${p}</option>`);
+
+            interactionArea.innerHTML = `
+                <form id="form-geo" class="max-w-xl mx-auto grid grid-cols-1 gap-3">
+                    <select id="demo-pais" required class="w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-800 cursor-pointer">
+                        ${optionsPais}
+                    </select>
+                    
+                    <select id="demo-depto" class="hidden w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-800 cursor-pointer"></select>
+                    <select id="demo-ciudad" class="hidden w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-800 cursor-pointer"></select>
+
+                    <input type="text" id="demo-ciudad-manual" class="hidden w-full border border-teal-200 rounded-xl px-4 py-3 focus:outline-none focus:border-teal-500 bg-teal-50/30 text-teal-900" placeholder="Escribe el nombre de tu ciudad">
+
+                    <div class="flex gap-3">
+                        <button type="button" onclick="goBackDemographics(patientData.demographics.edad < 18 ? askGuardian : askDob)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
+                    </div>
+                </form>
+            `;
+
+            const paisSelect = document.getElementById('demo-pais');
+            const deptoSelect = document.getElementById('demo-depto');
+            const ciudadSelect = document.getElementById('demo-ciudad');
+            const ciudadManual = document.getElementById('demo-ciudad-manual');
+
+            paisSelect.addEventListener('change', function() {
+                if(this.value === 'Colombia') {
+                    deptoSelect.classList.remove('hidden');
+                    deptoSelect.required = true;
+                    ciudadManual.classList.add('hidden');
+                    ciudadManual.required = false;
+                    ciudadManual.value = "";
+                    
+                    const colombiaData = geoData["América del Sur"]["Colombia"];
+                    let deptoOptions = `<option value="" disabled selected>Selecciona tu Departamento</option>`;
+                    Object.keys(colombiaData).sort().forEach(d => deptoOptions += `<option value="${d}">${d}</option>`);
+                    deptoSelect.innerHTML = deptoOptions;
+                } else {
+                    deptoSelect.classList.add('hidden');
+                    ciudadSelect.classList.add('hidden');
+                    deptoSelect.required = false;
+                    ciudadSelect.required = false;
+                    
+                    ciudadManual.classList.remove('hidden');
+                    ciudadManual.required = true;
+                }
+            });
+
+            deptoSelect.addEventListener('change', function() {
+                ciudadSelect.classList.remove('hidden');
+                ciudadSelect.required = true;
+                
+                const colombiaData = geoData["América del Sur"]["Colombia"];
+                const ciudades = colombiaData[this.value] || [];
+                let ciudadOptions = `<option value="" disabled selected>Selecciona tu Ciudad</option>`;
+                ciudades.sort().forEach(c => ciudadOptions += `<option value="${c}">${c}</option>`);
+                ciudadSelect.innerHTML = ciudadOptions;
+            });
+
+            document.getElementById('form-geo').addEventListener('submit', function(e) {
+                e.preventDefault();
+                patientData.demographics.pais = paisSelect.value;
+                
+                if(paisSelect.value === 'Colombia') {
+                    patientData.demographics.departamento = deptoSelect.value;
+                    patientData.demographics.ciudad = ciudadSelect.value;
+                    clearInteraction();
+                    addMessage(`${paisSelect.value} (${ciudadSelect.value}, ${deptoSelect.value})`, 'user');
+                    setTimeout(askEduProGen, 600);
+                } else {
+                    const ciudadIngresada = ciudadManual.value.trim();
+                    clearInteraction();
+                    addMessage(`${paisSelect.value} (${ciudadIngresada})`, 'user');
+                    setTimeout(() => confirmCityManual(ciudadIngresada), 500);
+                }
+            });
         }
 
-        function saveGeo(x) {
-            patientData.demographics.pais = x;
-            patientData.demographics.departamento = "N/A";
-            patientData.demographics.ciudad = "Desconocida";
-            addMessage(x, 'user');
-            addMessage("Casi listos. ¿Tu nivel educativo, profesión, correo, religión, hijos, situación sentimental y si tienes mascotas?");
-            document.getElementById('interaction-area').innerHTML = `
-                <form onsubmit="event.preventDefault(); saveRest(this)" class="grid grid-cols-2 gap-2 text-xs">
-                    <input name="e" placeholder="Correo" required class="border p-2 rounded">
-                    <input name="ed" placeholder="Nivel Educativo" required class="border p-2 rounded">
-                    <input name="pr" placeholder="Ocupación" required class="border p-2 rounded">
-                    <input name="re" placeholder="Religión" required class="border p-2 rounded">
-                    <input name="hi" type="number" placeholder="Hijos" required class="border p-2 rounded">
-                    <input name="si" placeholder="Situación Sentimental" required class="border p-2 rounded">
-                    <input name="ma" placeholder="Mascotas" required class="border p-2 rounded">
-                    <button class="bg-teal-600 text-white p-2 rounded col-span-2">Finalizar Perfil</button>
-                </form>`;
+        function confirmCityManual(ciudad) {
+            clearInteraction();
+            addMessage(`Has escrito que tu ciudad es: <strong>${ciudad}</strong>.<br>¿Es correcta?`);
+            
+            interactionArea.innerHTML = `
+                <div class="flex justify-center gap-3 max-w-xl mx-auto">
+                    <button onclick="saveCityManual('${ciudad}')" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-md">Sí, es correcta</button>
+                    <button onclick="goBackDemographics(askGeo)" class="flex-1 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">No, corregir</button>
+                </div>
+            `;
         }
 
-        function saveRest(f) {
-            const d = patientData.demographics;
-            d.correo = f.e.value; d.nivel_educativo = f.ed.value; d.profesion = f.pr.value;
-            d.religion = f.re.value; d.hijos = f.hi.value; d.situacion_sentimental = f.si.value; d.mascotas = f.ma.value;
-            addMessage("Perfil completado."); startTest();
+        function saveCityManual(ciudad) {
+            patientData.demographics.departamento = "N/A"; 
+            patientData.demographics.ciudad = ciudad;
+            clearInteraction();
+            addMessage("Sí, es correcta.", 'user');
+            setTimeout(askEduProGen, 500);
         }
 
+        function askEduProGen() {
+            clearInteraction();
+            addMessage("Casi listos con los datos. Por favor selecciona tu nivel educativo, tu ocupación actual y género.");
+            
+            const eduOptions = ["Primaria", "Secundaria", "Técnico/Tecnólogo", "Profesional", "Especialista", "Magister", "Doctorado"];
+            const profOptions = ["Estudiante", "Trabajador Independiente", "Empleado", "Desempleado", "Empleo Informal", "Ama de Casa", "Cuidador Primario", "Militar", "Religioso"];
+            const genOptions = ["Hombre", "Mujer", "No Binario", "Transexual"];
+
+            interactionArea.innerHTML = `
+                <form id="form-epg" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <select id="demo-edu" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-800">
+                        <option value="" disabled selected>Nivel Educativo</option>
+                        ${eduOptions.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                    <select id="demo-prof" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-800">
+                        <option value="" disabled selected>Profesión / Ocupación</option>
+                        ${profOptions.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                    <select id="demo-gen" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-800 md:col-span-2">
+                        <option value="" disabled selected>Género</option>
+                        ${genOptions.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                    <div class="md:col-span-2 flex gap-3 mt-1">
+                        <button type="button" onclick="goBackDemographics(askGeo)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Siguiente</button>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('form-epg').addEventListener('submit', function(e) {
+                e.preventDefault();
+                patientData.demographics.nivel_educativo = document.getElementById('demo-edu').value;
+                patientData.demographics.profesion = document.getElementById('demo-prof').value;
+                patientData.demographics.genero = document.getElementById('demo-gen').value;
+                
+                clearInteraction();
+                addMessage("Datos de perfil registrados.", 'user');
+                setTimeout(askPersonal, 600);
+            });
+        }
+
+        function askPersonal() {
+            clearInteraction();
+            addMessage("Finalmente, cuéntanos un poco más sobre ti en estos aspectos:");
+            
+            const situacionOptions = ["Soltero/a", "Casado/a", "Separado/a / Divorciado/a", "Viudo/a"];
+            const mascotasOptions = [
+                "No tengo y no me gustan", 
+                "No tengo pero me gustan", 
+                "Sí tengo una o más", 
+                "Sí tengo una o más pero no me gustan"
+            ];
+
+            interactionArea.innerHTML = `
+                <form id="form-personal" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" id="demo-rel" placeholder="Religión" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-900">
+                    <input type="number" id="demo-hijos" placeholder="Número de hijos" min="0" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-900">
+                    <select id="demo-sit" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-800">
+                        <option value="" disabled selected>Situación Sentimental</option>
+                        ${situacionOptions.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                    <select id="demo-mascotas" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-teal-50/30 text-teal-800">
+                        <option value="" disabled selected>Sobre mascotas...</option>
+                        ${mascotasOptions.map(o => `<option value="${o}">${o}</option>`).join('')}
+                    </select>
+                    <div class="md:col-span-2 flex gap-3 mt-1">
+                        <button type="button" onclick="goBackDemographics(askEduProGen)" class="w-1/3 bg-white border border-teal-300 text-teal-700 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium transition-colors">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-md">Finalizar Perfil</button>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('form-personal').addEventListener('submit', function(e) {
+                e.preventDefault();
+                patientData.demographics.religion = document.getElementById('demo-rel').value.trim();
+                patientData.demographics.hijos = parseInt(document.getElementById('demo-hijos').value);
+                patientData.demographics.situacion_sentimental = document.getElementById('demo-sit').value;
+                patientData.demographics.mascotas = document.getElementById('demo-mascotas').value;
+                
+                clearInteraction();
+                addMessage("Información completada.", 'user');
+                setTimeout(startTest, 800);
+            });
+        }
+
+        // --- INICIO DE LA PRUEBA (170 ÍTEMS Y LÓGICA MOTIVACIONAL) ---
+        
         function startTest() {
-            addMessage("Iniciamos los 170 ítems. Responde de 1 a 7.");
-            askQ();
+            clearInteraction();
+            questionCounter.innerText = `0/170`;
+
+            const d = patientData.demographics;
+            let fraseMotivacional = `¡Gracias por compartir esto! Cada detalle que nos das hace que tu perfil sea único.`;
+
+            if (d.profesion === 'Estudiante' && d.edad < 25) {
+                fraseMotivacional = `Esta etapa de estudiante está llena de descubrimientos, ${d.nombres.split(' ')[0]}. Conocer a fondo tu personalidad te dará herramientas increíbles para construir tu futuro profesional.`;
+            } else if (d.hijos > 0) {
+                fraseMotivacional = `Sabemos que ser padre/madre de ${d.hijos} hijo(s) requiere muchísima energía, ${d.nombres.split(' ')[0]}. Dedicar este momento para evaluarte y conocerte mejor es un acto de amor propio muy valioso.`;
+            } else if (d.profesion === 'Trabajador Independiente') {
+                fraseMotivacional = `Ser independiente requiere de mucho carácter y disciplina. Esta prueba te será de gran utilidad para potenciar tus habilidades naturales.`;
+            } else if (d.mascotas === 'Sí tengo una o más' || d.mascotas === 'No tengo pero me gustan') {
+                fraseMotivacional = `¡Qué genial que tengas esa conexión con las mascotas! Esa empatía seguramente refleja un lado muy especial de tu personalidad. Vamos a explorarlo.`;
+            } else if (d.situacion_sentimental === 'Casado/a' || d.situacion_sentimental === 'Soltero/a') {
+                fraseMotivacional = `Ser ${d.profesion.toLowerCase()} y estar ${d.situacion_sentimental.toLowerCase().split('/')[0]} trae sus propios retos y alegrías. El autoconocimiento es la mejor inversión que puedes hacer en ti ahora mismo.`;
+            }
+
+            addMessage(`¡Genial! Hemos terminado de armar tu perfil.<br><br><span class="text-teal-700 font-medium italic">"${fraseMotivacional}"</span><br><br>Ahora sí, vamos a comenzar con la evaluación CEPER-III.<br><br>A continuación encontrarás una serie de afirmaciones sobre formas de pensar, sentir y actuar. Evalúa cada frase y decide en qué medida te describe habitualmente. <strong>No hay respuestas correctas ni incorrectas</strong>, lo importante es tu sinceridad.<br><br><div class="flex flex-col gap-1 mt-2 text-sm text-teal-800 bg-white border border-teal-100 p-2.5 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">1</span> = Nada característico de mí</div><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">7</span> = Totalmente característico de mí</div></div>`);
+            
+            setTimeout(() => {
+                askNextQuestion();
+            }, 6500); 
         }
 
-        function askQ() {
-            if(currentIdx >= 170) return finish();
-            document.getElementById('progress-bar').style.width = `${(currentIdx/170)*100}%`;
-            addMessage(`<b>${currentIdx+1}.</b> ${questions[currentIdx]}`);
-            document.getElementById('interaction-area').innerHTML = `<div class="grid grid-cols-7 gap-1">${[1,2,3,4,5,6,7].map(v=>`<button onclick="saveA(${v})" class="border-2 p-3 rounded-xl font-bold">${v}</button>`).join('')}</div>`;
+        function askNextQuestion() {
+            if (currentQuestionIndex >= totalQuestions) {
+                finishTest();
+                return;
+            }
+
+            const progress = ((currentQuestionIndex) / totalQuestions) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.innerText = `Progreso: ${Math.round(progress)}%`;
+            questionCounter.innerText = `${currentQuestionIndex + 1}/${totalQuestions}`;
+
+            const currentQ = questionsList[currentQuestionIndex];
+            addMessage(`<span class="font-bold text-teal-700 mr-1">${currentQuestionIndex + 1}.</span> ${currentQ}`);
+
+            let buttonsHTML = '<div class="grid grid-cols-7 gap-1 md:gap-2 max-w-2xl mx-auto w-full">';
+            for(let i = 1; i <= 7; i++) {
+                buttonsHTML += `<button onclick="handleAnswer(${i})" class="likert-btn bg-white border-2 border-teal-100 text-teal-700 font-bold py-3 md:py-4 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-lg md:text-xl flex items-center justify-center">${i}</button>`;
+            }
+            buttonsHTML += '</div>';
+            
+            buttonsHTML += `
+                <div class="flex justify-between max-w-2xl mx-auto mt-2 px-1">
+                    <span class="text-[11px] md:text-xs text-teal-600 font-medium leading-tight max-w-[80px] md:max-w-none text-left">Nada característico</span>
+                    <span class="text-[11px] md:text-xs text-teal-600 font-medium leading-tight max-w-[80px] md:max-w-none text-right">Totalmente característico</span>
+                </div>
+            `;
+
+            if (currentQuestionIndex > 0) {
+                buttonsHTML += `
+                    <div class="flex justify-center mt-3 md:mt-4">
+                        <button onclick="goBack()" class="text-xs md:text-sm text-teal-600 hover:text-teal-800 flex items-center gap-1.5 transition-colors font-medium bg-teal-50 px-4 py-2 rounded-full border border-teal-100 hover:bg-teal-100 active:scale-95">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            Corregir respuesta anterior
+                        </button>
+                    </div>
+                `;
+            }
+
+            interactionArea.innerHTML = buttonsHTML;
         }
 
-        function saveA(v) { 
-            clearInt(); 
-            patientData.answers[`q${currentIdx+1}`] = v; 
-            currentIdx++; 
-            setTimeout(askQ, 200); 
+        function handleAnswer(value) {
+            clearInteraction();
+            addMessage(`${value}`, 'user');
+            patientData.answers[`q${currentQuestionIndex + 1}`] = value;
+            currentQuestionIndex++;
+            
+            const nombre = patientData.demographics.nombres.split(' ')[0];
+
+            if (currentQuestionIndex === 42) { 
+                setTimeout(() => {
+                    addMessage(`¡Vas muy bien, ${nombre}! Ya hemos completado la primera cuarta parte. Respira profundo y sigamos adelante. 💪`);
+                    setTimeout(askNextQuestion, 2000);
+                }, 300);
+                return;
+            } else if (currentQuestionIndex === 85) { 
+                setTimeout(() => {
+                    addMessage(`¡Excelente ritmo! Ya llegamos a la mitad de la prueba. Recuerda que no hay respuestas correctas ni incorrectas, solo tu perspectiva genuina. ✨`);
+                    setTimeout(askNextQuestion, 2000);
+                }, 300);
+                return;
+            } else if (currentQuestionIndex === 127) { 
+                setTimeout(() => {
+                    addMessage(`Ya estamos en la recta final, ${nombre}. Falta muy poco, gracias por tu gran compromiso e introspección hasta ahora. 🎯`);
+                    setTimeout(askNextQuestion, 2000);
+                }, 300);
+                return;
+            }
+
+            setTimeout(askNextQuestion, 500);
         }
 
-        async function finish() {
-            clearInt(); addMessage("Guardando evaluación...");
+        function goBack() {
+            if(currentQuestionIndex > 0) {
+                clearInteraction();
+                addMessage("Corregir respuesta anterior.", 'user');
+                currentQuestionIndex--;
+                delete patientData.answers[`q${currentQuestionIndex + 1}`];
+
+                setTimeout(() => {
+                    addMessage(`<span class="text-teal-600 italic">Volviendo a la pregunta ${currentQuestionIndex + 1}...</span>`);
+                    setTimeout(askNextQuestion, 600);
+                }, 500);
+            }
+        }
+
+        async function finishTest() {
+            progressBar.style.width = `100%`;
+            progressText.innerText = `Progreso: 100%`;
+            questionCounter.innerText = `Finalizado`;
+
+            const nombre = patientData.demographics.nombres.split(' ')[0];
+            const psicologo = patientData.demographics.psicologo;
+
+            addMessage(`¡Hemos terminado, ${nombre}! 🎉<br><br>Dame un segundo mientras encripto y guardo tus respuestas de forma segura... ⏳`);
+            
+            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium">Guardando evaluación en el servidor... <svg class="inline animate-spin ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>`;
+            
             try {
-                const res = await fetch('/api/save-report', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(patientData) });
-                const d = await res.json();
-                if(res.ok) addMessage(`¡Listo! Ref: ${d.id_referencia.substring(0,6)}. Puedes cerrar esta pestaña.`);
-            } catch(e) { addMessage("Error al guardar."); }
+                const res = await fetch('/api/save-report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(patientData)
+                });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    const mensajeFinal = `¡Todo listo! ✅<br><br>Quiero agradecerte profundamente por el tiempo, la paciencia y la sinceridad que dedicaste a estas 170 preguntas. Sabemos que puede ser un proceso exigente, pero dedicarte este espacio de autoconocimiento es un acto muy valiente e importante para tu bienestar emocional.<br><br>Tus respuestas han sido guardadas con estricta confidencialidad (Ref: <strong class="text-teal-800">${data.id_referencia.substring(0,8)}</strong>). Trabajaré esta información de la mano de <strong>${psicologo}</strong> para que puedan continuar este proceso de la mejor manera.<br><br>¡Has dado un paso excelente hoy! Descansa y siéntete muy orgulloso/a de tu compromiso contigo mismo/a. 🌟`;
+
+                    addMessage(mensajeFinal);
+                    interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-bold bg-teal-50 border border-teal-200 rounded-xl mx-4 shadow-sm">Evaluación completada con éxito. Ya puedes cerrar esta pestaña.</div>`;
+                } else {
+                    throw new Error(data.message || "Error del servidor");
+                }
+            } catch (e) { 
+                console.error("Error al enviar reporte:", e);
+                addMessage(`Hubo un problema de conexión al guardar tus respuestas, ${nombre}. Por favor, no cierres esta ventana y presiona el botón para intentar de nuevo.`, 'bot'); 
+                interactionArea.innerHTML = `<div class="p-4 flex justify-center"><button onclick="finishTest()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-colors">Intentar enviar de nuevo</button></div>`;
+            }
         }
 
-        window.onload = start;
+        // --- INICIALIZACIÓN ---
+        window.onload = () => {
+            checkCookies();
+            startIntro();
+        };
+
     </script>
 </body>
 </html>

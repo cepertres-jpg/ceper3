@@ -22,11 +22,10 @@ export default async function handler(req, res) {
             return res.status(401).json({ message: 'Sesión expirada.' });
         }
 
-        const requestUser = decodedToken.user;
+        const requestUser = decodedToken.user; // El usuario de la sesión (ej: "claudia")
         
-        // 2. Obtener el ID de la URL (ej: /api/get-report?id=12345)
+        // 2. Obtener el ID del reporte
         const { id } = req.query;
-
         if (!id) {
             return res.status(400).json({ message: 'ID de reporte no proporcionado.' });
         }
@@ -41,14 +40,17 @@ export default async function handler(req, res) {
 
         const docData = docSnap.data();
 
-        // 4. Regla de Seguridad: ¿Tiene permiso de ver esto?
+        // 4. Lógica de Seguridad Insensible a Mayúsculas
         if (requestUser !== 'admin') {
-            if (!docData.demographics || docData.demographics.psicologo !== requestUser) {
+            const psicologoEnDB = (docData.demographics?.psicologo || '').trim().toLowerCase();
+            const usuarioSesion = requestUser.trim().toLowerCase();
+
+            if (psicologoEnDB !== usuarioSesion) {
                 return res.status(403).json({ message: 'Acceso denegado. Este reporte pertenece a otro psicólogo.' });
             }
         }
 
-        // 5. Retornar los datos completos
+        // 5. Retornar los datos completos si todo es correcto
         return res.status(200).json({ 
             success: true, 
             data: { id: docSnap.id, ...docData } 

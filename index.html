@@ -557,9 +557,23 @@
             clearInteraction();
             addMessage(psicologo, 'user');
             
-            setTimeout(() => {
+            setTimeout(async () => {
                 addMessage(`¡Perfecto! Trabajaré de la mano de <strong>${psicologo}</strong> para acompañarte y apoyarte en este proceso evaluativo. 🤝`);
-                setTimeout(askPrivacy, 1500);
+                
+                // --- NUEVO: Verificación de Base de Datos ---
+                try {
+                    const res = await fetch('/api/check-db');
+                    if (!res.ok) throw new Error('Falla DB');
+                    
+                    // Si responde OK, seguimos normalmente
+                    setTimeout(askPrivacy, 1500);
+                } catch (err) {
+                    // Si falla, detenemos el proceso y avisamos
+                    setTimeout(() => {
+                        addMessage("<span class='text-red-600 font-bold'>⚠️ Error Crítico del Servidor:</span> No se puede continuar con la prueba por un problema de conexión con la base de datos central.<br><br>Por favor, <strong>contacta a tu psicólogo</strong> para informarle de esta situación. Lamentamos los inconvenientes.", "bot");
+                        document.getElementById('interaction-area').innerHTML = `<div class="text-center p-4 text-red-600 font-bold bg-red-50 border border-red-200 rounded-xl mx-4">Evaluación detenida por seguridad.</div>`;
+                    }, 1000);
+                }
             }, 500);
         }
 

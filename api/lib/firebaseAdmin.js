@@ -9,7 +9,7 @@ function initializeFirebaseAdmin() {
     }
 
     // Leemos la variable de entorno que contiene la llave en Base64.
-    // Esta variable debe estar configurada en Vercel (FIREBASE_SERVICE_ACCOUNT_BASE64).
+    // Esta variable debe estar configurada en Vercel (FIREBASE_SERVICE_ACCOUNT_BASE6400000123).
     const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
     if (!serviceAccountBase64) {
         console.error("CRITICAL: La variable de entorno FIREBASE_SERVICE_ACCOUNT_BASE64 no está definida.");

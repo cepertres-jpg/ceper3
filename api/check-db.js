@@ -10,7 +10,7 @@ export default async function handler(req, res) {
         // Intentamos hacer una lectura mínima y rápida a Firestore.
         // Si la cuenta de Google fue suspendida, las credenciales expiraron o hay 
         // cualquier problema, esta línea fallará y lanzará un error al "catch".
-        await db.collection('evaluaciones_ceper').limit(1).get();
+        await db.collection('evaluaciones_ceper_INVENTADA').limit(1).get();
         
         // Si logró pasar, la conexión está perfecta.
         return res.status(200).json({ 

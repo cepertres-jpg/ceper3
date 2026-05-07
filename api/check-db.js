@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
     try {
         // Hacemos la petición a la base de datos limitando a 1 solo documento para que sea súper rápido
-        const snapshot = await db.collection('evaluaciones_ceper_inventar').limit(1).get();
+        const snapshot = await db.collection('evaluaciones_ceper').limit(1).get();
         
         // REGLA ESTRICTA: Si la conexión fue exitosa pero la colección NO EXISTE 
         // (por ejemplo, si le cambiamos el nombre por error) o está vacía, forzamos un error.

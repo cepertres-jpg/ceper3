@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Informe Clínico CEPER-III</title>
+    <!-- Vinculación CSS Local (Tailwind V4) -->
     <link rel="stylesheet" href="./style.css">
+    
+    <!-- Librerías de Gráficas y Números -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
@@ -73,6 +77,14 @@
 
                     <div class="sm:col-span-2"><span class="text-slate-400 block uppercase text-[10px] font-bold">Contacto</span> <span class="font-medium text-teal-600" id="pat-email">--</span></div>
                     <div class="sm:col-span-2"><span class="text-slate-400 block uppercase text-[10px] font-bold">Psicólogo Responsable</span> <span class="font-bold text-teal-800 capitalize text-base" id="pat-psi">--</span></div>
+                </div>
+            </section>
+
+            <!-- NUEVO: SECCIÓN DE SINCERIDAD / VALIDEZ -->
+            <section class="report-card p-6 md:p-8">
+                <h3 class="section-title">Validez de la Prueba (Sinceridad)</h3>
+                <div id="sincerity-container" class="flex flex-col md:flex-row items-center gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <!-- Dinámico -->
                 </div>
             </section>
 
@@ -191,10 +203,30 @@
 
             document.getElementById('norm-used').innerText = calc.normUsed || '--';
 
-            // Registramos el plugin antes de renderizar la gráfica
+            // --- SECCIÓN DE SINCERIDAD ---
+            const sinc = calc.sincerity || { t: 50, qualitative: "Dato no disponible" };
+            const sincContainer = document.getElementById('sincerity-container');
+            
+            let sincBadge = sinc.t >= 60 ? 
+                `<span class="px-5 py-3 bg-red-100 text-red-700 font-bold rounded-xl text-2xl shadow-sm border border-red-200">T: ${sinc.t}</span>` : 
+                `<span class="px-5 py-3 bg-teal-100 text-teal-700 font-bold rounded-xl text-2xl shadow-sm border border-teal-200">T: ${sinc.t}</span>`;
+
+            let sincTextClass = sinc.t >= 60 ? 'text-red-600' : 'text-teal-700';
+
+            sincContainer.innerHTML = `
+                <div class="shrink-0">
+                    ${sincBadge}
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 text-base mb-1">Escala de Control (Ítems 57 y 128)</h4>
+                    <p class="text-sm ${sincTextClass} font-medium">${sinc.qualitative}</p>
+                </div>
+            `;
+
+            // Registramos el plugin antes de renderizar la gráfica para mostrar los números
             Chart.register(ChartDataLabels);
 
-            // 2. Gráfico con Puntuaciones T y Números
+            // 2. Gráfico con Puntuaciones T, Padding Superior y Límite de 100
             new Chart(document.getElementById('personalityChart'), {
                 type: 'bar',
                 data: {
@@ -209,7 +241,7 @@
                 options: { 
                     layout: {
                         padding: {
-                            top: 25 // Da espacio extra arriba para que el 100 no se corte
+                            top: 25 // Margen superior para que un puntaje de 100 no se corte con el borde
                         }
                     },
                     responsive: true, 
@@ -217,7 +249,7 @@
                     scales: { 
                         y: { 
                             min: 20, 
-                            max: 100, // Escala fija hasta 100
+                            max: 100, // Fijado explícitamente en 100
                             grid: { color: '#f1f5f9' },
                             ticks: { font: { weight: 'bold' } }
                         },

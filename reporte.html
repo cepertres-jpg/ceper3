@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Informe Clínico CEPER-III</title>
-    <!-- Vinculación CSS Local (Tailwind V4) -->
+    <!-- Vinculación CSS Local -->
     <link rel="stylesheet" href="./style.css">
     
-    <!-- Librerías de Gráficas y Números -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     
@@ -20,6 +19,8 @@
             .no-print { display: none !important; }
             body { background: white; padding: 0; }
             .report-card { box-shadow: none; border: 1px solid #eee; break-inside: avoid; margin-bottom: 2rem; }
+            /* Esta clase fuerza el salto a una nueva hoja al imprimir o exportar a PDF */
+            .print-page-break { page-break-before: always; }
         }
     </style>
 </head>
@@ -46,7 +47,7 @@
 
         <div id="report-content" class="hidden space-y-8">
             
-            <!-- 1. IDENTIFICACIÓN COMPLETA -->
+            <!-- HOJA 1: REPORTE PRINCIPAL -->
             <section class="report-card p-6 md:p-8">
                 <div class="flex flex-col md:flex-row justify-between items-start border-b border-slate-100 pb-6 mb-6">
                     <div>
@@ -80,7 +81,6 @@
                 </div>
             </section>
 
-            <!-- NUEVO: SECCIÓN DE SINCERIDAD / VALIDEZ -->
             <section class="report-card p-6 md:p-8">
                 <h3 class="section-title">Validez de la Prueba (Sinceridad)</h3>
                 <div id="sincerity-container" class="flex flex-col md:flex-row items-center gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-200">
@@ -88,7 +88,6 @@
                 </div>
             </section>
 
-            <!-- 2. ANÁLISIS GRÁFICO -->
             <section class="report-card p-6 md:p-8">
                 <h3 class="section-title">Perfil Psicométrico Resultante</h3>
                 <div class="h-[400px] w-full mt-4">
@@ -99,7 +98,6 @@
                 </div>
             </section>
 
-            <!-- 3. ANÁLISIS CUALITATIVO -->
             <section class="report-card p-6 md:p-8">
                 <h3 class="section-title">Análisis de Estilos Predominantes</h3>
                 <div id="top-traits-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -107,7 +105,6 @@
                 </div>
             </section>
 
-            <!-- 4. CONCLUSIONES -->
             <section class="report-card p-6 md:p-8">
                 <h3 class="section-title">Impresión Clínica y Sugerencias</h3>
                 <div class="space-y-6 text-sm">
@@ -123,6 +120,18 @@
                     </div>
                 </div>
             </section>
+
+            <!-- HOJA 2: ANEXO CLÍNICO DE RESPUESTAS (Fuerza salto de página) -->
+            <div class="print-page-break"></div>
+            <section class="report-card p-6 md:p-8">
+                <h3 class="section-title">Anexo Clínico: Desglose de Respuestas por Estilo</h3>
+                <p class="text-sm text-slate-500 mb-6 border-b border-slate-100 pb-4">Esta sección detalla las respuestas directas (del 1 al 7) proporcionadas por el paciente, agrupadas según las dimensiones del CEPER-III, para un análisis clínico a profundidad.</p>
+                
+                <div id="detailed-answers-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Las tablas de desglose se inyectan aquí dinámicamente -->
+                </div>
+            </section>
+
         </div>
 
         <div id="error-state" class="hidden text-center py-20 no-print">
@@ -133,6 +142,197 @@
     </main>
 
     <script>
+        // Lista oficial de 170 ítems para el cruce de respuestas
+        const questionsList = [
+            "Creo que hay personas que intentan aprovecharse de mis ideas o de lo que hago para su propio beneficio.",
+            "No me atraen las fiestas ni las reuniones sociales.",
+            "Con frecuencia tengo pensamientos extraños de los que me gustaría poder librarme.",
+            "Cuando quiero algo intento conseguirlo como sea, sin importar si alguien sale perjudicado.",
+            "A veces tengo explosiones de ira o de cólera que no puedo controlar.",
+            "Cuando estoy en reuniones sociales me gusta llamar la atención, que la gente se fije en mí.",
+            "Considero que mi inteligencia es superior a la de la mayoría.",
+            "Soy una persona tímida que habitualmente le cuesta establecer relaciones con los demás.",
+            "Me encuentro cómodo/a cuando los demás toman decisiones importantes por mí.",
+            "Lo más importante para mí es seguir un procedimiento y un order estricto a la hora de hacer las cosas.",
+            "Con frecuencia estoy irritado/a y de mal humor.",
+            "Al final siempre termino relacionándome con amigos/as que me tratan mal.",
+            "Me paso la vida preocupándome por una u otra cosa.",
+            "A veces digo cosas crueles a los demás para hacerles sufrir o que se sientan mal.",
+            "Cuando alguien me crítica por cometer un error, rápidamente le señalo los suyos.",
+            "Hay pocas cosas en la vida que me hagan disfrutar.",
+            "Cuando estoy solo/a siento, a veces, la presencia de alguien o de algo que no puedo ver.",
+            "Me gusta hacer cosas que nadie se atreve a hacer, aunque ponga en peligro mi seguridad.",
+            "Algunas veces me he causado daño o me he herido intencionadamente.",
+            "Cuando una reunión social se está poniendo aburrida suelo ser yo quien la anime.",
+            "Cualquier director de una empresa de mi especialidad desearía tenerme en ella.",
+            "Cuando empiezo una relación sentimental soy muy cauteloso/a por temor a pasar vergüenza o hacer el ridículo.",
+            "Muchas veces me siento desamparado/a o desvalido/a cuando estoy solo/a.",
+            "La gente me dice que soy una persona muy responsable y seria.",
+            "La gente me dice que siempre llevo la contraria.",
+            "Cuando logro algo por lo que he luchado, en lugar de sentirme satisfecho/a y aliviado/a, me siento triste o culpable.",
+            "Me descubro en muchas ocasiones pensando que no valgo para nada.",
+            "Cuando alguien está bajo mis órdenes y no las cumple, le castigo con dureza.",
+            "Creo que la gente habla de mí a mis espaldas.",
+            "Prefiero estar con personas que no me pidan muestras de cariño.",
+            "A menudo puedo leer la mente de las personas.",
+            "El peligro me estimula y me anima.",
+            "Mis sentimientos hacia personas importantes en mi vida a veces cambian rápidamente de un extremo a otro (p. ej., de admiración a decepción, de amor a odio).",
+            "Me gusta mucho asistir a fiestas y ser el centro de la atención.",
+            "Soy o seré un/a triunfador/a.",
+            "Pienso que me faltan habilidades a la hora de enfrentarme a la mayoría de las situaciones sociales.",
+            "Con frecuencia busco consejo a la hora de tomar decisiones en mi vida cotidiana.",
+            "Considero que siempre hay formas correctas de hacer las cosas y así suelo actuar yo.",
+            "Creo que los superiores se aprovechan siempre de la autoridad que les da su posición para manipular a su antojo a los demás.",
+            "No suelo pasármelo bien en situaciones que se suponen divertidas.",
+            "Siempre he criticado mi forma de pensar y actuar.",
+            "A veces disfruto cuando veo sufrir a los animales o a las personas.",
+            "Me cuido de las personas que son más amistosas de lo que espero.",
+            "La gente suele decir que soy poco cariñoso/a o poco afectivo/a.",
+            "Mis pensamientos pueden ser tan potentes que casi puedo oírlos.",
+            "Con frecuencia me olvido de cumplir con mis compromisos económicos (p. ej., pago alquiler, cuotas, etc.)",
+            "Mi estado de ánimo puede cambiar mucho de un día para otro.",
+            "Tengo muchos amigos/as.",
+            "Es importante que los demás admiren lo que hago.",
+            "Me angustia relacionarme con personas desconocidas o poco conocidas por temor a hacer el ridículo o que no les caiga bien.",
+            "Me preocupa estar solo/a, sin la protección de alguien cercano que me ayude.",
+            "Para que las cosas importantes salgan bien tengo que hacerlas yo y no dejarlas a cargo de los demás.",
+            "La gente con la que me relaciono suele tener más suerte de la que se merece.",
+            "Me cuesta mejorar a nivel personal o profesional aunque suelo ayudar a los demás a que consigan sus objetivos.",
+            "Generalmente tiendo a ver el lado negativo de las cosas.",
+            "Las personas suelen hacer lo que yo les digo porque si no podrían sufrir consecuencias negativas.",
+            "Me produce un gran malestar que alguno de mis padres caiga gravemente enfermo.",
+            "Me enfado y siento celos cuando alguna persona del sexo opuesto se acerca a mi pareja.",
+            "Prefiero los trabajos en solitario a los trabajos en grupo.",
+            "Siento que la gente está hablando de mí cuando paso a su lado.",
+            "Me gusta experimentar nuevas sensaciones constantemente.",
+            "Cuando me siento mal, suelo hacer cosas que no puedo controlar y de las que luego me arrepiento (p. ej., gastar mucho dinero, atracarme de comida, etc.)",
+            "Me es muy fácil hacer nuevos amigos/as.",
+            "Me gustaría que alguien escribiese mi biografía algún día.",
+            "Cuando voy a algún lugar donde no conozco a la gente, me suelo comportar de forma torpe y nerviosa.",
+            "Me resulta muy difícil iniciar nuevos proyectos o hacer las cosas a mi manera porque me siento inseguro/a.",
+            "Las normas y el orden suelen determinar el éxito en un trabajo o un proyecto.",
+            "Mi pareja o familiares cercanos se quejan con frecuencia de que no hago las cosas como a ellos les gustaría.",
+            "A veces me siento confuso/a y molesto/a cuando la gente es amable conmigo.",
+            "Con frecuencia me siento culpable o con remordimientos.",
+            "Con frecuencia controlo por la fuerza a mi pareja o a las personas que dependen de mí.",
+            "Prefiero ser reservado/a con mis cosas para que nadie las pueda usar en mi contra.",
+            "No me gusta que me feliciten aunque haga las cosas bien.",
+            "A veces la gente comenta que mi forma de vestir es diferente o excéntrica.",
+            "Cuando me enfado puedo ser violento/a y desagradable, incluso con mi familia.",
+            "A menudo me pregunto quien soy realmente.",
+            "Expreso mis emociones fácil y frecuentemente.",
+            "Suelo ser más capaz que los demás.",
+            "Me gustaría tener más amigos, pero me resulta difícil establecer relaciones con la gente.",
+            "En general, soy una persona agradable y sumisa.",
+            "Controlo muy bien mi dinero para estar preparado/a en caso de necesidad.",
+            "La gente que suele tener éxito se debe a que es afortunada o a que es deshonesta.",
+            "Muchas veces pienso que no merezco las cosas buenas que me pasan.",
+            "Desde niño/a he tenido frecuentemente sentimientos de tristeza.",
+            "De vez en cuando utilizo la violencia física para que quede claro quién manda.",
+            "Muchas veces sospecho que mis amigos/as están en mi contra.",
+            "Hay pocas personas imprescindibles en mi vida.",
+            "Poseo un sexto sentido que no suelen tener las demás personas.",
+            "Me importa mucho más conseguir lo que necesito ahora que lo que pueda suceder en el futuro.",
+            "A veces me siento culpable como si hubiera cometido un delito, aunque no lo he cometido realmente.",
+            "La gente me dice a menudo que cuento las cosas de forma muy exagerada.",
+            "Creo que soy una persona especialmente competente y espero que los demás me presten la atención que merezco.",
+            "Me siento menos interesante y divertido que los demás.",
+            "Cuando estoy en un grupo prefiero que sean otros quienes tomen las decisiones importantes.",
+            "La gente piensa que soy demasiado/a estricto/a con las reglas y las normas.",
+            "Me molestan las personas que piensan que pueden hacer las cosas mejor que yo.",
+            "Suelo elegir como pareja personas que terminan tratándome mal.",
+            "Desde hace mucho tiempo me encuentro triste y desanimado/a.",
+            "He tenido que ser realmente duro/a con algunas personas para mantenerlas a raya.",
+            "Siempre que hay un problema intentan culparme.",
+            "Estoy solo/a la mayor parte del tiempo y lo prefiero así.",
+            "A veces siento como si mi mente se separase de mi cuerpo.",
+            "Aprovecharme de los demás no me produce sentimientos de culpa.",
+            "Me siento desorientado/a, sin objetivos, y no se hacia dónde voy en la vida.",
+            "Tengo fama de que me gusta coquetear con personas del sexo opuesto.",
+            "Hay mucha gente que me tiene envidia por las cosas que consigo.",
+            "Las situaciones nuevas siempre me producen temor.",
+            "Me preocupa que me dejen solo/a y tenga que cuidar de mí mismo/a.",
+            "Una gran parte de mi tiempo la dedico a trabajar/estudiar, de modo que me queda poco tiempo para actividades de ocio.",
+            "Si no quiero hacer algo, por más que me lo pida el/a profesor/a, el/a jefe/a, mis padres o mi pareja, no lo voy a hacer o lo voy a hacer mal a propósito.",
+            "Cuando alguien se preocupa realmente por mí, pierdo enseguida el interés por esa persona.",
+            "Habitualmente me siento culpable.",
+            "Para conseguir el respeto de los demás tengo que ser duro/a y amenazante.",
+            "Suelo poner a prueba a las personas para saber si puedo confiar en ellas.",
+            "Tengo pocas ganas de hacer amigos/as íntimos/as.",
+            "Suelo tener sensaciones especiales que las demás personas no pueden comprender.",
+            "Suelo hacer las cosas sin pensar en los riesgos para mí o para los demás.",
+            "A veces, cuando las cosas van mal, siento que estoy viviendo un sueño o veo pasar la vida delante de mí como si fuera una película.",
+            "A veces utilizo mi apariencia física para llamar la atención de los demás.",
+            "La gente piensa que tengo un elevado concepto de mi mismo/a.",
+            "Con frecuencia evito asistir a reuniones o situaciones sociales por temor a no ser aceptado/a o que no caiga bien a la gente.",
+            "Suelo estar dispuesto/a a ceder ante los demás, aunque no esté de acuerdo con ellos/as, por temor a que se enfaden o me rechacen.",
+            "Siempre compruebo que mi trabajo esté terminado y bien hecho antes de tomarme un descanso para actividades de ocio.",
+            "Aunque mis superiores/profesores o mi pareja me pidan más de lo que soy capaz de hacer, sigo mi ritmo a la hora de hacerlo.",
+            "El sufrimiento me hace mejor persona, por lo que evito la ayuda de los demás.",
+            "Incluso en los buenos tiempos, siempre he tenido miedo a que las cosas de pronto fuesen mal.",
+            "A veces he mentido con el único propósito de ver sufrir a otras personas.",
+            "Me produciría mucho malestar o mucha rabia que un grupo de delincuentes armados atracase a una persona que quiero mucho.",
+            "Con frecuencia creo que las personas intentan engañar a los demás, incluso a mí.",
+            "Hago pocos intentos para establecer nuevas relaciones.",
+            "En ocasiones he tenido experiencias sobrenaturales.",
+            "Desde pequeño/a me meto en peleas con mucha facilidad.",
+            "Haría algo desesperado para impedir que una persona que quiero me abandone.",
+            "Las personas me dicen que a veces me comporto de forma muy teatral.",
+            "Gracias a mi otras personas han conseguido cosas importantes.",
+            "Me falta confianza en mí mismo/a para arriesgarme a probar algo nuevo.",
+            "Habitualmente hago lo posible por complacer a los demás, incluso a quienes no me gustan.",
+            "Siempre tengo organizadas mis actividades diarias porque no me gusta perder el tiempo.",
+            "Creo que los demás no valoran adecuadamente mis esfuerzos.",
+            "Los demás se aprovechan de mí, pero no hago nada para evitarlo.",
+            "Con frecuencia pienso que en el futuro las cosas no irán mejor.",
+            "Siento un gran placer cuando consigo humillar a los demás.",
+            "Cuando alguien me ha hecho una mala jugada, tardo mucho tiempo en olvidarlo.",
+            "Siempre he tenido menos interés por el sexo que la mayoría de la gente.",
+            "La gente piensa que en ocasiones hablo sobre cosas extrañas, raras o mágicas.",
+            "Me cuesta mucho seguir las mismas normas sociales que los demás.",
+            "La mayoría de las personas que quiero terminan decepcionándome.",
+            "Suelo ser una persona muy sociable y extravertida.",
+            "Tengo la capacidad de convencer a los demás para conseguir lo que me propongo.",
+            "Suelo pensar que los demás tienen de mí una imagen poco favorable.",
+            "Con frecuencia soy muy indeciso/a.",
+            "La gente me ve como una persona muy organizada y perfeccionista.",
+            "A menudo otras personas me culpan de cosas que no he hecho.",
+            "Con frecuencia he dejado de lado mis sueños para ayudar a otros a alcanzar los suyos.",
+            "Habitualmente estoy cansado/a y fatigado/a.",
+            "Con frecuencia me dicen que humillo o maltrato a otras personas.",
+            "A menudo me han dicho que suelo buscar el doble sentido o el significado oculto de las cosas cuando hablan conmigo.",
+            "Mis familiares realmente son mis únicos confidentes.",
+            "Me pongo nervioso/a cuando estoy con personas que no conozco bien porque pueden querer hacerme daño.",
+            "No me preocupan las consecuencias que puedan traerme mis actos si consigo lo que quiero.",
+            "Con frecuencia me siento vacío/a.",
+            "Dicen que soy muy exagerado/a al expresar mis emociones.",
+            "Algunas personas cercanas a mí me dicen que soy egoísta, que sólo pienso en mí.",
+            "Con frecuencia pienso que no voy a estar a la altura de las circunstancias cuando tengo que mantener una conversación con alguien a quien acabo de conocer.",
+            "Siempre estoy temiendo que alguna persona cercana me abandone.",
+            "Me molesta cuando tengo que modificar cosas de mi rutina diaria.",
+            "He tenido poca suerte en esta vida; me gustaría haber sido más afortunado/a.",
+            "Suelo sacrificar mi bienestar para tratar de ayudar a los demás.",
+            "La gente me dice que soy una persona triste y demasiado seria.",
+            "Con frecuencia consigo que los demás hagan lo que yo quiero por medio de la violencia o la coerción."
+        ];
+
+        const styleMapping = {
+            "Paranoide": [1, 15, 29, 43, 58, 72, 86, 100, 114, 129, 143, 157],
+            "Esquizoide": [2, 16, 30, 44, 59, 73, 87, 101, 115, 130, 144, 158],
+            "Esquizotípico": [3, 17, 31, 45, 60, 74, 88, 102, 116, 131, 145, 159],
+            "Antisocial": [4, 18, 32, 46, 61, 75, 89, 103, 117, 132, 146, 160],
+            "Límite": [5, 19, 33, 47, 62, 76, 90, 104, 118, 133, 147, 161],
+            "Histriónico": [6, 20, 34, 48, 63, 77, 91, 105, 119, 134, 148, 162],
+            "Narcisista": [7, 21, 35, 49, 64, 78, 92, 106, 120, 135, 149, 163],
+            "Evitativo": [8, 22, 36, 50, 65, 79, 93, 107, 121, 136, 150, 164],
+            "Dependiente": [9, 23, 37, 51, 66, 80, 94, 108, 122, 137, 151, 165],
+            "Obsesivo C.": [10, 24, 38, 52, 67, 81, 95, 109, 123, 138, 152, 166],
+            "Pasivo A.": [11, 25, 39, 53, 68, 82, 96, 110, 124, 139, 153, 167],
+            "Autodestructivo": [12, 26, 40, 54, 69, 83, 97, 111, 125, 140, 154, 168],
+            "Depresivo": [13, 27, 41, 55, 70, 84, 98, 112, 126, 141, 155, 169],
+            "Sádico": [14, 28, 42, 56, 71, 85, 99, 113, 127, 142, 156, 170]
+        };
+
         // --- FUNCIONES DE SEGURIDAD PARA NAVEGACIÓN ---
         function safeRedirect(target, msg) {
             try {
@@ -165,7 +365,6 @@
             document.body.classList.remove('hidden');
 
             try {
-                // LLAMADA AL CEREBRO CENTRALIZADO EN EL API
                 const res = await fetch(`/api/get-report?id=${id}`, { headers: {'Authorization': `Bearer ${token}`} });
                 const result = await res.json();
                 
@@ -184,6 +383,7 @@
         function renderReport(data) {
             const d = data.demographics || {};
             const calc = data.calculated || {};
+            const rawAnswers = data.rawAnswers || {};
 
             // 1. Mostrar Ficha Demográfica Completa
             document.getElementById('pat-id').innerText = data.id;
@@ -223,10 +423,9 @@
                 </div>
             `;
 
-            // Registramos el plugin antes de renderizar la gráfica para mostrar los números
             Chart.register(ChartDataLabels);
 
-            // 2. Gráfico con Puntuaciones T, Padding Superior y Límite de 100
+            // 2. Gráfico con Puntuaciones T
             new Chart(document.getElementById('personalityChart'), {
                 type: 'bar',
                 data: {
@@ -239,39 +438,26 @@
                     }]
                 },
                 options: { 
-                    layout: {
-                        padding: {
-                            top: 25 // Margen superior para que un puntaje de 100 no se corte con el borde
-                        }
-                    },
+                    layout: { padding: { top: 25 } },
                     responsive: true, 
                     maintainAspectRatio: false, 
                     scales: { 
-                        y: { 
-                            min: 20, 
-                            max: 100, // Fijado explícitamente en 100
-                            grid: { color: '#f1f5f9' },
-                            ticks: { font: { weight: 'bold' } }
-                        },
+                        y: { min: 20, max: 100, grid: { color: '#f1f5f9' }, ticks: { font: { weight: 'bold' } } },
                         x: { grid: { display: false } }
                     }, 
                     plugins: { 
                         legend: { display: false },
                         tooltip: { backgroundColor: '#1e293b', padding: 12 },
                         datalabels: {
-                            anchor: 'end',
-                            align: 'top',
-                            formatter: Math.round,
+                            anchor: 'end', align: 'top', formatter: Math.round,
                             font: { weight: 'bold', size: 12 },
-                            color: function(context) {
-                                return context.dataset.data[context.dataIndex] >= 60 ? '#e11d48' : '#0f766e';
-                            }
+                            color: function(context) { return context.dataset.data[context.dataIndex] >= 60 ? '#e11d48' : '#0f766e'; }
                         }
                     } 
                 }
             });
 
-            // 3. Top 4 Cualitativo Proporcionado por el Servidor
+            // 3. Top 4 Cualitativo
             document.getElementById('top-traits-container').innerHTML = calc.top4.map(s => `
                 <div class="p-5 rounded-2xl border ${s.t >= 60 ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-200'} transition-all">
                     <div class="flex justify-between items-center mb-2">
@@ -285,6 +471,64 @@
             // 4. Conclusiones y Recomendaciones
             document.getElementById('clinical-conclusions').innerText = calc.conclusion;
             document.getElementById('recommendations-list').innerHTML = calc.recommendations.map(r => `<li>${r}</li>`).join('');
+
+            // --- NUEVO: HOJA 2 - DESGLOSE DE RESPUESTAS POR ESTILO ---
+            const detailedContainer = document.getElementById('detailed-answers-container');
+            let detailsHTML = '';
+
+            // Renderizar la tabla de Sinceridad primero (Ítems 57 y 128)
+            const sincItems = [57, 128];
+            const sincColorClass = sinc.t >= 60 ? 'bg-red-50 text-red-800 border-red-100' : 'bg-slate-50 text-slate-800 border-slate-200';
+            
+            detailsHTML += `
+                <div class="mb-4">
+                   <h4 class="font-bold px-4 py-2 rounded-t-lg border-b flex justify-between ${sincColorClass}">
+                       <span>Escala de Validez (Sinceridad)</span>
+                       <span>T: ${sinc.t}</span>
+                   </h4>
+                   <table class="w-full text-[11px] text-left border-x border-b border-slate-200 rounded-b-lg bg-white">
+                       <tbody class="divide-y divide-slate-100">
+                           ${sincItems.map(num => `
+                               <tr>
+                                   <td class="px-3 py-1.5 w-10 text-center text-slate-400 font-mono">${num}</td>
+                                   <td class="px-3 py-1.5 text-slate-700 leading-tight">${questionsList[num - 1]}</td>
+                                   <td class="px-3 py-1.5 w-16 text-center font-bold text-teal-700">${rawAnswers[`q${num}`] || '-'}</td>
+                               </tr>
+                           `).join('')}
+                       </tbody>
+                   </table>
+                </div>
+            `;
+
+            // Renderizar las 14 dimensiones de personalidad
+            calc.scores.forEach(scoreObj => {
+                const styleName = scoreObj.style;
+                const items = styleMapping[styleName];
+                const headerColorClass = scoreObj.t >= 60 ? 'bg-red-50 text-red-800 border-red-100' : 'bg-teal-50 text-teal-900 border-teal-100';
+                const scoreColorClass = scoreObj.t >= 60 ? 'text-red-600' : 'text-teal-700';
+
+                detailsHTML += `
+                    <div class="mb-4">
+                       <h4 class="font-bold px-4 py-2 rounded-t-lg border-b flex justify-between ${headerColorClass}">
+                           <span>${styleName}</span>
+                           <span>T: ${scoreObj.t}</span>
+                       </h4>
+                       <table class="w-full text-[11px] text-left border-x border-b border-slate-200 rounded-b-lg bg-white">
+                           <tbody class="divide-y divide-slate-100">
+                               ${items.map(num => `
+                                   <tr>
+                                       <td class="px-3 py-1.5 w-10 text-center text-slate-400 font-mono">${num}</td>
+                                       <td class="px-3 py-1.5 text-slate-700 leading-tight">${questionsList[num - 1]}</td>
+                                       <td class="px-3 py-1.5 w-16 text-center font-bold ${scoreColorClass}">${rawAnswers[`q${num}`] || '-'}</td>
+                                   </tr>
+                               `).join('')}
+                           </tbody>
+                       </table>
+                    </div>
+                `;
+            });
+
+            detailedContainer.innerHTML = detailsHTML;
 
             // Mostrar el contenido final
             document.getElementById('loading-state').classList.add('hidden');

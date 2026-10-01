@@ -4,157 +4,458 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Evaluación CEPER-III</title>
-    <!-- Vinculación al archivo CSS local generado por Tailwind v4 -->
+    <!-- Vinculación al archivo CSS local de Tailwind v4 -->
     <link rel="stylesheet" href="./style.css">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-soft: #0f766e;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-soft);
+            background-color: var(--bg-color);
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #99f6e4; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
+
+        .message-fade-in { animation: fadeIn 0.3s ease-out forwards; opacity: 0; transform: translateY(10px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+        .likert-btn { transition: all 0.2s; touch-action: manipulation; }
+        .likert-btn:hover { transform: scale(1.05); background-color: #f0fdfa; border-color: #5eead4; }
+        .likert-btn:active { transform: scale(0.95); }
+        
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
 </head>
-<body class="bg-slate-50 text-teal-900 font-sans h-screen flex flex-col items-center justify-center p-4">
+<body class="flex h-[100dvh] w-full relative">
 
-    <main id="app-container" class="bg-white p-8 rounded-2xl shadow-xl max-w-3xl w-full">
-        <!-- Pantalla de Inicio y Datos Demográficos -->
-        <section id="step-demographics">
-            <h1 class="text-3xl font-extrabold text-teal-800 mb-2">CEPER-III</h1>
-            <p class="text-sm text-slate-500 mb-6">Cuestionario Exploratorio de Personalidad</p>
-            
-            <form id="form-demographics" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="nombres" placeholder="Nombres completos" required class="border border-teal-200 p-3 rounded-xl focus:ring-2 focus:ring-teal-500 w-full">
-                    <input type="email" id="correo" placeholder="Correo electrónico" required class="border border-teal-200 p-3 rounded-xl focus:ring-2 focus:ring-teal-500 w-full">
-                    <input type="number" id="edad" placeholder="Edad" required min="16" max="99" class="border border-teal-200 p-3 rounded-xl focus:ring-2 focus:ring-teal-500 w-full">
-                    <select id="psicologo" required class="border border-teal-200 p-3 rounded-xl focus:ring-2 focus:ring-teal-500 w-full">
-                        <option value="" disabled selected>Selecciona tu Psicólogo/a</option>
-                        <option value="Jorge">Jorge</option>
-                        <option value="Claudia">Claudia</option>
-                        <option value="Victor">Victor</option>
-                        <option value="Martha">Martha</option>
-                        <option value="Johanna">Johanna</option>
-                    </select>
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-teal-900/40 z-30 hidden backdrop-blur-sm transition-opacity" onclick="toggleMenu()"></div>
+
+    <div id="cookie-banner" class="fixed bottom-0 left-0 w-full bg-slate-800 text-slate-100 p-4 md:p-6 z-50 flex flex-col md:flex-row justify-between items-center shadow-2xl transition-transform duration-500 transform translate-y-full">
+        <div class="text-xs md:text-sm mb-4 md:mb-0 max-w-5xl pr-4 leading-relaxed">
+            <strong>Aviso de Privacidad y Cookies:</strong> Esta aplicación utiliza cookies técnicas estrictamente necesarias. Al continuar, confirmas estar de acuerdo con nuestra <a href="#" onclick="event.preventDefault(); openPrivacyPolicy();" class="underline font-bold text-teal-300 hover:text-teal-200">política de tratamiento de datos</a>.
+        </div>
+        <div class="flex shrink-0 w-full md:w-auto">
+            <button onclick="acceptCookies()" class="w-full md:w-auto bg-teal-500 hover:bg-teal-400 text-white px-8 py-2.5 rounded-lg font-medium transition-colors shadow-sm">Entendido y Aceptar</button>
+        </div>
+    </div>
+
+    <div id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 flex flex-col w-[85%] sm:w-1/2 md:w-1/3 border-r border-teal-100 bg-white p-6 md:p-8 overflow-y-auto shadow-2xl md:shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <button onclick="toggleMenu()" class="md:hidden absolute top-6 right-6 text-teal-600 hover:text-teal-800 bg-teal-50 p-2 rounded-full">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+
+        <div class="mb-8 mt-2 md:mt-0">
+            <a href="login.html" class="inline-block text-2xl font-semibold text-teal-800 tracking-wide mb-2 hover:text-teal-600 transition-colors cursor-pointer" title="Ir al Portal Administrativo">CEPER-III</a>
+            <p class="text-sm text-teal-600">Cuestionario Exploratorio de Personalidad</p>
+        </div>
+
+        <div class="space-y-4">
+            <details class="group border-b border-teal-50 pb-4" open>
+                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
+                    <span>Sobre la prueba</span>
+                    <span class="transition group-open:rotate-180 text-teal-500">
+                        <svg fill="none" height="24" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                    </span>
+                </summary>
+                <p class="text-teal-700 mt-3 text-sm leading-relaxed text-justify">
+                    El <strong>Cuestionario Exploratorio de Personalidad (CEPER-III)</strong> identifica y mide estilos de personalidad en 14 dimensiones clínicas.
+                </p>
+            </details>
+        </div>
+        
+        <div class="mt-auto pt-8">
+            <p class="text-xs text-teal-400 text-center font-medium">Plataforma de Evaluación Segura</p>
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col bg-slate-50 relative w-full md:w-2/3 h-full">
+        <header class="h-[72px] border-b border-teal-100 bg-white/90 backdrop-blur flex items-center px-4 md:px-6 sticky top-0 z-20 shadow-sm">
+            <button onclick="toggleMenu()" class="md:hidden mr-3 p-2 -ml-2 text-teal-700 hover:bg-teal-50 rounded-lg">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            <div class="flex-1">
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-[11px] md:text-xs font-semibold text-teal-700 uppercase tracking-wider" id="progress-text">Progreso: 0%</span>
+                    <span class="text-[11px] md:text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100" id="question-counter">Preparación</span>
                 </div>
-                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl transition-all shadow-md">
-                    Iniciar Evaluación
-                </button>
-            </form>
-            <p id="db-error" class="hidden text-red-500 text-sm mt-4 font-semibold bg-red-50 p-3 rounded-lg"></p>
-        </section>
+                <div class="w-full bg-teal-100 rounded-full h-2">
+                    <div id="progress-bar" class="bg-teal-500 h-2 rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(20,184,166,0.4)]" style="width: 0%"></div>
+                </div>
+            </div>
+        </header>
 
-        <!-- Pantalla de la Prueba (Preguntas) -->
-        <section id="step-test" class="hidden flex-col items-center w-full">
-            <div class="w-full bg-teal-100 rounded-full h-2 mb-6">
-                <div id="progress-bar" class="bg-teal-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-            </div>
-            
-            <p id="question-counter" class="text-xs text-teal-600 font-bold uppercase tracking-widest mb-4">Pregunta 1 de 170</p>
-            <h2 id="question-text" class="text-xl md:text-2xl font-medium text-center text-slate-800 mb-8 min-h-[80px]">Cargando...</h2>
-            
-            <div class="grid grid-cols-7 gap-2 w-full max-w-2xl">
-                <!-- Botones Likert -->
-                <button onclick="handleAnswer(1)" class="likert-btn bg-teal-50 border border-teal-200 hover:bg-teal-600 hover:text-white text-teal-800 font-bold py-4 rounded-xl transition-all">1</button>
-                <button onclick="handleAnswer(2)" class="likert-btn bg-teal-50 border border-teal-200 hover:bg-teal-600 hover:text-white text-teal-800 font-bold py-4 rounded-xl transition-all">2</button>
-                <button onclick="handleAnswer(3)" class="likert-btn bg-teal-50 border border-teal-200 hover:bg-teal-600 hover:text-white text-teal-800 font-bold py-4 rounded-xl transition-all">3</button>
-                <button onclick="handleAnswer(4)" class="likert-btn bg-teal-50 border border-teal-200 hover:bg-teal-600 hover:text-white text-teal-800 font-bold py-4 rounded-xl transition-all">4</button>
-                <button onclick="handleAnswer(5)" class="likert-btn bg-teal-50 border border-teal-200 hover:bg-teal-600 hover:text-white text-teal-800 font-bold py-4 rounded-xl transition-all">5</button>
-                <button onclick="handleAnswer(6)" class="likert-btn bg-teal-50 border border-teal-200 hover:bg-teal-600 hover:text-white text-teal-800 font-bold py-4 rounded-xl transition-all">6</button>
-                <button onclick="handleAnswer(7)" class="likert-btn bg-teal-50 border border-teal-200 hover:bg-teal-600 hover:text-white text-teal-800 font-bold py-4 rounded-xl transition-all">7</button>
-            </div>
-            
-            <div class="flex justify-between w-full max-w-2xl mt-3 text-[10px] text-teal-600 font-semibold uppercase">
-                <span>Nada característico</span>
-                <span>Totalmente característico</span>
-            </div>
-        </section>
+        <main id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 w-full scroll-smooth pb-32"></main>
 
-        <!-- Pantalla Final -->
-        <section id="step-finish" class="hidden text-center py-10">
-            <h2 class="text-3xl font-bold text-teal-800 mb-4">¡Evaluación completada!</h2>
-            <p class="text-slate-600 mb-6">Tus respuestas han sido procesadas y encriptadas con éxito.</p>
-            <p class="text-sm bg-teal-50 p-4 rounded-xl border border-teal-100 text-teal-900 inline-block">Ref: <strong id="ref-id">---</strong><br>Ya puedes cerrar esta ventana.</p>
-        </section>
-    </main>
+        <footer id="interaction-area" class="w-full bg-white border-t border-teal-100 p-4 md:p-5 shadow-[0_-4px_24px_rgba(0,0,0,0.03)] z-10 shrink-0 min-h-[90px]"></footer>
+    </div>
 
     <script>
-        // LISTA DE PREGUNTAS (Se integran las primeras de tu instrumento como ejemplo estructural. Agrega las 170 completas).
-        const questions = [
+        const totalQuestions = 170;
+        let currentQuestionIndex = 0;
+        
+        const patientData = {
+            demographics: { psicologo: "", consentimiento_datos: false, nombres: "", primer_apellido: "", segundo_apellido: "", correo: "", fecha_nacimiento: "", edad: null, pais: "Colombia", departamento: "N/A", ciudad: "N/A", nivel_educativo: "", profesion: "", genero: "", religion: "", situacion_sentimental: "", hijos: 0, mascotas: "" },
+            answers: {}
+        };
+
+        const questionsList = [
             "Creo que hay personas que intentan aprovecharse de mis ideas o de lo que hago para su propio beneficio.",
             "No me atraen las fiestas ni las reuniones sociales.",
             "Con frecuencia tengo pensamientos extraños de los que me gustaría poder librarme.",
             "Cuando quiero algo intento conseguirlo como sea, sin importar si alguien sale perjudicado.",
             "A veces tengo explosiones de ira o de cólera que no puedo controlar.",
             "Cuando estoy en reuniones sociales me gusta llamar la atención, que la gente se fije en mí.",
-            "Considero que mi inteligencia es superior a la de la mayoría."
-            // NOTA: Pega aquí los 163 ítems restantes extraídos del PDF para completar los 170.
+            "Considero que mi inteligencia es superior a la de la mayoría.",
+            "Soy una persona tímida que habitualmente le cuesta establecer relaciones con los demás.",
+            "Me encuentro cómodo/a cuando los demás toman decisiones importantes por mí.",
+            "Lo más importante para mí es seguir un procedimiento y un orden estricto a la hora de hacer las cosas.",
+            "Con frecuencia estoy irritado/a y de mal humor.",
+            "Al final siempre termino relacionándome con amigos/as que me tratan mal.",
+            "Me paso la vida preocupándome por una u otra cosa.",
+            "A veces digo cosas crueles a los demás para hacerles sufrir o que se sientan mal.",
+            "Cuando alguien me crítica por cometer un error, rápidamente le señalo los suyos.",
+            "Hay pocas cosas en la vida que me hagan disfrutar.",
+            "Cuando estoy solo/a siento, a veces, la presencia de alguien o de algo que no puedo ver.",
+            "Me gusta hacer cosas que nadie se atreve a hacer, aunque ponga en peligro mi seguridad.",
+            "Algunas veces me he causado daño o me he herido intencionadamente.",
+            "Cuando una reunión social se está poniendo aburrida suelo ser yo quien la anime.",
+            "Cualquier director de una empresa de mi especialidad desearía tenerme en ella.",
+            "Cuando empiezo una relación sentimental soy muy cauteloso/a por temor a pasar vergüenza o hacer el ridículo.",
+            "Muchas veces me siento desamparado/a o desvalido/a cuando estoy solo/a.",
+            "La gente me dice que soy una persona muy responsable y seria.",
+            "La gente me dice que siempre llevo la contraria.",
+            "Cuando logro algo por lo que he luchado, en lugar de sentirme satisfecho/a y aliviado/a, me siento triste o culpable.",
+            "Me descubro en muchas ocasiones pensando que no valgo para nada.",
+            "Cuando alguien está bajo mis órdenes y no las cumple, le castigo con dureza.",
+            "Creo que la gente habla de mí a mis espaldas.",
+            "Prefiero estar con personas que no me pidan muestras de cariño.",
+            "A menudo puedo leer la mente de las personas.",
+            "El peligro me estimula y me anima.",
+            "Mis sentimientos hacia personas importantes en mi vida a veces cambian rápidamente de un extremo a otro (p. ej., de admiración a decepción, de amor a odio).",
+            "Me gusta mucho asistir a fiestas y ser el centro de la atención.",
+            "Soy o seré un/a triunfador/a.",
+            "Pienso que me faltan habilidades a la hora de enfrentarme a la mayoría de las situaciones sociales.",
+            "Con frecuencia busco consejo a la hora de tomar decisiones en mi vida cotidiana.",
+            "Considero que siempre hay formas correctas de hacer las cosas y así suelo actuar yo.",
+            "Creo que los superiores se aprovechan siempre de la autoridad que les da su posición para manipular a su antojo a los demás.",
+            "No suelo pasármelo bien en situaciones que se suponen divertidas.",
+            "Siempre he criticado mi forma de pensar y actuar.",
+            "A veces disfruto cuando veo sufrir a los animales o a las personas.",
+            "Me cuido de las personas que son más amistosas de lo que espero.",
+            "La gente suele decir que soy poco cariñoso/a o poco afectivo/a.",
+            "Mis pensamientos pueden ser tan potentes que casi puedo oírlos.",
+            "Con frecuencia me olvido de cumplir con mis compromisos económicos (p. ej., pago alquiler, cuotas, etc.)",
+            "Mi estado de ánimo puede cambiar mucho de un día para otro.",
+            "Tengo muchos amigos/as.",
+            "Es importante que los demás admiren lo que hago.",
+            "Me angustia relacionarme con personas desconocidas o poco conocidas por temor a hacer el ridículo o que no les caiga bien.",
+            "Me preocupa estar solo/a, sin la protección de alguien cercano que me ayude.",
+            "Para que las cosas importantes salgan bien tengo que hacerlas yo y no dejarlas a cargo de los demás.",
+            "La gente con la que me relaciono suele tener más suerte de la que se merece.",
+            "Me cuesta mejorar a nivel personal o profesional aunque suelo ayudar a los demás a que consigan sus objetivos.",
+            "Generalmente tiendo a ver el lado negativo de las cosas.",
+            "Las personas suelen hacer lo que yo les digo porque si no podrían sufrir consecuencias negativas.",
+            "Me produce un gran malestar que alguno de mis padres caiga gravemente enfermo.",
+            "Me enfado y siento celos cuando alguna persona del sexo opuesto se acerca a mi pareja.",
+            "Prefiero los trabajos en solitario a los trabajos en grupo.",
+            "Siento que la gente está hablando de mí cuando paso a su lado.",
+            "Me gusta experimentar nuevas sensaciones constantemente.",
+            "Cuando me siento mal, suelo hacer cosas que no puedo controlar y de las que luego me arrepiento (p. ej., gastar mucho dinero, atracarme de comida, etc.)",
+            "Me es muy fácil hacer nuevos amigos/as.",
+            "Me gustaría que alguien escribiese mi biografía algún día.",
+            "Cuando voy a algún lugar donde no conozco a la gente, me suelo comportar de forma torpe y nerviosa.",
+            "Me resulta muy difícil iniciar nuevos proyectos o hacer las cosas a mi manera porque me siento inseguro/a.",
+            "Las normas y el orden suelen determinar el éxito en un trabajo o un proyecto.",
+            "Mi pareja o familiares cercanos se quejan con frecuencia de que no hago las cosas como a ellos les gustaría.",
+            "A veces me siento confuso/a y molesto/a cuando la gente es amable conmigo.",
+            "Con frecuencia me siento culpable o con remordimientos.",
+            "Con frecuencia controlo por la fuerza a mi pareja o a las personas que dependen de mí.",
+            "Prefiero ser reservado/a con mis cosas para que nadie las pueda usar en mi contra.",
+            "No me gusta que me feliciten aunque haga las cosas bien.",
+            "A veces la gente comenta que mi forma de vestir es diferente o excéntrica.",
+            "Cuando me enfado puedo ser violento/a y desagradable, incluso con mi familia.",
+            "A menudo me pregunto quien soy realmente.",
+            "Expreso mis emociones fácil y frecuentemente.",
+            "Suelo ser más capaz que los demás.",
+            "Me gustaría tener más amigos, pero me resulta difícil establecer relaciones con la gente.",
+            "En general, soy una persona agradable y sumisa.",
+            "Controlo muy bien mi dinero para estar preparado/a en caso de necesidad.",
+            "La gente que suele tener éxito se debe a que es afortunada o a que es deshonesta.",
+            "Muchas veces pienso que no merezco las cosas buenas que me pasan.",
+            "Desde niño/a he tenido frecuentemente sentimientos de tristeza.",
+            "De vez en cuando utilizo la violencia física para que quede claro quién manda.",
+            "Muchas veces sospecho que mis amigos/as están en mi contra.",
+            "Hay pocas personas imprescindibles en mi vida.",
+            "Poseo un sexto sentido que no suelen tener las demás personas.",
+            "Me importa mucho más conseguir lo que necesito ahora que lo que pueda suceder en el futuro.",
+            "A veces me siento culpable como si hubiera cometido un delito, aunque no lo he cometido realmente.",
+            "La gente me dice a menudo que cuento las cosas de forma muy exagerada.",
+            "Creo que soy una persona especialmente competente y espero que los demás me presten la atención que merezco.",
+            "Me siento menos interesante y divertido que los demás.",
+            "Cuando estoy en un grupo prefiero que sean otros quienes tomen las decisiones importantes.",
+            "La gente piensa que soy demasiado/a estricto/a con las reglas y las normas.",
+            "Me molestan las personas que piensan que pueden hacer las cosas mejor que yo.",
+            "Suelo elegir como pareja personas que terminan tratándome mal.",
+            "Desde hace mucho tiempo me encuentro triste y desanimado/a.",
+            "He tenido que ser realmente duro/a con algunas personas para mantenerlas a raya.",
+            "Siempre que hay un problema intentan culparme.",
+            "Estoy solo/a la mayor parte del tiempo y lo prefiero así.",
+            "A veces siento como si mi mente se separase de mi cuerpo.",
+            "Aprovecharme de los demás no me produce sentimientos de culpa.",
+            "Me siento desorientado/a, sin objetivos, y no se hacia dónde voy en la vida.",
+            "Tengo fama de que me gusta coquetear con personas del sexo opuesto.",
+            "Hay mucha gente que me tiene envidia por las cosas que consigo.",
+            "Las situaciones nuevas siempre me producen temor.",
+            "Me preocupa que me dejen solo/a y tenga que cuidar de mí mismo/a.",
+            "Una gran parte de mi tiempo la dedico a trabajar/estudiar, de modo que me queda poco tiempo para actividades de ocio.",
+            "Si no quiero hacer algo, por más que me lo pida el/a profesor/a, el/a jefe/a, mis padres o mi pareja, no lo voy a hacer o lo voy a hacer mal a propósito.",
+            "Cuando alguien se preocupa realmente por mí, pierdo enseguida el interés por esa persona.",
+            "Habitualmente me siento culpable.",
+            "Para conseguir el respeto de los demás tengo que ser duro/a y amenazante.",
+            "Suelo poner a prueba a las personas para saber si puedo confiar en ellas.",
+            "Tengo pocas ganas de hacer amigos/as íntimos/as.",
+            "Suelo tener sensaciones especiales que las demás personas no pueden comprender.",
+            "Suelo hacer las cosas sin pensar en los riesgos para mí o para los demás.",
+            "A veces, cuando las cosas van mal, siento que estoy viviendo un sueño o veo pasar la vida delante de mí como si fuera una película.",
+            "A veces utilizo mi apariencia física para llamar la atención de los demás.",
+            "La gente piensa que tengo un elevado concepto de mi mismo/a.",
+            "Con frecuencia evito asistir a reuniones o situaciones sociales por temor a no ser aceptado/a o que no caiga bien a la gente.",
+            "Suelo estar dispuesto/a a ceder ante los demás, aunque no esté de acuerdo con ellos/as, por temor a que se enfaden o me rechacen.",
+            "Siempre compruebo que mi trabajo esté terminado y bien hecho antes de tomarme un descanso para actividades de ocio.",
+            "Aunque mis superiores/profesores o mi pareja me pidan más de lo que soy capaz de hacer, sigo mi ritmo a la hora de hacerlo.",
+            "El sufrimiento me hace mejor persona, por lo que evito la ayuda de los demás.",
+            "Incluso en los buenos tiempos, siempre he tenido miedo a que las cosas de pronto fuesen mal.",
+            "A veces he mentido con el único propósito de ver sufrir a otras personas.",
+            "Me produciría mucho malestar o mucha rabia que un grupo de delincuentes armados atracase a una persona que quiero mucho.",
+            "Con frecuencia creo que las personas intentan engañar a los demás, incluso a mí.",
+            "Hago pocos intentos para establecer nuevas relaciones.",
+            "En ocasiones he tenido experiencias sobrenaturales.",
+            "Desde pequeño/a me meto en peleas con mucha facilidad.",
+            "Haría algo desesperado para impedir que una persona que quiero me abandone.",
+            "Las personas me dicen que a veces me comporto de forma muy teatral.",
+            "Gracias a mi otras personas han conseguido cosas importantes.",
+            "Me falta confianza en mí mismo/a para arriesgarme a probar algo nuevo.",
+            "Habitualmente hago lo posible por complacer a los demás, incluso a quienes no me gustan.",
+            "Siempre tengo organizadas mis actividades diarias porque no me gusta perder el tiempo.",
+            "Creo que los demás no valoran adecuadamente mis esfuerzos.",
+            "Los demás se aprovechan de mí, pero no hago nada para evitarlo.",
+            "Con frecuencia pienso que en el futuro las cosas no irán mejor.",
+            "Siento un gran placer cuando consigo humillar a los demás.",
+            "Cuando alguien me ha hecho una mala jugada, tardo mucho tiempo en olvidarlo.",
+            "Siempre he tenido menos interés por el sexo que la mayoría de la gente.",
+            "La gente piensa que en ocasiones hablo sobre cosas extrañas, raras o mágicas.",
+            "Me cuesta mucho seguir las mismas normas sociales que los demás.",
+            "La mayoría de las personas que quiero terminan decepcionándome.",
+            "Suelo ser una persona muy sociable y extravertida.",
+            "Tengo la capacidad de convencer a los demás para conseguir lo que me propongo.",
+            "Suelo pensar que los demás tienen de mí una imagen poco favorable.",
+            "Con frecuencia soy muy indeciso/a.",
+            "La gente me ve como una persona muy organizada y perfeccionista.",
+            "A menudo otras personas me culpan de cosas que no he hecho.",
+            "Con frecuencia he dejado de lado mis sueños para ayudar a otros a alcanzar los suyos.",
+            "Habitualmente estoy cansado/a y fatigado/a.",
+            "Con frecuencia me dicen que humillo o maltrato a otras personas.",
+            "A menudo me han dicho que suelo buscar el doble sentido o el significado oculto de las cosas cuando hablan conmigo.",
+            "Mis familiares realmente son mis únicos confidentes.",
+            "Me pongo nervioso/a cuando estoy con personas que no conozco bien porque pueden querer hacerme daño.",
+            "No me preocupan las consecuencias que puedan traerme mis actos si consigo lo que quiero.",
+            "Con frecuencia me siento vacío/a.",
+            "Dicen que soy muy exagerado/a al expresar mis emociones.",
+            "Algunas personas cercanas a mí me dicen que soy egoísta, que sólo pienso en mí.",
+            "Con frecuencia pienso que no voy a estar a la altura de las circunstancias cuando tengo que mantener una conversación con alguien a quien acabo de conocer.",
+            "Siempre estoy temiendo que alguna persona cercana me abandone.",
+            "Me molesta cuando tengo que modificar cosas de mi rutina diaria.",
+            "He tenido poca suerte en esta vida; me gustaría haber sido más afortunado/a.",
+            "Suelo sacrificar mi bienestar para tratar de ayudar a los demás.",
+            "La gente me dice que soy una persona triste y demasiado seria.",
+            "Con frecuencia consigo que los demás hagan lo que yo quiero por medio de la violencia o la coerción."
         ];
 
-        const patientData = { demographics: {}, answers: {} };
-        let currentIndex = 0;
+        const chatContainer = document.getElementById('chat-container');
+        const interactionArea = document.getElementById('interaction-area');
 
-        document.getElementById('form-demographics').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const dbError = document.getElementById('db-error');
-            const submitBtn = e.target.querySelector('button');
-            
-            submitBtn.innerText = "Verificando conexión...";
-            submitBtn.disabled = true;
-
-            // Escudo de Conexión a Base de Datos
-            try {
-                const res = await fetch('/api/check-db');
-                if (!res.ok) throw new Error("Falla en DB");
-
-                // Guardar Demográficos
-                patientData.demographics.nombres = document.getElementById('nombres').value;
-                patientData.demographics.correo = document.getElementById('correo').value;
-                patientData.demographics.edad = document.getElementById('edad').value;
-                patientData.demographics.psicologo = document.getElementById('psicologo').value;
-
-                document.getElementById('step-demographics').classList.add('hidden');
-                document.getElementById('step-test').classList.remove('hidden');
-                document.getElementById('step-test').classList.add('flex');
-                
-                showQuestion();
-            } catch (error) {
-                dbError.innerHTML = "⚠️ <b>Error Crítico:</b> No se puede continuar con la prueba por un problema de conexión con la base de datos central. Contacta a tu psicólogo.";
-                dbError.classList.remove('hidden');
-                submitBtn.innerText = "Iniciar Evaluación";
-                submitBtn.disabled = false;
+        function addMessage(text, sender = 'bot') {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex w-full ${sender === 'user' ? 'justify-end' : 'justify-start'} message-fade-in`;
+            const bubble = document.createElement('div');
+            if(sender === 'bot') {
+                bubble.className = 'bg-teal-50 border border-teal-100 text-teal-900 px-4 py-3 md:px-5 md:py-3.5 rounded-2xl rounded-tl-sm max-w-[90%] md:max-w-[80%] shadow-sm text-[15px] leading-relaxed';
+            } else {
+                bubble.className = 'bg-blue-100 text-blue-900 px-4 py-3 md:px-5 md:py-3.5 rounded-2xl rounded-tr-sm max-w-[90%] md:max-w-[80%] font-medium text-[15px] shadow-sm';
             }
-        });
+            bubble.innerHTML = text;
+            msgDiv.appendChild(bubble);
+            chatContainer.appendChild(msgDiv);
+            setTimeout(() => chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' }), 100);
+        }
 
-        function showQuestion() {
-            if (currentIndex >= questions.length) {
-                finishTest();
-                return;
-            }
+        function clearInteraction() {
+            interactionArea.innerHTML = '<div class="text-center p-4 text-teal-600 font-medium text-sm">Procesando...</div>';
+        }
+
+        function startIntro() {
+            addMessage("¡Hola! Soy tu asistente virtual para esta evaluación. 😊<br><br>Antes de iniciar, necesito conocer algunos datos básicos.");
+            interactionArea.innerHTML = `
+                <div class="flex justify-center max-w-2xl mx-auto">
+                    <button onclick="askPsicologo()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3.5 md:py-3 rounded-full font-medium shadow-md">Empezar Evaluación</button>
+                </div>
+            `;
+        }
+
+        function askPsicologo() {
+            clearInteraction();
+            addMessage("Empezar Evaluación", 'user');
+            setTimeout(() => {
+                addMessage("¿Quién es tu psicólogo/a asignado/a?");
+                interactionArea.innerHTML = `
+                    <div class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
+                        ${['Jorge', 'Victor', 'Martha', 'Claudia', 'Johanna'].map(p => 
+                            `<button onclick="savePsicologo('${p}')" class="bg-white border border-teal-200 text-teal-800 hover:bg-teal-50 px-4 py-3 rounded-xl shadow-sm text-center">${p}</button>`
+                        ).join('')}
+                    </div>
+                `;
+            }, 600);
+        }
+
+        function savePsicologo(psicologo) {
+            patientData.demographics.psicologo = psicologo;
+            clearInteraction();
+            addMessage(psicologo, 'user');
             
-            const progress = ((currentIndex) / questions.length) * 100;
+            setTimeout(async () => {
+                addMessage(`¡Perfecto! Trabajaré de la mano de <strong>${psicologo}</strong>.`);
+                try {
+                    const res = await fetch('/api/check-db');
+                    if (!res.ok) throw new Error('Falla DB');
+                    setTimeout(askNames, 1500);
+                } catch (err) {
+                    setTimeout(() => {
+                        addMessage("<span class='text-red-600 font-bold'>⚠️ Error Crítico del Servidor:</span> No se puede continuar con la prueba por un problema de conexión con la base de datos central.<br><br>Por favor, <strong>contacta a tu psicólogo</strong>.", "bot");
+                        interactionArea.innerHTML = `<div class="text-center p-4 text-red-600 font-bold bg-red-50 border border-red-200 rounded-xl mx-4">Evaluación detenida por seguridad.</div>`;
+                    }, 1000);
+                }
+            }, 500);
+        }
+
+        function askNames() {
+            clearInteraction();
+            addMessage("Por favor dime tus nombres y apellidos.");
+            interactionArea.innerHTML = `
+                <form id="form-names" class="max-w-xl mx-auto grid grid-cols-1 gap-3">
+                    <input type="text" id="demo-nombres" placeholder="Nombres" required class="border border-teal-200 rounded-xl px-4 py-3">
+                    <input type="text" id="demo-apellido1" placeholder="Primer Apellido" required class="border border-teal-200 rounded-xl px-4 py-3">
+                    <input type="text" id="demo-apellido2" placeholder="Segundo Apellido" required class="border border-teal-200 rounded-xl px-4 py-3">
+                    <button type="submit" class="bg-teal-600 text-white px-8 py-3 rounded-xl font-medium shadow-md">Siguiente</button>
+                </form>
+            `;
+            document.getElementById('form-names').addEventListener('submit', (e) => {
+                e.preventDefault();
+                patientData.demographics.nombres = document.getElementById('demo-nombres').value;
+                patientData.demographics.primer_apellido = document.getElementById('demo-apellido1').value;
+                patientData.demographics.segundo_apellido = document.getElementById('demo-apellido2').value;
+                clearInteraction(); 
+                addMessage(`${patientData.demographics.nombres} ${patientData.demographics.primer_apellido}`, 'user');
+                setTimeout(askEmail, 500);
+            });
+        }
+
+        function askEmail() {
+            clearInteraction();
+            addMessage("¿Cuál es tu correo electrónico?");
+            interactionArea.innerHTML = `
+                <form id="form-email" class="max-w-xl mx-auto flex gap-3">
+                    <input type="email" id="demo-email" required class="flex-1 border border-teal-200 rounded-xl px-4 py-3">
+                    <button type="submit" class="bg-teal-600 text-white px-6 py-3 rounded-xl font-medium shadow-md">Continuar</button>
+                </form>
+            `;
+            document.getElementById('form-email').addEventListener('submit', (e) => {
+                e.preventDefault();
+                patientData.demographics.correo = document.getElementById('demo-email').value;
+                clearInteraction(); 
+                addMessage(patientData.demographics.correo, 'user');
+                setTimeout(askEdad, 500);
+            });
+        }
+
+        function askEdad() {
+            clearInteraction();
+            addMessage("Por favor ingresa tu edad.");
+            interactionArea.innerHTML = `
+                <form id="form-edad" class="max-w-xl mx-auto flex gap-3">
+                    <input type="number" id="demo-edad" min="16" required class="flex-1 border border-teal-200 rounded-xl px-4 py-3">
+                    <button type="submit" class="bg-teal-600 text-white px-6 py-3 rounded-xl font-medium shadow-md">Siguiente</button>
+                </form>
+            `;
+            document.getElementById('form-edad').addEventListener('submit', (e) => {
+                e.preventDefault();
+                patientData.demographics.edad = document.getElementById('demo-edad').value;
+                clearInteraction(); 
+                addMessage(patientData.demographics.edad, 'user');
+                setTimeout(startTest, 500);
+            });
+        }
+
+        function startTest() {
+            clearInteraction();
+            addMessage(`¡Genial! Hemos terminado de armar tu perfil.<br><br>Evalúa cada frase del 1 al 7.<br><br><span class="bg-teal-100 px-2 py-0.5 rounded">1</span> = Nada característico<br><span class="bg-teal-100 px-2 py-0.5 rounded">7</span> = Totalmente característico`);
+            setTimeout(askNextQuestion, 3000); 
+        }
+
+        function askNextQuestion() {
+            if (currentQuestionIndex >= totalQuestions) return finishTest();
+            
+            const progress = ((currentQuestionIndex) / totalQuestions) * 100;
             document.getElementById('progress-bar').style.width = `${progress}%`;
-            document.getElementById('question-counter').innerText = `Pregunta ${currentIndex + 1} de ${questions.length}`;
-            document.getElementById('question-text').innerText = questions[currentIndex];
+            document.getElementById('question-counter').innerText = `${currentQuestionIndex + 1}/${totalQuestions}`;
+
+            addMessage(`<span class="font-bold text-teal-700 mr-1">${currentQuestionIndex + 1}.</span> ${questionsList[currentQuestionIndex]}`);
+
+            let buttonsHTML = '<div class="grid grid-cols-7 gap-1 md:gap-2 max-w-2xl mx-auto w-full">';
+            for(let i=1; i<=7; i++) {
+                buttonsHTML += `<button onclick="handleAnswer(${i})" class="likert-btn bg-white border-2 border-teal-100 text-teal-700 font-bold py-3 md:py-4 rounded-xl shadow-sm text-lg md:text-xl">${i}</button>`;
+            }
+            buttonsHTML += '</div>';
+            interactionArea.innerHTML = buttonsHTML;
         }
 
         function handleAnswer(value) {
-            patientData.answers[`q${currentIndex + 1}`] = value;
-            currentIndex++;
-            showQuestion();
+            clearInteraction();
+            addMessage(`${value}`, 'user');
+            patientData.answers[`q${currentQuestionIndex + 1}`] = value;
+            currentQuestionIndex++;
+            setTimeout(askNextQuestion, 400);
         }
 
         async function finishTest() {
-            document.getElementById('step-test').classList.add('hidden');
-            document.getElementById('step-test').classList.remove('flex');
-            document.getElementById('step-finish').classList.remove('hidden');
+            document.getElementById('progress-bar').style.width = `100%`;
+            document.getElementById('question-counter').innerText = `Finalizado`;
+            addMessage(`¡Hemos terminado!<br>Guardando respuestas...`);
+            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium">Guardando...</div>`;
             
-            // Envío al servidor
             try {
-                const res = await fetch('/api/save-report', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(patientData)
-                });
+                const res = await fetch('/api/save-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patientData) });
                 const data = await res.json();
-                document.getElementById('ref-id').innerText = data.id_referencia || "Guardado";
-            } catch (e) {
-                document.getElementById('ref-id').innerText = "Guardado localmente (Error de red)";
+                if(res.ok) {
+                    addMessage(`¡Todo listo! ✅<br>Ref: <strong class="text-teal-800">${data.id_referencia}</strong><br>Ya puedes cerrar esta pestaña.`);
+                    interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-bold">Completado.</div>`;
+                } else throw new Error("Error del servidor");
+            } catch (e) { 
+                addMessage(`Hubo un problema. Intenta de nuevo.`, 'bot'); 
+                interactionArea.innerHTML = `<button onclick="finishTest()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold">Reintentar</button>`;
             }
         }
+
+        window.onload = startIntro;
+        function toggleMenu() { /* Función visual menú */ }
+        function acceptCookies() { document.getElementById('cookie-banner').classList.add('translate-y-full'); }
     </script>
 </body>
 </html>

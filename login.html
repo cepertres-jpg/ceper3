@@ -7,53 +7,41 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body class="bg-slate-100 flex items-center justify-center h-screen">
-
     <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md border border-slate-200">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-black text-teal-900 tracking-tight">CEPER-III</h1>
             <p class="text-teal-600 text-sm font-medium uppercase tracking-widest mt-1">Portal Clínico</p>
         </div>
-
         <form id="login-form" class="space-y-5">
             <div>
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Usuario / Correo</label>
-                <input type="email" id="email" required class="w-full border border-slate-300 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50">
+                <input type="email" id="email" required class="w-full border border-slate-300 px-4 py-3 rounded-xl bg-slate-50">
             </div>
             <div>
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Contraseña</label>
-                <input type="password" id="password" required class="w-full border border-slate-300 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50">
+                <input type="password" id="password" required class="w-full border border-slate-300 px-4 py-3 rounded-xl bg-slate-50">
             </div>
-            <button type="submit" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-bold py-3 rounded-xl transition-all shadow-md">
+            <button type="submit" class="w-full bg-teal-700 hover:bg-teal-800 text-white font-bold py-3 rounded-xl shadow-md">
                 Ingresar al Sistema
             </button>
             <p id="error-msg" class="hidden text-red-500 text-xs text-center font-semibold mt-2"></p>
         </form>
     </div>
-
     <script>
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
             try {
-                const res = await fetch('/api/auth', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
+                const res = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
                 const data = await res.json();
                 if (res.ok) {
                     sessionStorage.setItem('ceper_token', data.token);
                     window.location.href = 'portal.html';
-                } else {
-                    throw new Error(data.message);
-                }
+                } else throw new Error();
             } catch (err) {
-                const errorEl = document.getElementById('error-msg');
-                errorEl.innerText = "Credenciales inválidas o error de conexión.";
-                errorEl.classList.remove('hidden');
+                document.getElementById('error-msg').innerText = "Credenciales inválidas.";
+                document.getElementById('error-msg').classList.remove('hidden');
             }
         });
     </script>

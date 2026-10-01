@@ -3,74 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Clínico | CEPER-III</title>
-    <!-- Vinculación CSS local -->
+    <title>Dashboard - Portal CEPER-III</title>
+    <!-- Tailwind CSS (Local) -->
     <link rel="stylesheet" href="./style.css">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --sidebar-bg: #0f766e; /* Teal 700 */
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+        }
+        /* Scrollbar personalizado para la tabla */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans hidden" id="app-body">
-    <header class="bg-teal-800 text-white shadow-md py-4 px-8 flex justify-between items-center">
-        <div>
-            <h1 class="text-xl font-bold tracking-wider">CEPER-III Dashboard</h1>
-            <p class="text-teal-200 text-xs uppercase">Gestión de Pacientes</p>
+<body class="flex h-screen overflow-hidden bg-slate-50 text-slate-800 hidden" id="app-body">
+    
+    <!-- BARRA LATERAL (SIDEBAR) -->
+    <aside class="w-64 bg-teal-800 text-teal-50 flex flex-col shadow-xl z-20 hidden md:flex shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-teal-700/50 bg-teal-900/20">
+            <h1 class="text-xl font-bold tracking-wider text-white">CEPER-III</h1>
         </div>
-        <button onclick="logout()" class="text-sm bg-teal-700 hover:bg-teal-600 px-4 py-2 rounded-lg font-medium transition">
-            Cerrar Sesión
-        </button>
-    </header>
+        
+        <nav class="flex-1 py-6 px-4 space-y-2">
+            <a href="javascript:void(0)" class="flex items-center gap-3 bg-teal-700/50 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Inicio / Dashboard
+            </a>
+            <a href="javascript:void(0)" class="flex items-center gap-3 hover:bg-teal-700/30 text-teal-100 px-4 py-3 rounded-lg font-medium transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Pacientes evaluados
+            </a>
+        </nav>
+        
+        <div class="p-4 border-t border-teal-700/50">
+            <button onclick="logout()" class="flex items-center gap-2 w-full px-4 py-2 text-teal-200 hover:text-white hover:bg-teal-700/50 rounded-lg transition-colors font-medium">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Cerrar Sesión
+            </button>
+        </div>
+    </aside>
 
-    <main class="max-w-6xl mx-auto py-10 px-4">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h2 class="font-bold text-lg text-slate-700">Evaluaciones Recientes</h2>
+    <!-- ÁREA DE CONTENIDO PRINCIPAL -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <!-- HEADER SUPERIOR -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shadow-sm shrink-0 z-10">
+            <div class="flex items-center gap-3">
+                <button class="md:hidden text-slate-500 hover:text-teal-600 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <h2 class="text-lg md:text-xl font-semibold text-slate-800" id="welcome-message">Cargando...</h2>
             </div>
             
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-white border-b border-slate-200 text-xs uppercase text-slate-400">
-                        <th class="p-4 font-bold">ID / Ref</th>
-                        <th class="p-4 font-bold">Paciente</th>
-                        <th class="p-4 font-bold">Edad</th>
-                        <th class="p-4 font-bold">Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="patients-list" class="text-sm divide-y divide-slate-100">
-                    <!-- Dinámico -->
-                </tbody>
-            </table>
+            <div class="flex items-center gap-4">
+                <div class="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold border border-teal-200" id="user-avatar">
+                    ?
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENIDO DINÁMICO -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50/50">
+            
+            <div class="max-w-7xl mx-auto space-y-6">
+                <!-- Tarjetas Informativas -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+                        <div class="p-3 bg-teal-50 text-teal-600 rounded-lg">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Pacientes Registrados</p>
+                            <h3 class="text-2xl font-bold text-slate-800" id="stat-total">0</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Reportes Generados</p>
+                            <h3 class="text-2xl font-bold text-slate-800" id="stat-reportes">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+                        <div class="p-3 bg-purple-50 text-purple-600 rounded-lg">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Última evaluación</p>
+                            <h3 class="text-lg font-bold text-slate-800 mt-1" id="stat-fecha">--</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABLA DE EVALUACIONES -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+                        <h3 class="text-lg font-semibold text-slate-800">Evaluaciones Recientes</h3>
+                        <div class="relative">
+                            <input type="text" id="table-search" placeholder="Buscar paciente..." class="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white shadow-sm">
+                            <svg class="h-4 w-4 text-slate-400 absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                    <th class="px-6 py-4 font-medium">Paciente / Referencia</th>
+                                    <th class="px-6 py-4 font-medium">Edad / Género</th>
+                                    <th class="px-6 py-4 font-medium">Fecha</th>
+                                    <th id="th-psi" class="px-6 py-4 font-medium hidden lg:table-cell" style="display: none;">Psicólogo</th>
+                                    <th class="px-6 py-4 font-medium text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patients-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                <!-- Las filas se inyectan dinámicamente con JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Estado cuando la tabla está vacía -->
+                    <div id="empty-state" class="hidden p-12 text-center flex flex-col items-center justify-center">
+                        <svg class="h-14 w-14 text-slate-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <p class="text-slate-400 font-medium">No se encontraron evaluaciones registradas.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
-    <script>
-        const token = sessionStorage.getItem('ceper_token');
-        if (!token) window.location.href = 'login.html';
-        else document.getElementById('app-body').classList.remove('hidden');
+    <!-- MODAL DE ELIMINACIÓN -->
+    <div id="delete-modal" class="fixed inset-0 bg-slate-900/50 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">¿Eliminar Reporte?</h3>
+            <p class="text-slate-600 text-sm mb-6">Esta acción es permanente y eliminará todos los datos de este paciente de la base de datos.</p>
+            <div id="delete-error" class="hidden text-red-600 text-sm mb-4 bg-red-50 p-3 rounded-lg"></div>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeDeleteModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">Cancelar</button>
+                <button id="confirm-delete-btn" onclick="confirmDelete()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors shadow-sm">
+                    <span id="delete-btn-text">Eliminar</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
-        function logout() {
-            sessionStorage.removeItem('ceper_token');
-            window.location.href = 'login.html';
+    <script>
+        let currentUser = "";
+        let currentToken = "";
+        let pacientesList = [];
+        let pacienteAEliminar = null;
+
+        // Función segura de redirección (evita el error de Location en iframes)
+        function redirectOrShowError(message, target = 'login.html') {
+            try {
+                window.location.href = target;
+            } catch (e) {
+                console.warn("Navegación bloqueada por el entorno.");
+                document.getElementById('app-body').innerHTML = `
+                    <div class="flex h-screen items-center justify-center p-6">
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border text-center max-w-md">
+                            <h2 class="text-xl font-bold mb-4">Acceso Requerido</h2>
+                            <p class="text-slate-600 mb-6">${message}</p>
+                            <p class="text-teal-600 font-medium">Por favor, abre el archivo <span class="font-bold">${target}</span> manualmente.</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('app-body').classList.remove('hidden');
+            }
         }
 
-        async function fetchPatients() {
+        async function checkAuth() {
+            currentToken = sessionStorage.getItem('ceper_token');
+            currentUser = sessionStorage.getItem('ceper_user');
+
+            if (!currentToken || !currentUser) {
+                redirectOrShowError("Tu sesión ha expirado o no has iniciado sesión.");
+                return;
+            }
+            
+            document.getElementById('app-body').classList.remove('hidden');
+            const nombreCap = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
+            document.getElementById('welcome-message').innerText = `Hola, ${nombreCap} 👋`;
+            document.getElementById('user-avatar').innerText = currentUser.charAt(0).toUpperCase();
+
+            // Mostrar columna psicólogo solo si es admin
+            if(currentUser === 'admin') {
+                document.getElementById('th-psi').style.display = 'table-cell';
+            }
+
+            await fetchPacientes();
+        }
+
+        async function fetchPacientes() {
             try {
-                const res = await fetch('/api/get-patients', { headers: { 'Authorization': `Bearer ${token}` } });
-                const data = await res.json();
+                const res = await fetch('/api/get-patients', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
                 
-                document.getElementById('patients-list').innerHTML = data.patients.map(p => `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 text-slate-500 font-mono">${p.id.substring(0,6)}</td>
-                        <td class="p-4 font-semibold text-slate-800">${p.nombres} ${p.primer_apellido || ''}</td>
-                        <td class="p-4 text-slate-600">${p.edad} años</td>
-                        <td class="p-4">
-                            <!-- HIPERVÍNCULO HACIA REPORTE CORREGIDO -->
-                            <a href="reporte.html?id=${p.id}" class="text-teal-600 hover:text-teal-800 font-bold bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-100 transition">Ver Informe</a>
+                if (res.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const result = await res.json();
+                if (res.ok) {
+                    pacientesList = result.data;
+                    renderTable(pacientesList);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                document.getElementById('empty-state').innerHTML = `<p class="text-red-500">Error de conexión con el servidor.</p>`;
+                document.getElementById('empty-state').classList.remove('hidden');
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('patients-table-body');
+            const emptyState = document.getElementById('empty-state');
+            
+            document.getElementById('stat-total').innerText = data.length;
+            document.getElementById('stat-reportes').innerText = data.length;
+            document.getElementById('stat-fecha').innerText = data.length > 0 ? data[0].fecha : "--";
+
+            if (data.length === 0) {
+                emptyState.classList.remove('hidden');
+                tbody.innerHTML = '';
+            } else {
+                emptyState.classList.add('hidden');
+                tbody.innerHTML = data.map(p => `
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-slate-800">${p.nombre} ${p.apellidos}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">REF: ${p.id.substring(0,8)}</div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-600">${p.edad} años | ${p.genero}</td>
+                        <td class="px-6 py-4 text-slate-600">${p.fecha}</td>
+                        ${currentUser === 'admin' ? `<td class="px-6 py-4 lg:table-cell"><span class="bg-teal-50 text-teal-700 px-2 py-0.5 rounded text-xs font-semibold capitalize">${p.psicologo}</span></td>` : ''}
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="goToReport('${p.id}')" class="bg-white border border-teal-500 text-teal-600 hover:bg-teal-50 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm">Ver Reporte</button>
+                                <button onclick="openDeleteModal('${p.id}')" class="p-1.5 text-red-400 hover:text-red-600 transition-colors" title="Eliminar">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `).join('');
-            } catch (e) {
-                document.getElementById('patients-list').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">Error al cargar pacientes o no hay registros.</td></tr>`;
             }
         }
-        fetchPatients();
+
+        // Navegación segura al reporte detallado
+        function goToReport(id) {
+            try {
+                window.location.href = `reporte.html?id=${id}`;
+            } catch (e) {
+                console.error("Navegación bloqueada.");
+                redirectOrShowError("Por favor abre reporte.html para ver este detalle.", `reporte.html?id=${id}`);
+            }
+        }
+
+        // Búsqueda en tiempo real
+        document.getElementById('table-search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = pacientesList.filter(p => 
+                p.nombre.toLowerCase().includes(term) || 
+                p.apellidos.toLowerCase().includes(term) ||
+                p.id.toLowerCase().includes(term)
+            );
+            renderTable(filtered);
+        });
+
+        // Lógica de eliminación
+        function openDeleteModal(id) {
+            pacienteAEliminar = id;
+            const modal = document.getElementById('delete-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.firstElementChild.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('delete-modal');
+            modal.classList.add('opacity-0');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function confirmDelete() {
+            const btn = document.getElementById('confirm-delete-btn');
+            const txt = document.getElementById('delete-btn-text');
+            btn.disabled = true;
+            txt.innerText = "Eliminando...";
+
+            try {
+                const res = await fetch(`/api/eliminar-report?id=${pacienteAEliminar}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+
+                if (res.ok) {
+                    pacientesList = pacientesList.filter(p => p.id !== pacienteAEliminar);
+                    renderTable(pacientesList);
+                    closeDeleteModal();
+                } else {
+                    const err = await res.json();
+                    throw new Error(err.message || "No se pudo eliminar.");
+                }
+            } catch (error) {
+                const errBox = document.getElementById('delete-error');
+                errBox.innerText = error.message;
+                errBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                txt.innerText = "Eliminar";
+            }
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            redirectOrShowError("Has cerrado sesión exitosamente.");
+        }
+
+        window.onload = checkAuth;
     </script>
 </body>
 </html>

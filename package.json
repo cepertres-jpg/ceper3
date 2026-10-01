@@ -1,15 +1,19 @@
 {
-  "name": "ceper-iii-api",
+  "name": "ceper-iii-app",
   "version": "1.0.0",
-  "description": "Backend Serverless para la plataforma clínica CEPER-III",
-  "main": "api/authenticate.js",
+  "type": "module",
+  "description": "Plataforma de evaluación y motor psicométrico para el cuestionario CEPER-III.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx @tailwindcss/cli -i ./input.css -o ./style.css --minify"
   },
+  "author": "Jorge Arango",
+  "license": "ISC",
   "dependencies": {
-    "firebase-admin": "^12.0.0",
-    "jsonwebtoken": "^9.0.2"
-  },
-  "author": "Portal Clínico",
-  "license": "ISC"
+    "firebase-admin": "^12.1.1",
+    "pdf-lib": "^1.17.1",
+    "resend": "^3.4.0",
+    "buffer": "^6.0.3",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/cli": "^4.0.0"
+  }
 }

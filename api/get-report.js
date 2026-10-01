@@ -70,7 +70,6 @@ export default async function handler(req, res) {
             }
         };
 
-        // --- Baremos para la Escala de Sinceridad ---
         const sincerityNorms = {
             "Colombia": { "Hombre": [10.4, 2.84], "Mujer": [10.74, 3.21] },
             "Internacional": { "Hombre": [10.61, 3.07], "Mujer": [10.61, 3.07] }
@@ -99,7 +98,6 @@ export default async function handler(req, res) {
         const table = norms[isCol ? 'Colombia' : 'Internacional'][genderKey];
         const sincTable = sincerityNorms[isCol ? 'Colombia' : 'Internacional'][genderKey];
 
-        // Procesar Cálculos T
         let scores = [];
         for (const style in styleMapping) {
             const raw = styleMapping[style].reduce((acc, idx) => acc + parseInt(answers[`q${idx}`] || 0), 0);
@@ -108,11 +106,9 @@ export default async function handler(req, res) {
             scores.push({ style, raw, t, description: descriptions[style] });
         }
 
-        // --- CÁLCULO DE SINCERIDAD (Ítems 57 y 128) ---
         const rawSinc = parseInt(answers.q57 || 0) + parseInt(answers.q128 || 0);
         const [meanSinc, sdSinc] = sincTable || [10.4, 2.84];
         
-        // Z invertida (* -1) según Excel, porque un raw alto es sincero y debe dar una T baja/normal
         const zSinc = -1 * ((rawSinc - meanSinc) / sdSinc);
         const tSinc = Math.round(50 + 10 * zSinc);
         
@@ -123,10 +119,8 @@ export default async function handler(req, res) {
             sincQualitative = "VÁLIDA: La prueba fue respondida con sinceridad. El perfil es confiable y válido para interpretación clínica.";
         }
 
-        // Obtener Top 4 para el análisis cualitativo
         const top4 = [...scores].sort((a, b) => b.t - a.t).slice(0, 4);
 
-        // Generar Conclusión Técnica
         const picos = top4.filter(s => s.t >= 60);
         const pNombre = (demo.nombres || 'El paciente').split(' ')[0];
         let conclusion = `${pNombre} presenta un perfil con predominancia en los estilos ${top4[0].style} y ${top4[1].style}. `;
@@ -136,18 +130,18 @@ export default async function handler(req, res) {
             conclusion += "No se observan elevaciones clínicas significativas; el perfil se encuentra dentro de la norma estadística esperada.";
         }
 
-        // Retorno de datos PROCESADOS
         return res.status(200).json({ 
             success: true, 
             data: { 
                 id: docSnap.id,
                 demographics: demo,
+                rawAnswers: answers, // SE ENVÍAN LAS RESPUESTAS AL VISOR
                 calculated: {
                     scores,
                     top4,
                     normUsed: normName,
                     conclusion,
-                    sincerity: { t: tSinc, qualitative: sincQualitative }, // Objeto de Sinceridad enviado al Frontend
+                    sincerity: { t: tSinc, qualitative: sincQualitative },
                     recommendations: [
                         `Contrastar los rasgos de ${top4[0].style} con el motivo de consulta inicial del paciente.`,
                         `Explorar la flexibilidad de afrontamiento ante situaciones de estrés elevado.`,

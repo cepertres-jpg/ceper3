@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Evaluación CEPER-III</title>
-    <!-- Vinculación al archivo CSS local de Tailwind v4 -->
+    <!-- Vinculación al archivo CSS local generado por Tailwind v4 -->
     <link rel="stylesheet" href="./style.css">
     <style>
         :root {
@@ -18,20 +18,44 @@
             overflow: hidden;
             touch-action: pan-y;
         }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #99f6e4; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #5eead4; }
-
-        .message-fade-in { animation: fadeIn 0.3s ease-out forwards; opacity: 0; transform: translateY(10px); }
-        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
-
-        .likert-btn { transition: all 0.2s; touch-action: manipulation; }
-        .likert-btn:hover { transform: scale(1.05); background-color: #f0fdfa; border-color: #5eead4; }
-        .likert-btn:active { transform: scale(0.95); }
-        
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #99f6e4;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5eead4;
+        }
+        .message-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .likert-btn {
+            transition: all 0.2s;
+            touch-action: manipulation; 
+        }
+        .likert-btn:hover {
+            transform: scale(1.05);
+            background-color: #f0fdfa;
+            border-color: #5eead4;
+        }
+        .likert-btn:active {
+            transform: scale(0.95);
+        }
         input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
     </style>
 </head>
 <body class="flex h-[100dvh] w-full relative">
@@ -40,33 +64,58 @@
 
     <div id="cookie-banner" class="fixed bottom-0 left-0 w-full bg-slate-800 text-slate-100 p-4 md:p-6 z-50 flex flex-col md:flex-row justify-between items-center shadow-2xl transition-transform duration-500 transform translate-y-full">
         <div class="text-xs md:text-sm mb-4 md:mb-0 max-w-5xl pr-4 leading-relaxed">
-            <strong>Aviso de Privacidad y Cookies:</strong> Esta aplicación utiliza cookies técnicas estrictamente necesarias. Al continuar, confirmas estar de acuerdo con nuestra <a href="#" onclick="event.preventDefault(); openPrivacyPolicy();" class="underline font-bold text-teal-300 hover:text-teal-200">política de tratamiento de datos</a>.
+            <strong>Aviso de Privacidad y Cookies:</strong> Esta aplicación utiliza cookies técnicas estrictamente necesarias. Al continuar, confirmas que estás de acuerdo con nuestra <a href="#" onclick="event.preventDefault(); openPrivacyPolicy();" class="underline font-bold text-teal-300 hover:text-teal-200">política de tratamiento de datos personales</a>.
         </div>
         <div class="flex shrink-0 w-full md:w-auto">
-            <button onclick="acceptCookies()" class="w-full md:w-auto bg-teal-500 hover:bg-teal-400 text-white px-8 py-2.5 rounded-lg font-medium transition-colors shadow-sm">Entendido y Aceptar</button>
+            <button onclick="acceptCookies()" class="w-full md:w-auto bg-teal-500 hover:bg-teal-400 text-white px-8 py-2.5 rounded-lg font-medium shadow-sm">Entendido y Aceptar</button>
         </div>
     </div>
 
     <div id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 flex flex-col w-[85%] sm:w-1/2 md:w-1/3 border-r border-teal-100 bg-white p-6 md:p-8 overflow-y-auto shadow-2xl md:shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        
         <button onclick="toggleMenu()" class="md:hidden absolute top-6 right-6 text-teal-600 hover:text-teal-800 bg-teal-50 p-2 rounded-full">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
 
         <div class="mb-8 mt-2 md:mt-0">
-            <a href="login.html" class="inline-block text-2xl font-semibold text-teal-800 tracking-wide mb-2 hover:text-teal-600 transition-colors cursor-pointer" title="Ir al Portal Administrativo">CEPER-III</a>
+            <a href="login.html" class="inline-block text-2xl font-semibold text-teal-800 tracking-wide mb-2 hover:text-teal-600 cursor-pointer" title="Ir al Portal Administrativo">CEPER-III</a>
             <p class="text-sm text-teal-600">Cuestionario Exploratorio de Personalidad</p>
         </div>
 
         <div class="space-y-4">
             <details class="group border-b border-teal-50 pb-4" open>
-                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600 transition-colors">
+                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600">
                     <span>Sobre la prueba</span>
                     <span class="transition group-open:rotate-180 text-teal-500">
                         <svg fill="none" height="24" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
                     </span>
                 </summary>
                 <p class="text-teal-700 mt-3 text-sm leading-relaxed text-justify">
-                    El <strong>Cuestionario Exploratorio de Personalidad (CEPER-III)</strong> identifica y mide estilos de personalidad en 14 dimensiones clínicas.
+                    El <strong>Cuestionario Exploratorio de Personalidad (CEPER-III)</strong> identifica y mide estilos de personalidad en 14 dimensiones clínicas. Su objetivo principal es trazar un perfil psicológico detallado para apoyar procesos de diagnóstico.
+                </p>
+            </details>
+
+            <details class="group border-b border-teal-50 pb-4">
+                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600">
+                    <span>Instrucciones</span>
+                    <span class="transition group-open:rotate-180 text-teal-500">
+                        <svg fill="none" height="24" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                    </span>
+                </summary>
+                <div class="text-teal-700 mt-3 text-sm leading-relaxed bg-teal-50/50 p-3 rounded-lg border border-teal-100 text-justify">
+                    Para la evaluación, utilizarás una escala del 1 al 7, donde <strong>1</strong> significa "Nada característico de mí" y <strong>7</strong> "Totalmente característico de mí".
+                </div>
+            </details>
+
+            <details id="privacy-section" class="group border-b border-teal-50 pb-4">
+                <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-teal-800 hover:text-teal-600">
+                    <span>Privacidad de datos</span>
+                    <span class="transition group-open:rotate-180 text-teal-500">
+                        <svg fill="none" height="24" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                    </span>
+                </summary>
+                <p class="text-teal-700 mt-3 text-sm leading-relaxed text-justify">
+                    Tus respuestas serán utilizadas única y exclusivamente con fines de evaluación clínica. En ningún caso tu información será compartida.
                 </p>
             </details>
         </div>
@@ -87,7 +136,7 @@
                     <span class="text-[11px] md:text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100" id="question-counter">Preparación</span>
                 </div>
                 <div class="w-full bg-teal-100 rounded-full h-2">
-                    <div id="progress-bar" class="bg-teal-500 h-2 rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(20,184,166,0.4)]" style="width: 0%"></div>
+                    <div id="progress-bar" class="bg-teal-500 h-2 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(20,184,166,0.4)]" style="width: 0%"></div>
                 </div>
             </div>
         </header>
@@ -98,11 +147,30 @@
     </div>
 
     <script>
+        const geoData = {
+          "América del Sur": {
+            "Colombia": {
+              "Amazonas": ["Leticia", "Puerto Nariño"],
+              "Antioquia": ["Medellín", "Abejorral", "Bello", "Envigado", "Itagüí", "Rionegro"],
+              "Atlántico": ["Barranquilla", "Soledad", "Malambo", "Sabanalarga"],
+              "Bogotá": ["Bogotá D.C."],
+              "Bolívar": ["Cartagena de Indias", "Magangué", "Turbaco"],
+              "Boyacá": ["Tunja", "Duitama", "Sogamoso", "Chiquinquirá"],
+              "Caldas": ["Manizales", "Chinchiná", "La Dorada"],
+              "Cundinamarca": ["Soacha", "Chía", "Zipaquirá", "Facatativá", "Mosquera"],
+              "Valle del Cauca": ["Cali", "Buenaventura", "Palmira", "Tuluá", "Buga"]
+            },
+            "España": { "España": ["Madrid", "Barcelona", "Valencia", "Sevilla", "Zaragoza"] },
+            "Otro": { "Otro": [] }
+          }
+        };
+
+        let paisesGlobales = ["Colombia", "España", "Otro"];
         const totalQuestions = 170;
         let currentQuestionIndex = 0;
         
         const patientData = {
-            demographics: { psicologo: "", consentimiento_datos: false, nombres: "", primer_apellido: "", segundo_apellido: "", correo: "", fecha_nacimiento: "", edad: null, pais: "Colombia", departamento: "N/A", ciudad: "N/A", nivel_educativo: "", profesion: "", genero: "", religion: "", situacion_sentimental: "", hijos: 0, mascotas: "" },
+            demographics: { psicologo: "", consentimiento_datos: false, nombres: "", primer_apellido: "", segundo_apellido: "", correo: "", fecha_nacimiento: "", edad: null, acudiente: null, pais: "", departamento: "", ciudad: "", nivel_educativo: "", profesion: "", genero: "", religion: "", situacion_sentimental: "", hijos: 0, mascotas: "" },
             answers: {}
         };
 
@@ -281,6 +349,35 @@
 
         const chatContainer = document.getElementById('chat-container');
         const interactionArea = document.getElementById('interaction-area');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const questionCounter = document.getElementById('question-counter');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobile-menu-overlay');
+
+        function checkCookies() {
+            if (!localStorage.getItem('cookiesAccepted')) {
+                setTimeout(() => document.getElementById('cookie-banner').classList.remove('translate-y-full'), 1000);
+            }
+        }
+
+        function acceptCookies() {
+            localStorage.setItem('cookiesAccepted', 'true');
+            document.getElementById('cookie-banner').classList.add('translate-y-full');
+        }
+
+        function toggleMenu() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                mobileOverlay.classList.remove('hidden');
+                setTimeout(() => mobileOverlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                mobileOverlay.classList.add('opacity-0');
+                setTimeout(() => mobileOverlay.classList.add('hidden'), 300);
+            }
+        }
 
         function addMessage(text, sender = 'bot') {
             const msgDiv = document.createElement('div');
@@ -301,24 +398,29 @@
             interactionArea.innerHTML = '<div class="text-center p-4 text-teal-600 font-medium text-sm">Procesando...</div>';
         }
 
+        function goBackDemographics(stepFunction) {
+            clearInteraction();
+            addMessage("Necesito corregir el paso anterior.", 'user');
+            setTimeout(() => {
+                addMessage("<span class='text-teal-600 italic'>Claro, volvamos al paso anterior...</span>");
+                setTimeout(stepFunction, 600);
+            }, 500);
+        }
+
         function startIntro() {
-            addMessage("¡Hola! Soy tu asistente virtual para esta evaluación. 😊<br><br>Antes de iniciar, necesito conocer algunos datos básicos.");
-            interactionArea.innerHTML = `
-                <div class="flex justify-center max-w-2xl mx-auto">
-                    <button onclick="askPsicologo()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3.5 md:py-3 rounded-full font-medium shadow-md">Empezar Evaluación</button>
-                </div>
-            `;
+            addMessage("¡Hola! Soy tu asistente virtual para esta evaluación. 😊<br><br>Antes de iniciar con las preguntas, necesito conocer algunos datos básicos.");
+            interactionArea.innerHTML = `<div class="flex justify-center max-w-2xl mx-auto"><button onclick="askPsicologo()" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3.5 md:py-3 rounded-full font-medium shadow-md">Empezar Evaluación</button></div>`;
         }
 
         function askPsicologo() {
             clearInteraction();
             addMessage("Empezar Evaluación", 'user');
             setTimeout(() => {
-                addMessage("¿Quién es tu psicólogo/a asignado/a?");
+                addMessage("Para asegurar que tus resultados lleguen a la persona correcta, ¿quién es tu psicólogo/a asignado/a?");
                 interactionArea.innerHTML = `
                     <div class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
                         ${['Jorge', 'Victor', 'Martha', 'Claudia', 'Johanna'].map(p => 
-                            `<button onclick="savePsicologo('${p}')" class="bg-white border border-teal-200 text-teal-800 hover:bg-teal-50 px-4 py-3 rounded-xl shadow-sm text-center">${p}</button>`
+                            `<button onclick="savePsicologo('${p}')" class="bg-white border border-teal-200 text-teal-800 hover:bg-teal-50 px-4 py-3 rounded-xl font-medium shadow-sm">${p}</button>`
                         ).join('')}
                     </div>
                 `;
@@ -332,10 +434,11 @@
             
             setTimeout(async () => {
                 addMessage(`¡Perfecto! Trabajaré de la mano de <strong>${psicologo}</strong>.`);
+                
                 try {
                     const res = await fetch('/api/check-db');
                     if (!res.ok) throw new Error('Falla DB');
-                    setTimeout(askNames, 1500);
+                    setTimeout(askPrivacy, 1500);
                 } catch (err) {
                     setTimeout(() => {
                         addMessage("<span class='text-red-600 font-bold'>⚠️ Error Crítico del Servidor:</span> No se puede continuar con la prueba por un problema de conexión con la base de datos central.<br><br>Por favor, <strong>contacta a tu psicólogo</strong>.", "bot");
@@ -345,22 +448,52 @@
             }, 500);
         }
 
+        function askPrivacy() {
+            clearInteraction();
+            addMessage("Por favor confirma que aceptas nuestra política de tratamiento de datos personales.");
+            interactionArea.innerHTML = `
+                <div class="flex flex-col md:flex-row justify-center gap-3 max-w-xl mx-auto">
+                    <button onclick="goBackDemographics(askPsicologo)" class="w-full md:w-1/4 bg-white border border-teal-300 text-teal-700 px-4 py-3 rounded-xl">Atrás</button>
+                    <button onclick="handlePrivacy(true)" class="w-full md:w-auto flex-1 bg-teal-600 text-white px-4 py-3 rounded-xl">Sí, acepto</button>
+                    <button onclick="handlePrivacy(false)" class="w-full md:w-auto flex-1 bg-white border border-red-300 text-red-600 px-4 py-3 rounded-xl">No acepto</button>
+                </div>
+            `;
+        }
+
+        function handlePrivacy(accepted) {
+            clearInteraction();
+            if(accepted) {
+                patientData.demographics.consentimiento_datos = true;
+                addMessage("Sí, acepto.", 'user');
+                setTimeout(askNames, 500);
+            } else {
+                addMessage("No acepto.", 'user');
+                setTimeout(() => {
+                    addMessage("Evaluación cancelada. Puedes cerrar esta ventana.", "bot");
+                    interactionArea.innerHTML = `<button onclick="location.reload()" class="mt-4 text-xs text-teal-600 hover:underline">Reiniciar</button>`;
+                }, 500);
+            }
+        }
+
         function askNames() {
             clearInteraction();
             addMessage("Por favor dime tus nombres y apellidos.");
             interactionArea.innerHTML = `
-                <form id="form-names" class="max-w-xl mx-auto grid grid-cols-1 gap-3">
-                    <input type="text" id="demo-nombres" placeholder="Nombres" required class="border border-teal-200 rounded-xl px-4 py-3">
-                    <input type="text" id="demo-apellido1" placeholder="Primer Apellido" required class="border border-teal-200 rounded-xl px-4 py-3">
-                    <input type="text" id="demo-apellido2" placeholder="Segundo Apellido" required class="border border-teal-200 rounded-xl px-4 py-3">
-                    <button type="submit" class="bg-teal-600 text-white px-8 py-3 rounded-xl font-medium shadow-md">Siguiente</button>
+                <form id="form-names" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" id="demo-nombres" placeholder="Nombres" required class="w-full border border-teal-200 rounded-xl px-4 py-3 md:col-span-2">
+                    <input type="text" id="demo-apellido1" placeholder="Primer Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3">
+                    <input type="text" id="demo-apellido2" placeholder="Segundo Apellido" required class="w-full border border-teal-200 rounded-xl px-4 py-3">
+                    <div class="md:col-span-2 flex gap-3 mt-1">
+                        <button type="button" onclick="goBackDemographics(askPrivacy)" class="w-1/3 bg-white border border-teal-300 text-teal-700 px-4 py-3 rounded-xl">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 text-white px-8 py-3 rounded-xl">Siguiente</button>
+                    </div>
                 </form>
             `;
             document.getElementById('form-names').addEventListener('submit', (e) => {
                 e.preventDefault();
-                patientData.demographics.nombres = document.getElementById('demo-nombres').value;
-                patientData.demographics.primer_apellido = document.getElementById('demo-apellido1').value;
-                patientData.demographics.segundo_apellido = document.getElementById('demo-apellido2').value;
+                patientData.demographics.nombres = document.getElementById('demo-nombres').value.trim();
+                patientData.demographics.primer_apellido = document.getElementById('demo-apellido1').value.trim();
+                patientData.demographics.segundo_apellido = document.getElementById('demo-apellido2').value.trim();
                 clearInteraction(); 
                 addMessage(`${patientData.demographics.nombres} ${patientData.demographics.primer_apellido}`, 'user');
                 setTimeout(askEmail, 500);
@@ -369,60 +502,177 @@
 
         function askEmail() {
             clearInteraction();
-            addMessage("¿Cuál es tu correo electrónico?");
+            addMessage(`¿Cuál es tu correo electrónico?`);
             interactionArea.innerHTML = `
-                <form id="form-email" class="max-w-xl mx-auto flex gap-3">
+                <form id="form-email" class="max-w-xl mx-auto flex flex-col md:flex-row gap-3">
                     <input type="email" id="demo-email" required class="flex-1 border border-teal-200 rounded-xl px-4 py-3">
-                    <button type="submit" class="bg-teal-600 text-white px-6 py-3 rounded-xl font-medium shadow-md">Continuar</button>
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button type="button" onclick="goBackDemographics(askNames)" class="bg-white border border-teal-300 text-teal-700 px-5 py-3 rounded-xl">Atrás</button>
+                        <button type="submit" class="flex-1 bg-teal-600 text-white px-6 py-3 rounded-xl">Continuar</button>
+                    </div>
                 </form>
             `;
             document.getElementById('form-email').addEventListener('submit', (e) => {
                 e.preventDefault();
-                patientData.demographics.correo = document.getElementById('demo-email').value;
+                const email = document.getElementById('demo-email').value.trim();
+                patientData.demographics.correo = email;
                 clearInteraction(); 
-                addMessage(patientData.demographics.correo, 'user');
-                setTimeout(askEdad, 500);
+                addMessage(email, 'user');
+                setTimeout(askDob, 500);
             });
         }
 
-        function askEdad() {
+        function askDob() {
             clearInteraction();
-            addMessage("Por favor ingresa tu edad.");
+            addMessage("¿Cuál es tu fecha de nacimiento? (Día / Mes / Año)");
             interactionArea.innerHTML = `
-                <form id="form-edad" class="max-w-xl mx-auto flex gap-3">
-                    <input type="number" id="demo-edad" min="16" required class="flex-1 border border-teal-200 rounded-xl px-4 py-3">
-                    <button type="submit" class="bg-teal-600 text-white px-6 py-3 rounded-xl font-medium shadow-md">Siguiente</button>
+                <form id="form-dob" class="max-w-xl mx-auto flex flex-col gap-3">
+                    <div class="flex gap-2 w-full">
+                        <input type="number" id="dob-day" placeholder="DD" required min="1" max="31" class="flex-1 border border-teal-200 rounded-xl px-4 py-3">
+                        <input type="number" id="dob-month" placeholder="MM" required min="1" max="12" class="flex-1 border border-teal-200 rounded-xl px-4 py-3">
+                        <input type="number" id="dob-year" placeholder="AAAA" required min="1920" max="2015" class="flex-1 border border-teal-200 rounded-xl px-4 py-3">
+                    </div>
+                    <div class="flex gap-2 w-full mt-1">
+                        <button type="button" onclick="goBackDemographics(askEmail)" class="w-1/3 bg-white border border-teal-300 text-teal-700 px-4 py-3 rounded-xl">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 text-white px-8 py-3 rounded-xl">Siguiente</button>
+                    </div>
                 </form>
             `;
-            document.getElementById('form-edad').addEventListener('submit', (e) => {
+            document.getElementById('form-dob').addEventListener('submit', (e) => {
                 e.preventDefault();
-                patientData.demographics.edad = document.getElementById('demo-edad').value;
+                const d = document.getElementById('dob-day').value;
+                const m = document.getElementById('dob-month').value;
+                const y = document.getElementById('dob-year').value;
+                
+                patientData.demographics.fecha_nacimiento = `${y}-${m}-${d}`;
+                patientData.demographics.edad = new Date().getFullYear() - parseInt(y);
+                
                 clearInteraction(); 
-                addMessage(patientData.demographics.edad, 'user');
-                setTimeout(startTest, 500);
+                addMessage(`${d}/${m}/${y}`, 'user'); 
+                setTimeout(askGeo, 600);
             });
         }
 
+        function askGeo() {
+            clearInteraction();
+            addMessage("¿De qué país nos visitas?");
+            interactionArea.innerHTML = `
+                <form id="form-geo" class="max-w-xl mx-auto grid grid-cols-1 gap-3">
+                    <select id="demo-pais" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-white">
+                        <option value="" disabled selected>Selecciona tu país</option>
+                        <option value="Colombia">Colombia</option>
+                        <option value="España">España</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                    <input type="text" id="demo-ciudad" placeholder="Escribe tu ciudad" required class="w-full border border-teal-200 rounded-xl px-4 py-3">
+                    <div class="flex gap-3">
+                        <button type="button" onclick="goBackDemographics(askDob)" class="w-1/3 bg-white border border-teal-300 text-teal-700 px-4 py-3 rounded-xl">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 text-white px-8 py-3 rounded-xl">Siguiente</button>
+                    </div>
+                </form>
+            `;
+            document.getElementById('form-geo').addEventListener('submit', (e) => {
+                e.preventDefault();
+                patientData.demographics.pais = document.getElementById('demo-pais').value;
+                patientData.demographics.ciudad = document.getElementById('demo-ciudad').value;
+                clearInteraction();
+                addMessage(`${patientData.demographics.pais} (${patientData.demographics.ciudad})`, 'user');
+                setTimeout(askEduProGen, 600);
+            });
+        }
+
+        function askEduProGen() {
+            clearInteraction();
+            addMessage("Por favor selecciona tu nivel educativo, tu ocupación actual y género.");
+            interactionArea.innerHTML = `
+                <form id="form-epg" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <select id="demo-edu" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-white">
+                        <option value="" disabled selected>Nivel Educativo</option>
+                        <option value="Secundaria">Secundaria</option><option value="Profesional">Profesional</option>
+                    </select>
+                    <select id="demo-prof" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-white">
+                        <option value="" disabled selected>Ocupación</option>
+                        <option value="Estudiante">Estudiante</option><option value="Empleado">Empleado</option>
+                    </select>
+                    <select id="demo-gen" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-white md:col-span-2">
+                        <option value="" disabled selected>Género</option>
+                        <option value="Hombre">Hombre</option><option value="Mujer">Mujer</option>
+                    </select>
+                    <div class="md:col-span-2 flex gap-3 mt-1">
+                        <button type="button" onclick="goBackDemographics(askGeo)" class="w-1/3 bg-white border border-teal-300 text-teal-700 px-4 py-3 rounded-xl">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 text-white px-8 py-3 rounded-xl">Siguiente</button>
+                    </div>
+                </form>
+            `;
+            document.getElementById('form-epg').addEventListener('submit', (e) => {
+                e.preventDefault();
+                patientData.demographics.nivel_educativo = document.getElementById('demo-edu').value;
+                patientData.demographics.profesion = document.getElementById('demo-prof').value;
+                patientData.demographics.genero = document.getElementById('demo-gen').value;
+                clearInteraction();
+                addMessage("Datos registrados.", 'user');
+                setTimeout(askPersonal, 600);
+            });
+        }
+
+        function askPersonal() {
+            clearInteraction();
+            addMessage("Finalmente, cuéntanos un poco más sobre ti:");
+            interactionArea.innerHTML = `
+                <form id="form-personal" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" id="demo-rel" placeholder="Religión" required class="w-full border border-teal-200 rounded-xl px-4 py-3">
+                    <input type="number" id="demo-hijos" placeholder="Número de hijos" min="0" required class="w-full border border-teal-200 rounded-xl px-4 py-3">
+                    <select id="demo-sit" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-white">
+                        <option value="" disabled selected>Estado Sentimental</option>
+                        <option value="Soltero/a">Soltero/a</option><option value="Casado/a">Casado/a</option>
+                    </select>
+                    <select id="demo-mascotas" required class="w-full border border-teal-200 rounded-xl px-4 py-3 bg-white">
+                        <option value="" disabled selected>Mascotas...</option>
+                        <option value="Tengo mascotas">Tengo</option><option value="No tengo">No tengo</option>
+                    </select>
+                    <div class="md:col-span-2 flex gap-3 mt-1">
+                        <button type="button" onclick="goBackDemographics(askEduProGen)" class="w-1/3 bg-white border border-teal-300 text-teal-700 px-4 py-3 rounded-xl">Atrás</button>
+                        <button type="submit" class="w-2/3 bg-teal-600 text-white px-8 py-3 rounded-xl">Finalizar Perfil</button>
+                    </div>
+                </form>
+            `;
+            document.getElementById('form-personal').addEventListener('submit', (e) => {
+                e.preventDefault();
+                patientData.demographics.religion = document.getElementById('demo-rel').value;
+                patientData.demographics.hijos = document.getElementById('demo-hijos').value;
+                patientData.demographics.situacion_sentimental = document.getElementById('demo-sit').value;
+                patientData.demographics.mascotas = document.getElementById('demo-mascotas').value;
+                clearInteraction();
+                addMessage("Información completada.", 'user');
+                setTimeout(startTest, 800);
+            });
+        }
+        
         function startTest() {
             clearInteraction();
-            addMessage(`¡Genial! Hemos terminado de armar tu perfil.<br><br>Evalúa cada frase del 1 al 7.<br><br><span class="bg-teal-100 px-2 py-0.5 rounded">1</span> = Nada característico<br><span class="bg-teal-100 px-2 py-0.5 rounded">7</span> = Totalmente característico`);
-            setTimeout(askNextQuestion, 3000); 
+            questionCounter.innerText = `0/170`;
+            addMessage(`¡Genial! Ahora vamos a comenzar con la evaluación CEPER-III.<br><br>Evalúa cada frase y decide en qué medida te describe habitualmente. <strong>No hay respuestas correctas ni incorrectas</strong>.<br><br><div class="flex flex-col gap-1 mt-2 text-sm"><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 rounded font-bold">1</span> = Nada característico de mí</div><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 rounded font-bold">7</span> = Totalmente característico de mí</div></div>`);
+            setTimeout(askNextQuestion, 4000); 
         }
 
         function askNextQuestion() {
             if (currentQuestionIndex >= totalQuestions) return finishTest();
-            
+
             const progress = ((currentQuestionIndex) / totalQuestions) * 100;
-            document.getElementById('progress-bar').style.width = `${progress}%`;
-            document.getElementById('question-counter').innerText = `${currentQuestionIndex + 1}/${totalQuestions}`;
+            progressBar.style.width = `${progress}%`;
+            progressText.innerText = `Progreso: ${Math.round(progress)}%`;
+            questionCounter.innerText = `${currentQuestionIndex + 1}/${totalQuestions}`;
 
             addMessage(`<span class="font-bold text-teal-700 mr-1">${currentQuestionIndex + 1}.</span> ${questionsList[currentQuestionIndex]}`);
 
             let buttonsHTML = '<div class="grid grid-cols-7 gap-1 md:gap-2 max-w-2xl mx-auto w-full">';
-            for(let i=1; i<=7; i++) {
-                buttonsHTML += `<button onclick="handleAnswer(${i})" class="likert-btn bg-white border-2 border-teal-100 text-teal-700 font-bold py-3 md:py-4 rounded-xl shadow-sm text-lg md:text-xl">${i}</button>`;
-            }
+            for(let i=1; i<=7; i++) buttonsHTML += `<button onclick="handleAnswer(${i})" class="likert-btn bg-white border-2 border-teal-100 text-teal-700 font-bold py-3 md:py-4 rounded-xl text-lg">${i}</button>`;
             buttonsHTML += '</div>';
+
+            if (currentQuestionIndex > 0) {
+                buttonsHTML += `<div class="flex justify-center mt-3"><button onclick="goBack()" class="text-sm text-teal-600 font-medium bg-teal-50 px-4 py-2 rounded-full border border-teal-100">Corregir respuesta anterior</button></div>`;
+            }
+
             interactionArea.innerHTML = buttonsHTML;
         }
 
@@ -434,28 +684,36 @@
             setTimeout(askNextQuestion, 400);
         }
 
+        function goBack() {
+            if(currentQuestionIndex > 0) {
+                clearInteraction();
+                addMessage("Corregir respuesta anterior.", 'user');
+                currentQuestionIndex--;
+                delete patientData.answers[`q${currentQuestionIndex + 1}`];
+                setTimeout(() => { addMessage(`Volviendo a la pregunta ${currentQuestionIndex + 1}...`); setTimeout(askNextQuestion, 600); }, 500);
+            }
+        }
+
         async function finishTest() {
-            document.getElementById('progress-bar').style.width = `100%`;
-            document.getElementById('question-counter').innerText = `Finalizado`;
-            addMessage(`¡Hemos terminado!<br>Guardando respuestas...`);
-            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium">Guardando...</div>`;
+            progressBar.style.width = `100%`;
+            questionCounter.innerText = `Finalizado`;
+            addMessage(`¡Hemos terminado!<br>Guardando respuestas de forma segura... ⏳`);
+            interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-medium">Guardando evaluación...</div>`;
             
             try {
                 const res = await fetch('/api/save-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patientData) });
                 const data = await res.json();
                 if(res.ok) {
-                    addMessage(`¡Todo listo! ✅<br>Ref: <strong class="text-teal-800">${data.id_referencia}</strong><br>Ya puedes cerrar esta pestaña.`);
-                    interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-bold">Completado.</div>`;
-                } else throw new Error("Error del servidor");
+                    addMessage(`¡Todo listo! ✅<br><br>Tus respuestas han sido guardadas. Ref: <strong class="text-teal-800">${data.id_referencia.substring(0,8)}</strong>.<br>Ya puedes cerrar esta pestaña.`);
+                    interactionArea.innerHTML = `<div class="text-center p-4 text-teal-600 font-bold">Evaluación completada.</div>`;
+                } else throw new Error();
             } catch (e) { 
-                addMessage(`Hubo un problema. Intenta de nuevo.`, 'bot'); 
-                interactionArea.innerHTML = `<button onclick="finishTest()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold">Reintentar</button>`;
+                addMessage(`Hubo un problema de conexión al guardar. Presiona intentar de nuevo.`, 'bot'); 
+                interactionArea.innerHTML = `<button onclick="finishTest()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold">Intentar enviar de nuevo</button>`;
             }
         }
 
-        window.onload = startIntro;
-        function toggleMenu() { /* Función visual menú */ }
-        function acceptCookies() { document.getElementById('cookie-banner').classList.add('translate-y-full'); }
+        window.onload = () => { checkCookies(); startIntro(); };
     </script>
 </body>
 </html>

@@ -1,0 +1,21 @@
+/* Importación nativa de Tailwind v4 */
+@import "tailwindcss";
+
+/* Escaneo de todos los archivos HTML y JS (incluyendo la carpeta api) */
+@source "./**/*.html";
+@source "./**/*.js";
+
+/* Configuración del tema corporativo del CEPER-III */
+@theme {
+  --color-ceper-primary: #0f766e; /* Teal 700 */
+  --color-ceper-secondary: #0d9488; /* Teal 600 */
+  --color-ceper-bg: #f8fafc; /* Slate 50 */
+  --color-ceper-alert: #f43f5e; /* Rose 500 para picos clínicos */
+}
+
+/* CSS personalizado para el aplicativo */
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}

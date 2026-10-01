@@ -4,31 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Informe Clínico CEPER-III</title>
-    <!-- CSS Nativo Local -->
     <link rel="stylesheet" href="./style.css">
-    
-    <!-- Chart.js y Plugin DataLabels -->
+    <!-- Chart.js y Plugin DataLabels para los números sobre las barras -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 </head>
 <body class="text-slate-800 p-4 md:p-8 hidden bg-slate-50" id="app-body">
-
     <header class="max-w-6xl mx-auto mb-6 flex justify-between items-center no-print">
         <button onclick="window.location.href='portal.html'" class="text-teal-700 font-bold hover:bg-teal-100 px-4 py-2 rounded-lg transition">
             &larr; Volver al Portal
         </button>
-        <button onclick="window.print()" class="bg-teal-700 hover:bg-teal-800 text-white px-6 py-2 rounded-lg font-bold shadow-md transition">
-            Exportar PDF
-        </button>
+        <button onclick="window.print()" class="bg-teal-700 hover:bg-teal-800 text-white px-6 py-2 rounded-lg font-bold">Exportar PDF</button>
     </header>
 
     <main class="max-w-6xl mx-auto space-y-8">
-        <div id="loading-state" class="text-center py-20 text-teal-600 font-bold">
-            Procesando análisis psicométrico...
-        </div>
+        <div id="loading-state" class="text-center py-20 text-teal-600 font-bold">Procesando análisis psicométrico...</div>
 
         <div id="report-content" class="hidden space-y-8">
-            
             <section class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                 <div class="border-b border-slate-100 pb-4 mb-4 flex justify-between">
                     <h1 class="text-3xl font-black text-teal-900 uppercase">Informe Clínico CEPER-III</h1>
@@ -50,34 +42,25 @@
                     <canvas id="personalityChart"></canvas>
                 </div>
             </section>
-
-            <section class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="border-left-4 border-l-4 border-teal-600 pl-3 font-bold text-slate-800 mb-4 text-lg">Impresión Clínica</h3>
-                <p id="clinical-conclusions" class="text-slate-700 leading-relaxed italic bg-teal-50 p-6 rounded-xl border border-teal-100">--</p>
-            </section>
         </div>
     </main>
 
     <script>
-        // Registrar plugin DataLabels globalmente
         Chart.register(ChartDataLabels);
 
         window.onload = async () => {
             const token = sessionStorage.getItem('ceper_token');
             const id = new URLSearchParams(window.location.search).get('id');
-            
             if(!token) { window.location.href = 'login.html'; return; }
             document.body.classList.remove('hidden');
 
             try {
-                // Llamada al cerebro en backend
                 const res = await fetch(`/api/get-report?id=${id}`, { headers: {'Authorization': `Bearer ${token}`} });
                 const result = await res.json();
                 if(res.ok) renderReport(result.data);
                 else throw new Error(result.message);
             } catch(e) { 
                 document.getElementById('loading-state').innerText = "Error de comunicación con el servidor.";
-                document.getElementById('loading-state').classList.add("text-red-500");
             }
         };
 
@@ -86,44 +69,33 @@
             const calc = data.calculated || {};
 
             document.getElementById('pat-id').innerText = data.id;
-            document.getElementById('pat-name').innerText = d.nombres || '--';
+            document.getElementById('pat-name').innerText = `${d.nombres} ${d.primer_apellido || ''}`;
             document.getElementById('pat-age').innerText = (d.edad || '--') + " años";
             document.getElementById('pat-psi').innerText = d.psicologo || '--';
-            document.getElementById('clinical-conclusions').innerText = calc.conclusion || '--';
 
-            // Configuración del Gráfico con Números Arriba
             new Chart(document.getElementById('personalityChart'), {
                 type: 'bar',
                 data: {
                     labels: calc.scores.map(s => s.style),
                     datasets: [{ 
                         data: calc.scores.map(s => s.t), 
-                        backgroundColor: calc.scores.map(s => s.t >= 60 ? '#f43f5e' : '#0d9488'), // Rojo si >= 60, Teal si es normal
+                        backgroundColor: calc.scores.map(s => s.t >= 60 ? '#f43f5e' : '#0d9488'),
                         borderRadius: 6 
                     }]
                 },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    scales: { 
-                        y: { min: 20, max: 90, grid: { color: '#f1f5f9' } },
-                        x: { grid: { display: false } }
-                    }, 
+                    scales: { y: { min: 20, max: 90 }, x: { grid: { display: false } } }, 
                     plugins: { 
                         legend: { display: false },
-                        tooltip: { enabled: false }, // Desactivar tooltip si los números ya están fijos
+                        tooltip: { enabled: false },
                         datalabels: {
-                            anchor: 'end',    // Posiciona el label al final de la barra
-                            align: 'top',     // Lo alinea por encima de la barra
+                            anchor: 'end',
+                            align: 'top',
                             formatter: Math.round,
-                            font: {
-                                weight: 'bold',
-                                size: 12
-                            },
-                            color: function(context) {
-                                // Mismo color de la barra (Rojo o Teal) para el texto
-                                return context.dataset.data[context.dataIndex] >= 60 ? '#e11d48' : '#0f766e';
-                            }
+                            font: { weight: 'bold', size: 12 },
+                            color: (ctx) => ctx.dataset.data[ctx.dataIndex] >= 60 ? '#e11d48' : '#0f766e'
                         }
                     } 
                 }

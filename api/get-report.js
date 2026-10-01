@@ -7,7 +7,6 @@ export default async function handler(req, res) {
     }
 
     try {
-        // 1. Verificación de Seguridad (Token JWT)
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return res.status(401).json({ message: 'No autorizado.' });
@@ -26,7 +25,6 @@ export default async function handler(req, res) {
 
         if (!id) return res.status(400).json({ message: 'ID de reporte no proporcionado.' });
 
-        // 2. Buscar datos en Firebase
         const docRef = db.collection('evaluaciones_ceper').doc(id);
         const docSnap = await docRef.get();
 
@@ -34,7 +32,6 @@ export default async function handler(req, res) {
 
         const docData = docSnap.data();
 
-        // 3. Seguridad de Acceso: Admin o Psicólogo dueño
         if (requestUser !== 'admin') {
             const psicologoEnDB = (docData.demographics?.psicologo || '').trim().toLowerCase();
             if (psicologoEnDB !== requestUser.trim().toLowerCase()) {
@@ -42,11 +39,9 @@ export default async function handler(req, res) {
             }
         }
 
-        // --- 4. EL CEREBRO: PROCESAMIENTO PSICOMÉTRICO CENTRALIZADO ---
         const demo = docData.demographics || {};
         const answers = docData.answers || {};
 
-        // Mapeo de Ítems por Estilo (Estructura oficial CEPER-III)
         const styleMapping = {
             "Paranoide": [1, 15, 29, 43, 58, 72, 86, 100, 114, 129, 143, 157],
             "Esquizoide": [2, 16, 30, 44, 59, 73, 87, 101, 115, 130, 144, 158],
@@ -64,7 +59,6 @@ export default async function handler(req, res) {
             "Sádico": [14, 28, 42, 56, 71, 85, 99, 113, 127, 142, 156, 170]
         };
 
-        // Tablas de Baremos de tus archivos Excel
         const norms = {
             "Colombia": {
                 "Hombre": { "Paranoide": [32.6, 10.71], "Esquizoide": [33.04, 10.15], "Esquizotípico": [26.56, 11.23], "Antisocial": [27.02, 10.14], "Límite": [27.81, 11.02], "Histriónico": [34.56, 11.33], "Narcisista": [36.78, 10.56], "Evitativo": [30.12, 10.88], "Dependiente": [32.45, 10.11], "Obsesivo C.": [42.12, 11.23], "Pasivo A.": [28.56, 10.45], "Autodestructivo": [22.34, 9.88], "Depresivo": [29.67, 10.78], "Sádico": [21.56, 9.45] },
@@ -74,6 +68,12 @@ export default async function handler(req, res) {
                 "Hombre": { "Paranoide": [32.73, 10.76], "Esquizoide": [31.16, 9.5], "Esquizotípico": [24.3, 10.23], "Antisocial": [26.12, 9.8], "Límite": [25.12, 10.1], "Histriónico": [33.12, 10.4], "Narcisista": [35.12, 10.1], "Evitativo": [29.12, 9.9], "Dependiente": [31.12, 10.0], "Obsesivo C.": [40.12, 10.8], "Pasivo A.": [27.12, 9.7], "Autodestructivo": [20.12, 8.8], "Depresivo": [28.12, 10.2], "Sádico": [20.12, 9.1] },
                 "Mujer": { "Paranoide": [29.83, 9.33], "Esquizoide": [27.5, 9.45], "Esquizotípico": [23.04, 9.92], "Antisocial": [21.12, 8.5], "Límite": [24.12, 9.6], "Histriónico": [36.12, 10.8], "Narcisista": [33.12, 9.9], "Evitativo": [31.12, 10.1], "Dependiente": [34.12, 10.7], "Obsesivo C.": [41.12, 11.1], "Pasivo A.": [25.12, 9.2], "Autodestructivo": [19.12, 8.5], "Depresivo": [30.12, 10.4], "Sádico": [17.12, 8.1] }
             }
+        };
+
+        // --- Baremos para la Escala de Sinceridad ---
+        const sincerityNorms = {
+            "Colombia": { "Hombre": [10.4, 2.84], "Mujer": [10.74, 3.21] },
+            "Internacional": { "Hombre": [10.61, 3.07], "Mujer": [10.61, 3.07] }
         };
 
         const descriptions = {
@@ -93,11 +93,11 @@ export default async function handler(req, res) {
             "Sádico": "Uso de comportamientos crueles o humillantes para ejercer dominio."
         };
 
-        // Identificar Baremos
         const isCol = demo.pais === 'Colombia';
         const normName = isCol ? "Colombiana" : "Internacional (España)";
         const genderKey = (demo.genero === 'Hombre' || demo.genero === 'Masculino') ? 'Hombre' : 'Mujer';
         const table = norms[isCol ? 'Colombia' : 'Internacional'][genderKey];
+        const sincTable = sincerityNorms[isCol ? 'Colombia' : 'Internacional'][genderKey];
 
         // Procesar Cálculos T
         let scores = [];
@@ -106,6 +106,21 @@ export default async function handler(req, res) {
             const [mean, sd] = table[style] || [30, 10];
             const t = Math.round(50 + 10 * ((raw - mean) / sd));
             scores.push({ style, raw, t, description: descriptions[style] });
+        }
+
+        // --- CÁLCULO DE SINCERIDAD (Ítems 57 y 128) ---
+        const rawSinc = parseInt(answers.q57 || 0) + parseInt(answers.q128 || 0);
+        const [meanSinc, sdSinc] = sincTable || [10.4, 2.84];
+        
+        // Z invertida (* -1) según Excel, porque un raw alto es sincero y debe dar una T baja/normal
+        const zSinc = -1 * ((rawSinc - meanSinc) / sdSinc);
+        const tSinc = Math.round(50 + 10 * zSinc);
+        
+        let sincQualitative = "";
+        if (tSinc >= 60) {
+            sincQualitative = "ALERTA: La prueba NO fue respondida con sinceridad. Se detecta un patrón de respuestas inconsistente o al azar (posible falsa bondad/evitación). Se sugiere interpretar con extrema precaución o invalidar el perfil.";
+        } else {
+            sincQualitative = "VÁLIDA: La prueba fue respondida con sinceridad. El perfil es confiable y válido para interpretación clínica.";
         }
 
         // Obtener Top 4 para el análisis cualitativo
@@ -132,6 +147,7 @@ export default async function handler(req, res) {
                     top4,
                     normUsed: normName,
                     conclusion,
+                    sincerity: { t: tSinc, qualitative: sincQualitative }, // Objeto de Sinceridad enviado al Frontend
                     recommendations: [
                         `Contrastar los rasgos de ${top4[0].style} con el motivo de consulta inicial del paciente.`,
                         `Explorar la flexibilidad de afrontamiento ante situaciones de estrés elevado.`,

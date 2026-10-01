@@ -7,24 +7,18 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans hidden" id="app-body">
-
     <header class="bg-teal-800 text-white shadow-md py-4 px-8 flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold tracking-wider">CEPER-III Dashboard</h1>
             <p class="text-teal-200 text-xs uppercase">Gestión de Pacientes</p>
         </div>
-        <button onclick="logout()" class="text-sm bg-teal-700 hover:bg-teal-600 px-4 py-2 rounded-lg font-medium transition">
-            Cerrar Sesión
-        </button>
+        <button onclick="logout()" class="text-sm bg-teal-700 hover:bg-teal-600 px-4 py-2 rounded-lg font-medium">Cerrar Sesión</button>
     </header>
-
     <main class="max-w-6xl mx-auto py-10 px-4">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <h2 class="font-bold text-lg text-slate-700">Evaluaciones Recientes</h2>
-                <input type="text" placeholder="Buscar paciente..." class="border border-slate-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
             </div>
-            
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-white border-b border-slate-200 text-xs uppercase text-slate-400">
@@ -34,42 +28,31 @@
                         <th class="p-4 font-bold">Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="patients-list" class="text-sm divide-y divide-slate-100">
-                    <!-- Dinámico -->
-                </tbody>
+                <tbody id="patients-list" class="text-sm divide-y divide-slate-100"></tbody>
             </table>
         </div>
     </main>
-
     <script>
         const token = sessionStorage.getItem('ceper_token');
         if (!token) window.location.href = 'login.html';
         else document.getElementById('app-body').classList.remove('hidden');
 
-        function logout() {
-            sessionStorage.removeItem('ceper_token');
-            window.location.href = 'login.html';
-        }
+        function logout() { sessionStorage.removeItem('ceper_token'); window.location.href = 'login.html'; }
 
         async function fetchPatients() {
             try {
-                // Endpoint ficticio para demostración del frontend
                 const res = await fetch('/api/get-patients', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await res.json();
-                
-                const tbody = document.getElementById('patients-list');
-                tbody.innerHTML = data.patients.map(p => `
-                    <tr class="hover:bg-slate-50 transition">
+                document.getElementById('patients-list').innerHTML = data.patients.map(p => `
+                    <tr class="hover:bg-slate-50">
                         <td class="p-4 text-slate-500">${p.fecha}</td>
-                        <td class="p-4 font-semibold text-slate-800">${p.nombres}</td>
-                        <td class="p-4 text-slate-600">${p.edad} años</td>
-                        <td class="p-4">
-                            <a href="reporte.html?id=${p.id}" class="text-teal-600 hover:text-teal-800 font-bold bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-100 transition">Ver Informe</a>
-                        </td>
+                        <td class="p-4 font-semibold">${p.nombres}</td>
+                        <td class="p-4">${p.edad} años</td>
+                        <td class="p-4"><a href="reporte.html?id=${p.id}" class="text-teal-600 hover:text-teal-800 font-bold">Ver Informe</a></td>
                     </tr>
                 `).join('');
             } catch (e) {
-                document.getElementById('patients-list').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">Error al cargar pacientes.</td></tr>`;
+                document.getElementById('patients-list').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">Error al cargar.</td></tr>`;
             }
         }
         fetchPatients();

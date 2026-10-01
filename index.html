@@ -54,12 +54,12 @@
             touch-action: manipulation; 
         }
         .likert-btn:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
             background-color: #f0fdfa; /* Teal 50 */
             border-color: #5eead4; /* Teal 300 */
         }
         .likert-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.98);
         }
         
         /* Ocultar flechas en input number */
@@ -438,6 +438,17 @@
             "Con frecuencia consigo que los demás hagan lo que yo quiero por medio de la violencia o la coerción."
         ];
 
+        // --- ARREGLO DE ETIQUETAS COMPLETAS LIKERT ---
+        const likertLabels = [
+            "Nada característico de mí",
+            "Muy poco característico de mí",
+            "Poco característico de mí",
+            "Moderadamente característico de mí",
+            "Bastante característico de mí",
+            "Muy característico de mí",
+            "Totalmente característico de mí"
+        ];
+
         // --- ELEMENTOS DEL DOM ---
         const chatContainer = document.getElementById('chat-container');
         const interactionArea = document.getElementById('interaction-area');
@@ -560,15 +571,12 @@
             setTimeout(async () => {
                 addMessage(`¡Perfecto! Trabajaré de la mano de <strong>${psicologo}</strong> para acompañarte y apoyarte en este proceso evaluativo. 🤝`);
                 
-                // --- NUEVO: Verificación de Base de Datos ---
                 try {
                     const res = await fetch('/api/check-db');
                     if (!res.ok) throw new Error('Falla DB');
                     
-                    // Si responde OK, seguimos normalmente
                     setTimeout(askPrivacy, 1500);
                 } catch (err) {
-                    // Si falla, detenemos el proceso y avisamos
                     setTimeout(() => {
                         addMessage("<span class='text-red-600 font-bold'>⚠️ Error Crítico del Servidor:</span> No se puede continuar con la prueba por un problema de conexión con la base de datos central.<br><br>Por favor, <strong>contacta a tu psicólogo</strong> para informarle de esta situación. Lamentamos los inconvenientes.", "bot");
                         document.getElementById('interaction-area').innerHTML = `<div class="text-center p-4 text-red-600 font-bold bg-red-50 border border-red-200 rounded-xl mx-4">Evaluación detenida por seguridad.</div>`;
@@ -1013,7 +1021,17 @@
                 fraseMotivacional = `Ser ${d.profesion.toLowerCase()} y estar ${d.situacion_sentimental.toLowerCase().split('/')[0]} trae sus propios retos y alegrías. El autoconocimiento es la mejor inversión que puedes hacer en ti ahora mismo.`;
             }
 
-            addMessage(`¡Genial! Hemos terminado de armar tu perfil.<br><br><span class="text-teal-700 font-medium italic">"${fraseMotivacional}"</span><br><br>Ahora sí, vamos a comenzar con la evaluación CEPER-III.<br><br>A continuación encontrarás una serie de afirmaciones sobre formas de pensar, sentir y actuar. Evalúa cada frase y decide en qué medida te describe habitualmente. <strong>No hay respuestas correctas ni incorrectas</strong>, lo importante es tu sinceridad.<br><br><div class="flex flex-col gap-1 mt-2 text-sm text-teal-800 bg-white border border-teal-100 p-2.5 rounded-lg shadow-sm"><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">1</span> = Nada característico de mí</div><div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-bold">7</span> = Totalmente característico de mí</div></div>`);
+            // AQUI SE INCLUYE LA LEYENDA COMPLETA EN EL MENSAJE
+            addMessage(`¡Genial! Hemos terminado de armar tu perfil.<br><br><span class="text-teal-700 font-medium italic">"${fraseMotivacional}"</span><br><br>Ahora sí, vamos a comenzar con la evaluación CEPER-III.<br><br>A continuación encontrarás una serie de afirmaciones sobre formas de pensar, sentir y actuar. Evalúa cada frase y decide en qué medida te describe habitualmente. <strong>No hay respuestas correctas ni incorrectas</strong>, lo importante es tu sinceridad.<br><br>
+            <div class="flex flex-col gap-2 mt-3 text-xs md:text-sm text-teal-800 bg-white border border-teal-100 p-3 md:p-4 rounded-xl shadow-sm">
+                <div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 w-6 h-6 flex items-center justify-center rounded font-bold shrink-0">1</span> Nada característico de mí</div>
+                <div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 w-6 h-6 flex items-center justify-center rounded font-bold shrink-0">2</span> Muy poco característico de mí</div>
+                <div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 w-6 h-6 flex items-center justify-center rounded font-bold shrink-0">3</span> Poco característico de mí</div>
+                <div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 w-6 h-6 flex items-center justify-center rounded font-bold shrink-0">4</span> Moderadamente característico de mí</div>
+                <div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 w-6 h-6 flex items-center justify-center rounded font-bold shrink-0">5</span> Bastante característico de mí</div>
+                <div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 w-6 h-6 flex items-center justify-center rounded font-bold shrink-0">6</span> Muy característico de mí</div>
+                <div class="flex items-center gap-2"><span class="bg-teal-100 text-teal-700 w-6 h-6 flex items-center justify-center rounded font-bold shrink-0">7</span> Totalmente característico de mí</div>
+            </div>`);
             
             setTimeout(() => {
                 askNextQuestion();
@@ -1034,18 +1052,15 @@
             const currentQ = questionsList[currentQuestionIndex];
             addMessage(`<span class="font-bold text-teal-700 mr-1">${currentQuestionIndex + 1}.</span> ${currentQ}`);
 
-            let buttonsHTML = '<div class="grid grid-cols-7 gap-1 md:gap-2 max-w-2xl mx-auto w-full">';
+            // NUEVO DISEÑO VERTICAL DE BOTONES PARA MEJOR LECTURA
+            let buttonsHTML = '<div class="flex flex-col gap-2 max-w-lg mx-auto w-full">';
             for(let i = 1; i <= 7; i++) {
-                buttonsHTML += `<button onclick="handleAnswer(${i})" class="likert-btn bg-white border-2 border-teal-100 text-teal-700 font-bold py-3 md:py-4 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-lg md:text-xl flex items-center justify-center">${i}</button>`;
+                buttonsHTML += `<button onclick="handleAnswer(${i})" class="likert-btn bg-white border border-teal-200 text-teal-800 py-2.5 px-4 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-left flex items-center gap-3">
+                    <span class="bg-teal-100 text-teal-800 font-bold w-8 h-8 flex items-center justify-center rounded shrink-0 shadow-sm">${i}</span>
+                    <span class="text-[13px] md:text-sm font-medium leading-tight">${likertLabels[i-1]}</span>
+                </button>`;
             }
             buttonsHTML += '</div>';
-            
-            buttonsHTML += `
-                <div class="flex justify-between max-w-2xl mx-auto mt-2 px-1">
-                    <span class="text-[11px] md:text-xs text-teal-600 font-medium leading-tight max-w-[80px] md:max-w-none text-left">Nada característico</span>
-                    <span class="text-[11px] md:text-xs text-teal-600 font-medium leading-tight max-w-[80px] md:max-w-none text-right">Totalmente característico</span>
-                </div>
-            `;
 
             if (currentQuestionIndex > 0) {
                 buttonsHTML += `

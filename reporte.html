@@ -15,12 +15,17 @@
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
         .report-card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         .section-title { border-left: 4px solid #0d9488; padding-left: 1rem; margin-bottom: 1.5rem; font-weight: 700; color: #0f172a; }
+        
         @media print {
             .no-print { display: none !important; }
             body { background: white; padding: 0; }
             .report-card { box-shadow: none; border: 1px solid #eee; break-inside: avoid; margin-bottom: 2rem; }
-            /* Esta clase fuerza el salto a una nueva hoja al imprimir o exportar a PDF */
-            .print-page-break { page-break-before: always; }
+            /* Se aplica directamente a la sección para evitar páginas en blanco por márgenes colapsados */
+            .print-page-break { 
+                page-break-before: always; 
+                break-before: page; 
+                margin-top: 0 !important; 
+            }
         }
     </style>
 </head>
@@ -121,9 +126,8 @@
                 </div>
             </section>
 
-            <!-- HOJA 2: ANEXO CLÍNICO DE RESPUESTAS (Fuerza salto de página) -->
-            <div class="print-page-break"></div>
-            <section class="report-card p-6 md:p-8">
+            <!-- HOJA 2: ANEXO CLÍNICO DE RESPUESTAS (Ahora la clase está directo en el section) -->
+            <section class="report-card p-6 md:p-8 print-page-break">
                 <h3 class="section-title">Anexo Clínico: Desglose de Respuestas por Estilo</h3>
                 <p class="text-sm text-slate-500 mb-6 border-b border-slate-100 pb-4">Esta sección detalla las respuestas directas (del 1 al 7) proporcionadas por el paciente, agrupadas según las dimensiones del CEPER-III, para un análisis clínico a profundidad.</p>
                 
@@ -472,7 +476,7 @@
             document.getElementById('clinical-conclusions').innerText = calc.conclusion;
             document.getElementById('recommendations-list').innerHTML = calc.recommendations.map(r => `<li>${r}</li>`).join('');
 
-            // --- NUEVO: HOJA 2 - DESGLOSE DE RESPUESTAS POR ESTILO ---
+            // --- HOJA 2 - DESGLOSE DE RESPUESTAS POR ESTILO ---
             const detailedContainer = document.getElementById('detailed-answers-container');
             let detailsHTML = '';
 
